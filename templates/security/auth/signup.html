@@ -1,0 +1,139 @@
+{% extends 'components/base.html' %}
+{% load static %}
+{% load widget_tweaks %}
+{% block title %}Regístrate{% endblock %}
+{% block content %}
+<div class="container mx-auto py-12">
+    <div class="bg-white shadow-md rounded-lg p-8 max-w-md mx-auto">
+        <h2 class="text-2xl font-bold mb-6 text-center">Crear una cuenta</h2>
+
+        <form action="{% url 'security:register' %}" method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+
+            <!-- Form Fields -->
+            {{ form.non_field_errors }}
+
+            <!-- Campo de Nombre de Usuario -->
+            <div class="mb-4">
+                <label for="id_username" class="block text-gray-700 font-semibold mb-2">Nombre de usuario</label>
+                {{ form.username|add_class:"w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500" }}
+                {{ form.username.errors }}
+            </div>
+
+            <!-- Campo de Correo Electrónico -->
+            <div class="mb-4">
+                <label for="id_email" class="block text-gray-700 font-semibold mb-2">Correo electrónico</label>
+                {{ form.email|add_class:"w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500" }}
+                {{ form.email.errors }}
+            </div>
+
+            <!-- Campo de Nombre -->
+            <div class="mb-4">
+                <label for="id_first_name" class="block text-gray-700 font-semibold mb-2">Nombre</label>
+                {{ form.first_name|add_class:"w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500" }}
+                {{ form.first_name.errors }}
+            </div>
+
+            <!-- Campo de Apellido -->
+            <div class="mb-4">
+                <label for="id_last_name" class="block text-gray-700 font-semibold mb-2">Apellido</label>
+                {{ form.last_name|add_class:"w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500" }}
+                {{ form.last_name.errors }}
+            </div>
+
+            <!-- Campo de Teléfono -->
+            <div class="mb-4">
+                <label for="id_phone_number" class="block text-gray-700 font-semibold mb-2">Número de teléfono</label>
+                {{ form.phone_number|add_class:"w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500" }}
+                {{ form.phone_number.errors }}
+            </div>
+
+            <!-- Campo de Dirección -->
+            <div class="mb-4">
+                <label for="id_address" class="block text-gray-700 font-semibold mb-2">Dirección</label>
+                {{ form.address|add_class:"w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500" }}
+                {{ form.address.errors }}
+            </div>
+
+            <!-- Campo de Fecha de Nacimiento -->
+            <div class="mb-4">
+                <label for="id_date_of_birth" class="block text-gray-700 font-semibold mb-2">Fecha de nacimiento</label>
+                {{ form.date_of_birth|add_class:"w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500" }}
+                {{ form.date_of_birth.errors }}
+            </div>
+
+            <!-- Campo de Género -->
+            <div class="mb-4">
+                <label for="id_gender" class="block text-gray-700 font-semibold mb-2">Género</label>
+                {{ form.gender|add_class:"w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500" }}
+                {{ form.gender.errors }}
+            </div>
+
+            <!-- Campo de Imagen -->
+            <div class="mb-4">
+                <label for="id_image" class="block text-gray-700 font-semibold mb-2">Imagen de perfil</label>
+                {{ form.image|add_class:"w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500" }}
+                {{ form.image.errors }}
+            </div>
+
+            <!-- Campo de Contraseña -->
+            <div class="mb-4">
+                <label for="id_password1" class="block text-gray-700 font-semibold mb-2">Contraseña</label>
+                <div class="flex items-center">
+                    {{ form.password1|add_class:"w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500" }}
+                    <button type="button" onclick="togglePasswordVisibility('id_password1', this)" class="ml-2 text-green-500 font-semibold hover:underline">Mostrar</button>
+                    <button id="id_sugerir" type="button" class="ml-2 bg-green-500 text-white px-4 py-2 rounded-lg font-semibold hover:bg-green-600">Sugerir</button>
+                </div>
+                {{ form.password1.errors }}
+            </div>
+
+            <!-- Campo de Confirmar Contraseña -->
+            <div class="mb-6">
+                <label for="id_password2" class="block text-gray-700 font-semibold mb-2">Confirmar Contraseña</label>
+                <div class="flex items-center">
+                    {{ form.password2|add_class:"w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500" }}
+                    <button type="button" onclick="togglePasswordVisibility('id_password2', this)" class="ml-2 text-green-500 font-semibold hover:underline">Mostrar</button>
+                </div>
+                {{ form.password2.errors }}
+            </div>
+
+            <!-- Botón de Enviar -->
+            <div class="mt-6">
+                <button type="submit" class="w-full bg-green-600 text-white py-2 rounded-lg font-semibold hover:bg-green-700 transition">
+                    Registrarse
+                </button>
+            </div>
+        </form>
+
+        <!-- Enlace para iniciar sesión -->
+        <div class="mt-4 text-center">
+            <p class="text-gray-700">¿Ya tienes una cuenta? 
+                <a href="{% url 'security:login' %}" class="text-green-500 font-semibold hover:underline">Inicia sesión</a>
+            </p>
+        </div>
+    </div>
+</div>
+<!-- Script para alternar la visibilidad de la contraseña -->
+<script>
+    function togglePasswordVisibility(fieldId, button) {
+        const passwordField = document.getElementById(fieldId);
+        if (passwordField.type !== 'password') {
+            passwordField.type = 'password';
+            button.textContent = 'Mostrar';
+        }
+        if (passwordField.type === 'password') {
+            passwordField.type = 'text';
+            button.textContent = 'Ocultar';
+        }
+    }
+</script>
+
+<!-- Script para generar contraseñas aleatorias -->
+<script src="{% static 'js/generate_password.js' %}"></script>
+{% endblock %}
+
+
+
+
+
+

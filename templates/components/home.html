@@ -1,0 +1,99 @@
+{% extends 'components/base.html' %} 
+{% load static %} 
+{% block title %}{{ title }}{% endblock %}
+{% block content %}
+<!-- Hero Section -->
+<section class="bg-red-600 text-white py-20">
+    <div class="container mx-auto text-center">
+        <h1 class="text-4xl font-bold mb-4">Bienvenidos a My Supermarket</h1> 
+        <p class="text-lg mb-6">Aquí podrás encontrar todo lo que necesitas para tu hogar y tu vida en general.</p> 
+        <a href="{% url 'super:catalog' %}" class="bg-white text-red-600 py-3 px-6 rounded-full shadow-md hover:bg-gray-100 transition">
+            Explora los productos
+        </a> 
+    </div> 
+</section>
+
+<div class="container mx-auto px-4">
+    <section class="py-16 bg-gray-100">
+        <div class="container mx-auto p-6">
+            <h1 class="text-3xl font-bold text-center mb-8">Productos Destacados</h1>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                
+                <!-- Producto 1 -->
+                <div class="bg-white rounded-lg shadow-lg p-6">
+                    <img src="{% static 'img/products/product_1.jpg' %}" alt="Coca-Cola 1L" class="w-full h-40 object-contain">
+                    <h3 class="text-xl font-semibold mt-4">Coca-Cola 1L</h3>
+                    <p class="text-gray-600 mt-2">Disfruta de una refrescante bebida gaseosa Coca-Cola.</p>
+                </div>
+
+                <!-- Producto 2 -->
+                <div class="bg-white rounded-lg shadow-lg p-6">
+                    <img src="{% static 'img/products/product_2.jpg' %}" alt="Doritos Flaming Hot" class="w-full h-40 object-contain">
+                    <h3 class="text-xl font-semibold mt-4">Doritos Flaming Hot</h3>
+                    <p class="text-gray-600 mt-2">Disfruta de una experiencia probando los nuevos Doritos Flaming Hot.</p>
+                </div>
+
+                <!-- Producto 3 -->
+                <div class="bg-white rounded-lg shadow-lg p-6">
+                    <img src="{% static 'img/products/product_3.jpg' %}" alt="Chocolate Kitkat" class="w-full h-40 object-contain">
+                    <h3 class="text-xl font-semibold mt-4">Chocolate Kitkat</h3>
+                    <p class="text-gray-600 mt-2">Ven y prueba el nuevo chocolate Kitkat de Nestlé.</p>
+                </div>
+
+            </div>
+        </div>
+    </section> 
+</div>
+
+<!-- ¿Por Qué Elegirnos? -->
+<section class="bg-red-50 py-16 px-8">
+    <div class="container mx-auto text-center">
+        <h2 class="text-3xl font-semibold mb-8">¿Por Qué Elegirnos?</h2>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div class="p-6 bg-white rounded-lg shadow-lg hover:shadow-2xl transition">
+                <div class="flex justify-center items-center mb-4">
+                    <!-- Icono de sostenibilidad con Boxicons -->
+                    <i class="bx bx-dollar text-4xl text-blue-600"></i>
+                </div>
+                <h3 class="text-xl font-semibold text-green-600">Precios Económicos</h3>
+                <p class="text-gray-600 mt-2">Ofrecemos precios económicos para que puedas disfrutar de los productos sin tener que preocuparte por los costos.</p>
+            </div>
+            <div class="p-6 bg-white rounded-lg shadow-lg hover:shadow-2xl transition">
+                <div class="flex justify-center items-center mb-4">
+                    <!-- Icono de calidad con Boxicons -->
+                    <i class="bx bxs-check-circle text-4xl text-blue-600"></i>
+                </div>
+                <h3 class="text-xl font-semibold text-green-600">Calidad Asegurada</h3>
+                <p class="text-gray-600 mt-2">Contamos con los más altos estándares de calidad en todos nuestros productos.</p>
+            </div>
+            <div class="p-6 bg-white rounded-lg shadow-lg hover:shadow-2xl transition">
+                <div class="flex justify-center items-center mb-4">
+                    <!-- Icono de soporte con Boxicons -->
+                    <i class="bx bx-headphone text-4xl text-blue-600"></i>
+                </div>
+                <h3 class="text-xl font-semibold text-green-600">Soporte 24/7</h3>
+                <p class="text-gray-600 mt-2">Ofrecemos atención y soporte constante para garantizar tu satisfacción.</p>
+            </div>
+        </div>
+    </div> 
+</section> 
+
+<section class="bg-red-600 text-white py-20 mt-16">
+    <div class="container mx-auto text-center">
+        <h2 class="text-3xl font-semibold mb-6">Contáctanos</h2>
+        <p class="text-lg mb-8">Contáctanos para más información sobre nuestros productos y servicios.</p>
+        <a href="{% url 'super:contact' %}" class="bg-white text-red-600 py-3 px-6 rounded-full shadow-md hover:bg-gray-100 transition">
+            Contáctanos
+        </a>
+    </div>
+</section>
+{% endblock %} 
+
+
+
+
+
+
+
+
+

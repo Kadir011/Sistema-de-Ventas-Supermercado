@@ -1,0 +1,39 @@
+#Ignorar todos los pycache
+__pycache__/
+*.pyc
+.vscode/
+.idea/
+
+# Ignorar archivos de virtualenv (env) y archivo .env
+env/
+venv/
+.env
+
+# Ignorar archivos de archivos de datos
+db.sqlite3
+*.db
+*.sql
+*.bak
+
+# Ignorar archivos de logs
+logs/
+
+# Ignorar archivos de caché
+cache/
+
+# Ignorar archivos de media
+media/
+
+# Ignorar todos los migrations 
+**/migrations/**
+!**/migrations
+!**/migrations/__init__.py 
+
+
+
+
+
+
+
+
+

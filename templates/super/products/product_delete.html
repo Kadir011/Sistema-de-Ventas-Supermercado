@@ -1,0 +1,19 @@
+{% extends 'components/base.html' %}
+{% block title %}{{title}}{% endblock %}
+{% block content %}
+<div class="container mx-auto py-8 px-16">
+    <div class="bg-white shadow-lg rounded-lg p-8">
+        <h1 class="text-3xl font-bold mb-4">{{description}}</h1>
+        <div class="mt-6 flex justify-between">
+            <a href="{{back_url}}" class="bg-gray-300 text-black px-6 py-2 rounded-lg hover:bg-gray-400">Cancelar</a>
+            <form action="{% url 'super:product_delete' product.pk %}" method="post">
+                {% csrf_token %}
+                <button type="submit" class="bg-red-500 text-white px-6 py-2 rounded-lg hover:bg-red-600">{{ grabar }}</button>
+            </form> 
+        </div> 
+    </div> 
+</div> 
+{% endblock %}
+
+
+

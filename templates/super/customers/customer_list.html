@@ -1,0 +1,59 @@
+{% extends 'components/base.html' %}
+{% block title %}{{ title }}{% endblock %}
+{% block content %}
+<div class="container mx-auto py-8 px-16">
+    <h1 class="text-3xl font-bold mb-6">Lista de {{ title }}</h1>
+    <a href={{create_url}} class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-red-700 transition-all mb-8">Agregar Nuevo Cliente</a>  
+    <div class="overflow-x-auto bg-white shadow-md rounded-lg mt-6">
+        <table class="min-w-full text-sm">
+            <thead>
+                <tr>
+                    <th class="py-3 px-4 text-left">Nombre</th>
+                    <th class="py-3 px-4 text-left">Cédula</th>
+                    <th class="py-3 px-4 text-left">Email</th>
+                    <th class="py-3 px-4 text-left">Teléfono</th>
+                    <th class="py-3 px-4 text-left">Dirección</th>
+                    <th class="py-3 px-4 text-left">Nacimiento</th>
+                    <th class="py-3 px-4 text-left">Género</th>
+                    <th class="py-3 px-4 text-left">Acciones</th>
+                </tr> 
+            </thead> 
+            <tbody>
+                {% for c in customers %}
+                   <tr>
+                        <td class="py-3 px-4">{{c.get_full_name}}</td> 
+                        <td class="py-3 px-4">{{c.dni}}</td> 
+                        <td class="py-3 px-4">{{c.email}}</td> 
+                        <td class="py-3 px-4">{{c.phone}}</td>
+                        <td class="py-3 px-4">{{c.address}}</td>
+                        <td class="py-3 px-4">{{c.birth_date}}</td>
+                        <!-- Genero  1 = Masculino, 2 = Femenino -->
+                        <td class="py-3 px-4">
+                            {% if c.gender == 1 %}
+                                Masculino
+                            {% elif c.gender == 2 %}
+                                Femenino
+                            {% endif %}
+                        </td>
+                        <td class="py-3 px-4">
+                            <a href="{% url 'super:customer_update' c.pk %}" class="text-blue-500 hover:underline" label="Editar"><i class='bx bxs-edit'></i></a> |
+                            <a href="{% url 'super:customer_delete' c.pk %}" class="text-red-500 hover:underline" label="Eliminar"><i class='bx bxs-eraser'></i></a>
+                        </td>
+                   </tr> 
+                   {% empty %}
+                   <tr>
+                       <td colspan="7" class="py-3 px-4">No hay clientes registrados</td>
+                   </tr>
+                {% endfor %}
+            </tbody> 
+        </table> 
+    </div> 
+</div> 
+{% endblock %}
+
+
+
+
+
+
+

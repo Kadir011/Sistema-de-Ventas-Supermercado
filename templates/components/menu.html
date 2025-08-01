@@ -1,0 +1,59 @@
+{% extends 'components/base.html' %}
+{% block title %}Menú{% endblock %}
+{% block content %}
+<main class="container mx-auto p-8">
+    <h1 class="text-3xl font-bold text-center mb-8">Menú Supermercado</h1>
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+        <div class="bg-white p-6 rounded-lg shadow-lg flex flex-col items-center">
+            <i class="bx bx-user text-4xl text-blue-700 mb-4"></i>
+            <h3 class="text-xl font-semibold text-black-700 mb-2">Clientes</h3>
+            <p class="text-center mb-4">Gestiona los clientes registrados en el sistema.</p>
+            <a href="{% url 'super:customer_list' %}" class="text-green-700 hover:text-white border border-blue-700 hover:bg-green-700 px-4 py-2 rounded-full transition-all duration-200">
+                Ver Clientes
+            </a>
+        </div>
+        <div class="bg-white p-6 rounded-lg shadow-lg flex flex-col items-center">
+            <i class="bx bxs-user text-4xl text-blue-700 mb-4"></i>
+            <h3 class="text-xl font-semibold text-black-700 mb-2">Vendedores</h3>
+            <p class="text-center mb-4">Gestiona los vendedores registrados en el sistema.</p>
+            <a href="{% url 'super:seller_list' %}" class="text-green-700 hover:text-white border border-blue-700 hover:bg-green-700 px-4 py-2 rounded-full transition-all duration-200">
+                Ver Vendedores
+            </a>
+        </div>
+        <div class="bg-white p-6 rounded-lg shadow-lg flex flex-col items-center">
+            <i class="bx bx-baguette text-4xl text-blue-700 mb-4"></i>
+            <h3 class="text-xl font-semibold text-black-700 mb-2">Productos</h3>
+            <p class="text-center mb-4">Gestiona los productos disponibles en el catálogo.</p>
+            <a href="{% url 'super:product_list' %}" class="text-green-700 hover:text-white border border-blue-700 hover:bg-green-700 px-4 py-2 rounded-full transition-all duration-200">
+                Ver Productos
+            </a>
+        </div>
+        <div class="bg-white p-6 rounded-lg shadow-lg flex flex-col items-center">
+            <i class="bx bx-money-withdraw text-4xl text-blue-700 mb-4"></i>
+            <h3 class="text-xl font-semibold text-black-700 mb-2">Ventas</h3>
+            <p class="text-center mb-4">Gestiona las ventas realizadas en el sistema.</p>
+            <a href="{% url 'super:sale_list' %}" class="text-green-700 hover:text-white border border-blue-700 hover:bg-green-700 px-4 py-2 rounded-full transition-all duration-200">
+                Ver Ventas
+            </a>
+        </div> 
+        <div class="bg-white p-6 rounded-lg shadow-lg flex flex-col items-center">
+            <i class="bx bx-barcode-reader text-4xl text-blue-700 mb-4"></i> 
+            <h3 class="text-xl font-semibold text-black-700 mb-2">Escanear Productos</h3>
+            <p class="text-center mb-4">Escanear los productos para visualizar los precios.</p> 
+            <a href="{% url 'super:scan_barcode' %}" class="text-green-700 hover:text-white border border-blue-700 hover:bg-green-700 px-4 py-2 rounded-full transition-all duration-200">
+                Escanear Productos
+            </a> 
+        </div> 
+    </div> 
+</main> 
+{% endblock %}
+
+
+
+
+
+
+
+
+
+

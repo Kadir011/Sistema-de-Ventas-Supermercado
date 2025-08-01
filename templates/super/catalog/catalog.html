@@ -1,0 +1,119 @@
+{% extends 'components/base.html' %}
+{% block title %}{{title}}{% endblock %}
+{% block content %}
+<div class="container mx-auto py-8 px-16">
+    <h1 class="text-3xl font-bold mb-6">{{title}}</h1>
+    <!-- Barra de búsqueda y filtro por categoría en la misma línea -->
+    <div class="mb-6">
+        <form method="get" class="flex flex-wrap space-x-4 items-center">
+            <!-- Filtro de marca -->
+            <select name="brand" class="border border-gray-300 rounded-lg px-4 py-2" onchange="this.form.submit()">
+                <option value="">Todas las Marcas</option>
+                {% for m in brands %}
+                    <option value="{{ m.id_brand }}" {% if m.id_brand|stringformat:"s" == selected_brand %}selected{% endif %}>
+                        {{ m.name }}
+                    </option> 
+                {% endfor %}
+            </select> 
+            <!-- Filtro de categoría -->
+            <select name="category" class="border border-gray-300 rounded-lg px-4 py-2" onchange="this.form.submit()">
+                <option value="">Todas las Categorías</option>
+                {% for c in categories %}
+                    <option value="{{ c.id_category }}" {% if c.id_category|stringformat:"s" == selected_category %}selected{% endif %}>
+                        {{ c.name }}
+                    </option>
+                {% endfor %}
+            </select> 
+
+            <!-- Barra de búsqueda -->
+            <input type="text" name="search" placeholder="Buscar productos..." value="{{ search_query }}" 
+            class="border border-gray-300 rounded-lg px-4 py-2 w-full sm:w-auto" />
+
+            <!-- Botón de búsqueda -->
+            <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-all">Buscar</button>
+        </form> 
+    </div> 
+
+    <!-- Si hay productos -->
+    {% if products %}
+       <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
+           {% for p in products %}
+           <div class="border rounded-lg p-4 bg-white shadow-sm hover:shadow-lg transition-all">
+                <div class="w-full h-48 bg-gray-100 mb-4">
+                    {% if p.image %}
+                       <img src="{{ p.get_image_url }}" alt="{{ p.name }}" class="w-full h-full object-cover rounded-lg">
+                    {% else %}
+                       <div class="w-full h-full flex justify-center items-center bg-gray-200 text-gray-400">
+                            Sin imágen
+                       </div>
+                    {% endif %}
+                </div>
+                <h3 class="text-lg font-semibold">{{ p.name }}</h3>
+                <p class="text-gray-600 mb-2">{{ p.description|truncatewords:15 }}</p>
+                <div class="mt-4">
+                    {% if p.stock > 0 %}
+                       <span class="text-sm text-green-500 font-semibold">Stock Disponible</span> 
+                    {% else %}
+                        <span class="text-sm text-red-500 font-semibold">Stock Agotado</span>
+                    {% endif %}
+                </div> 
+                <span class="text-lg font-bold">${{ p.price }}</span>
+                <div class="mt-4">
+                    <a href="{% url 'super:product_detail' p.pk %}" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-all">Ver Detalles</a>
+                </div>
+           </div> 
+           {% endfor %}
+       </div> 
+    {% else %}
+       <p class="text-lg text-gray-500">No hay productos disponibles en esta categoría o búsqueda.</p>
+    {% endif %}
+
+    <!-- Paginación -->
+    <div class="mt-6 flex justify-center items-center space-x-2">
+        {% if page_obj.has_previous %}
+            <a href="?page=1{% if search_query %}&search={{ search_query }}{% endif %}{% if selected_category %}&category={{ selected_category }}{% endif %}" 
+            class="px-3 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 hover:text-black transition-all flex items-center">
+                ⏮️ Primera
+            </a>
+            <a href="?page={{ page_obj.previous_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if selected_category %}&category={{ selected_category }}{% endif %}" 
+               class="px-3 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 hover:text-black transition-all flex items-center">
+                ◀️ Anterior
+            </a>
+        {% else %}
+            <span class="px-3 py-2 bg-gray-100 text-gray-400 rounded-lg flex items-center cursor-not-allowed">
+                ⏮️ Primera
+            </span>
+            <span class="px-3 py-2 bg-gray-100 text-gray-400 rounded-lg flex items-center cursor-not-allowed">
+                ◀️ Anterior
+            </span>
+        {% endif %}
+
+        <!-- Página actual -->
+        <span class="px-4 py-2 text-lg font-semibold text-gray-700 rounded-lg bg-gray-200">
+            Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}
+        </span>
+
+        {% if page_obj.has_next %}
+            <a href="?page={{ page_obj.next_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if selected_category %}&category={{ selected_category }}{% endif %}" 
+               class="px-3 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 hover:text-black transition-all flex items-center">
+                Siguiente ▶️
+            </a>
+            <a href="?page={{ page_obj.paginator.num_pages }}{% if search_query %}&search={{ search_query }}{% endif %}{% if selected_category %}&category={{ selected_category }}{% endif %}" 
+               class="px-3 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 hover:text-black transition-all flex items-center">
+                Última ⏭️
+            </a>
+        {% else %}
+            <span class="px-3 py-2 bg-gray-100 text-gray-400 rounded-lg flex items-center cursor-not-allowed">
+                Siguiente ▶️
+            </span>
+            <span class="px-3 py-2 bg-gray-100 text-gray-400 rounded-lg flex items-center cursor-not-allowed">
+                Última ⏭️
+            </span>
+        {% endif %}
+    </div> 
+</div> 
+{% endblock %}
+
+
+
+
