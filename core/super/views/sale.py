@@ -1,3 +1,4 @@
+import os
 import json
 from django.shortcuts import get_object_or_404
 from django.views.decorators.http import require_http_methods 
@@ -11,6 +12,11 @@ from django.db.models import Q
 from decimal import Decimal
 from core.super.models import Sale, SaleDetail, Product
 from core.super.form.sale import SaleForm
+from django.contrib.staticfiles import finders
+from django.conf import settings
+from django.http import HttpResponse
+from django.template.loader import get_template
+from xhtml2pdf import pisa
 
 class SaleListView(ListView):
     model = Sale
@@ -277,3 +283,49 @@ class ProductView(View):
             return JsonResponse(products_list, safe=False)
         except Exception as e:
             return JsonResponse({'error': str(e)}, status=500)
+
+# API para generar PDF tipo factura para cada venta realizada
+class SalePDFView(View):
+    def get(self, request, *args, **kwargs):
+        try:
+            # 1. Obtener la venta y sus detalles
+            sale = get_object_or_404(Sale, pk=kwargs['pk'])
+            details = SaleDetail.objects.filter(sale=sale)
+
+            # 2. Contexto para la template
+            context = {
+                'sale': sale,
+                'details': details,
+                'title': f'Factura - {sale.id_sale}',
+                # Puedes agregar info de la empresa aquí estáticamente o desde DB si existiera
+                'company': {
+                    'name': 'My Supermarket',
+                    'address': 'Av. Principal 123, Guayaquil',
+                    'phone': '0999999999',
+                    'email': 'contacto@mysupermarket.com'
+                }
+            }
+
+            # 3. Renderizar el template
+            template_path = 'super/sales/salePDF.html'
+            template = get_template(template_path)
+            html = template.render(context)
+
+            # 4. Crear el PDF
+            response = HttpResponse(content_type='application/pdf')
+            # Si quieres que se descargue automáticamente usa: attachment
+            # response['Content-Disposition'] = f'attachment; filename="factura_{sale.id_sale}.pdf"'
+            # Si quieres verlo en el navegador usa: inline
+            response['Content-Disposition'] = f'inline; filename="factura_{sale.id_sale}_{sale.sale_date}.pdf"'
+
+            # Generar PDF
+            pisa_status = pisa.CreatePDF(
+                html, dest=response
+            )
+
+            if pisa_status.err:
+                return HttpResponse('Hubo un error al generar el PDF <pre>' + html + '</pre>')
+            
+            return response
+        except Exception as e:
+            return HttpResponse(f'Error: {str(e)}')
