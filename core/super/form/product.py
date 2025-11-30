@@ -21,11 +21,11 @@ class ProductForm(ModelForm):
             'production_date': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
             'expiration_date': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
             
-            # Configuración específica para Barcode
+            # Configuración específica para Barcode EAN-13
             'barcode': forms.TextInput(attrs={
                 'class': 'form-control only-numbers',
                 'placeholder': 'Código de barras (13 dígitos)',
-                'maxlength': '13',  # Límite para EAN-13
+                'maxlength': '13', 
                 'minlength': '13',
                 'pattern': '[0-9]{13}',
                 'autocomplete': 'off'
