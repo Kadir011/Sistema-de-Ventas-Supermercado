@@ -34,6 +34,7 @@
                         <td class="py-3 px-4">
                             <a href="{% url 'super:sale_update' s.pk %}" class="text-blue-500 hover:underline" label="Editar"><i class='bx bxs-edit'></i></a> 
                             <a href="{% url 'super:sale_delete' s.pk %}" class="text-red-500 hover:underline" label="Eliminar"><i class='bx bxs-eraser'></i></a>
+                            <a href="{% url 'super:sale_pdf' s.pk %}" class="text-green-500 hover:underline" label="Factura"><i class='bx bxs-file-pdf'></i></a>
                         </td> 
                    </tr> 
                    {% empty %}
