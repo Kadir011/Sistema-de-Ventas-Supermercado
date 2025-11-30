@@ -22,13 +22,13 @@ class SaleListView(ListView):
         q = self.request.GET.get('q')
         self.query = Q()
         if q is not None:
-            self.query.add(Q(id__icontains=q)|
+            self.query.add(Q(id_sale__icontains=q)|
                          Q(customer__name__icontains=q)|
                          Q(customer__last_name__icontains=q)|
                          Q(seller__name__icontains=q)|
                          Q(seller__last_name__icontains=q)|
                          Q(payment__name__icontains=q), Q.OR)
-        return self.model.objects.filter(self.query).order_by('sale_date')
+        return self.model.objects.filter(self.query).order_by('-sale_date')
     
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -53,25 +53,24 @@ class SaleCreateView(CreateView):
     def post(self, request, *args, **kwargs):
         if request.headers.get('Content-Type') == 'application/json':
            return self.handle_ajax(request)
-        return super().post(request, 
-                            *args, 
-                            **kwargs)
+        return super().post(request, *args, **kwargs)
     
     @transaction.atomic
     def handle_ajax(self, request):
         try:
-            # Decodificar datos JSON
             data = json.loads(request.body) 
 
             # Crear la venta
-            sale = Sale(customer_id=data.get('customer'),
-                        seller_id=data.get('seller'),
-                        payment_id=data.get('payment'),
-                        sale_date=data.get('sale_date'),
-                        subtotal=Decimal(data.get('subtotal', '0')),
-                        iva=Decimal(data.get('iva', '0')),
-                        discount=Decimal(data.get('discount', '0')),
-                        total=Decimal(data.get('total', '0'))) 
+            sale = Sale(
+                customer_id=data.get('customer'),
+                seller_id=data.get('seller'),
+                payment_id=data.get('payment'),
+                sale_date=data.get('sale_date'),
+                subtotal=Decimal(data.get('subtotal', '0')),
+                iva=Decimal(data.get('iva', '0')),
+                discount=Decimal(data.get('discount', '0')),
+                total=Decimal(data.get('total', '0'))
+            ) 
             sale.save() 
 
             # Procesar detalles de venta
@@ -84,23 +83,24 @@ class SaleCreateView(CreateView):
                    raise ValueError(f"Stock insuficiente para el producto {product.name}")
                 
                 # Crear detalle de venta
-                sale_detail = SaleDetail(sale=sale,
-                                        product=product,
-                                        quantity=quantity,
-                                        price=Decimal(detail.get('price', '0')),
-                                        subtotal=Decimal(detail.get('subtotal', '0')))
+                sale_detail = SaleDetail(
+                    sale=sale,
+                    product=product,
+                    quantity=quantity,
+                    price=Decimal(detail.get('price', '0')),
+                    subtotal=Decimal(detail.get('subtotal', '0'))
+                )
                 sale_detail.save()
 
                 # Actualizar stock del producto
                 product.stock -= quantity
                 product.save() 
             
-            return JsonResponse({'success':True, 'redirect_url':self.success_url})
+            return JsonResponse({'success': True, 'redirect_url': str(self.success_url)})
         except ValueError as e:
-            return JsonResponse({'success':False, 'error': str(e)}, status=400)
+            return JsonResponse({'success': False, 'error': str(e)}, status=400)
         except Exception as e:
-            # Rollback automático debido a @transaction.atomic
-            return JsonResponse({'success':False, 'error':f'Error al procesar la venta: {str(e)}'}, status=500) 
+            return JsonResponse({'success': False, 'error': f'Error al procesar la venta: {str(e)}'}, status=500) 
 
 class SaleUpdateView(UpdateView):
     model = Sale
@@ -111,22 +111,22 @@ class SaleUpdateView(UpdateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['title'] = 'Editar Venta'
-        context['grabar'] = 'Editar Venta'
+        context['grabar'] = 'Actualizar Venta'
         context['back_url'] = self.success_url
         context['products'] = Product.objects.filter(state=True, stock__gt=0)
 
         if self.object:
             # Detalles de los productos
-            context['details'] = SaleDetail.objects.filter(sale=self.object)
+            details = SaleDetail.objects.filter(sale=self.object)
             details_data = [
                 {
-                    'product': detail.product.id,
+                    'product': detail.product.id_product,
                     'name': detail.product.name,
                     'quantity': detail.quantity,
                     'price': float(detail.price),
                     'subtotal': float(detail.subtotal),
                     'stock': detail.product.stock
-                } for detail in context['details']
+                } for detail in details
             ]
             context['initial_details'] = json.dumps(details_data)
 
@@ -154,7 +154,7 @@ class SaleUpdateView(UpdateView):
             if not data or 'details' not in data:
                 raise ValueError("Datos inválidos enviados en la solicitud")
 
-            # Actualizar la venta
+            # Actualizar los datos de la venta
             sale.customer_id = data.get('customer')
             sale.seller_id = data.get('seller')
             sale.payment_id = data.get('payment')
@@ -165,61 +165,63 @@ class SaleUpdateView(UpdateView):
             sale.total = Decimal(data.get('total', '0'))
             sale.save()
 
-            new_details = {detail.get('product'): detail for detail in data.get('details', [])}
+            # Obtener detalles actuales de la base de datos
             old_details = SaleDetail.objects.filter(sale=sale)
+            old_details_dict = {str(detail.product.id_product): detail for detail in old_details}
+            
+            # Crear diccionario de nuevos detalles
+            new_details_dict = {str(detail.get('product')): detail for detail in data.get('details', [])}
 
-            # Devolver stock de detalles eliminados o reducidos
-            for detail in old_details:
-                product_id = str(detail.product.id)
-                if product_id not in new_details:
-                    product = detail.product
-                    product.stock += detail.quantity
+            # Procesar detalles eliminados o modificados
+            for product_id, old_detail in old_details_dict.items():
+                if product_id not in new_details_dict:
+                    # Detalle eliminado: devolver stock
+                    product = old_detail.product
+                    product.stock += old_detail.quantity
                     product.save()
+                    old_detail.delete()
                 else:
-                    new_quantity = int(new_details[product_id].get('quantity', 1))
-                    if new_quantity < detail.quantity:
-                        product = detail.product
-                        product.stock += (detail.quantity - new_quantity)
-                        product.save()
-
-            # Eliminar detalles que ya no están
-            old_details_to_delete = [d for d in old_details if str(d.product.id) not in new_details]
-            SaleDetail.objects.filter(id__in=[d.id for d in old_details_to_delete]).delete()
-
-            # Procesar nuevos o actualizados detalles
-            for detail in data.get('details', []):
-                product = get_object_or_404(Product, pk=detail.get('product'))
-                quantity = int(detail.get('quantity', 1))
-                price = Decimal(detail.get('price', '0'))
-                subtotal = Decimal(detail.get('subtotal', '0'))
-
-                existing_detail = SaleDetail.objects.filter(sale=sale, product=product).first()
-                if existing_detail:
-                    old_quantity = existing_detail.quantity
-                    existing_detail.quantity = quantity
-                    existing_detail.price = price
-                    existing_detail.subtotal = subtotal
-                    existing_detail.save()
-                    if quantity > old_quantity:  # Aumentar cantidad
-                        if product.stock < (quantity - old_quantity):
+                    # Detalle modificado: ajustar stock
+                    new_quantity = int(new_details_dict[product_id].get('quantity', 1))
+                    if new_quantity != old_detail.quantity:
+                        product = old_detail.product
+                        stock_difference = old_detail.quantity - new_quantity
+                        product.stock += stock_difference
+                        
+                        if product.stock < 0:
                             raise ValueError(f"Stock insuficiente para el producto {product.name}")
-                        product.stock -= (quantity - old_quantity)
+                        
                         product.save()
-                else:
+                        
+                        # Actualizar el detalle
+                        old_detail.quantity = new_quantity
+                        old_detail.price = Decimal(new_details_dict[product_id].get('price', '0'))
+                        old_detail.subtotal = Decimal(new_details_dict[product_id].get('subtotal', '0'))
+                        old_detail.save()
+
+            # Procesar detalles nuevos
+            for product_id, new_detail in new_details_dict.items():
+                if product_id not in old_details_dict:
+                    # Detalle nuevo: crear y descontar stock
+                    product = get_object_or_404(Product, pk=int(product_id))
+                    quantity = int(new_detail.get('quantity', 1))
+                    
                     if product.stock < quantity:
                         raise ValueError(f"Stock insuficiente para el producto {product.name}")
+                    
                     sale_detail = SaleDetail(
                         sale=sale,
                         product=product,
                         quantity=quantity,
-                        price=price,
-                        subtotal=subtotal
+                        price=Decimal(new_detail.get('price', '0')),
+                        subtotal=Decimal(new_detail.get('subtotal', '0'))
                     )
                     sale_detail.save()
+                    
                     product.stock -= quantity
                     product.save()
 
-            return JsonResponse({'success': True, 'redirect_url': self.success_url})
+            return JsonResponse({'success': True, 'redirect_url': str(self.success_url)})
         except ValueError as e:
             return JsonResponse({'success': False, 'error': str(e)}, status=400)
         except json.JSONDecodeError as e:
@@ -239,6 +241,23 @@ class SaleDeleteView(DeleteView):
         context['description'] = f'¿Está seguro de eliminar la venta?'
         context['back_url'] = self.success_url
         return context
+    
+    @transaction.atomic
+    def delete(self, request, *args, **kwargs):
+        """
+        Sobrescribir delete para devolver el stock antes de eliminar
+        """
+        sale = self.get_object()
+        
+        # Devolver el stock de todos los productos
+        details = SaleDetail.objects.filter(sale=sale)
+        for detail in details:
+            product = detail.product
+            product.stock += detail.quantity
+            product.save()
+        
+        # Eliminar la venta (cascade eliminará los detalles)
+        return super().delete(request, *args, **kwargs)
 
 # API para obtener productos
 @method_decorator(require_http_methods(["GET"]), name='dispatch')
@@ -248,7 +267,7 @@ class ProductView(View):
             products = Product.objects.filter(state=True, stock__gt=0)
             products_list = [
                 {
-                    'id': product.id,
+                    'id': product.id_product,
                     'name': str(product),
                     'price': float(product.price),
                     'stock': product.stock
@@ -258,12 +277,3 @@ class ProductView(View):
             return JsonResponse(products_list, safe=False)
         except Exception as e:
             return JsonResponse({'error': str(e)}, status=500)
-
-
-
-
-
-
-
-
-
