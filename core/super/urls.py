@@ -37,7 +37,8 @@ urlpatterns = [
     path('ventas/editar/<int:pk>/', sale.SaleUpdateView.as_view(), name='sale_update'),
     path('ventas/eliminar/<int:pk>/', sale.SaleDeleteView.as_view(), name='sale_delete'),
     path('api/products/', sale.ProductView.as_view(), name='get_products'),
-
+    path('ventas/factura/<int:pk>/', sale.SalePDFView.as_view(), name='sale_pdf'),
+    
     #ESCANEAR PRODUCTOS
     path('scan_barcode/', scan_barcode.ScannerTemplate.as_view(), name='scan_barcode'),
 ]
