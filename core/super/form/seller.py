@@ -6,14 +6,24 @@ class SellerForm(ModelForm):
     class Meta:
         model = Seller
         fields = ['name', 'last_name', 'dni', 'email', 'address', 'phone', 'birth_date', 'gender']
-        help_texts = {k: "" for k in fields}
         widgets = {
-            'dni': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Cédula'}),
+            'dni': forms.TextInput(attrs={
+                'class': 'form-control only-numbers',
+                'placeholder': 'Cédula (10 dígitos)',
+                'maxlength': '10',
+                'minlength': '10',
+                'pattern': '[0-9]{10}',
+                'autocomplete': 'off'
+            }),
+            'phone': forms.TextInput(attrs={
+                'class': 'form-control only-numbers',
+                'placeholder': 'Teléfono (10 dígitos)',
+                'maxlength': '10',
+                'minlength': '10',
+                'pattern': '[0-9]{10}',
+                'autocomplete': 'off'
+            }),
             'email': forms.EmailInput(attrs={'class': 'form-control', 'placeholder': 'Email'}),
             'address': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Dirección'}),
-            'phone': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Teléfono'}),
-            'birth_date': forms.DateInput(attrs={'class': 'form-control', 'placeholder': 'Fecha de nacimiento'}),
+            'birth_date': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
         }
-
-
-
