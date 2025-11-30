@@ -1,0 +1,73 @@
+<div class="space-y-6">
+    <div class="grid grid-cols-2 gap-4 border-b pb-4">
+        <div>
+            <h3 class="text-lg font-bold text-gray-800">Venta #{{ sale.id_sale|stringformat:"06d" }}</h3>
+            <p class="text-sm text-gray-600"><i class='bx bx-calendar'></i> {{ sale.sale_date|date:"d/m/Y" }}</p>
+        </div>
+        <div class="text-right">
+            <h4 class="font-semibold text-red-600">{{ company.name }}</h4>
+            <p class="text-xs text-gray-500">{{ company.address }}</p>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 bg-gray-50 p-4 rounded-lg">
+        <div>
+            <h5 class="font-semibold text-blue-600 mb-2 border-b border-blue-200">Cliente</h5>
+            <p class="text-sm"><span class="font-bold">Nombre:</span> {{ sale.customer.get_full_name }}</p>
+            <p class="text-sm"><span class="font-bold">Cédula:</span> {{ sale.customer.dni }}</p>
+            <p class="text-sm"><span class="font-bold">Email:</span> {{ sale.customer.email }}</p>
+        </div>
+        <div>
+            <h5 class="font-semibold text-green-600 mb-2 border-b border-green-200">Detalles</h5>
+            <p class="text-sm"><span class="font-bold">Vendedor:</span> {{ sale.seller.get_full_name }}</p>
+            <p class="text-sm"><span class="font-bold">Pago:</span> {{ sale.payment.name }}</p>
+        </div>
+    </div>
+
+    <div>
+        <h5 class="font-semibold text-gray-800 mb-2">Productos</h5>
+        <div class="overflow-x-auto border rounded-lg">
+            <table class="min-w-full text-sm">
+                <thead class="bg-gray-100">
+                    <tr>
+                        <th class="py-2 px-3 text-left border-b">Producto</th>
+                        <th class="py-2 px-3 text-center border-b">Cant.</th>
+                        <th class="py-2 px-3 text-right border-b">P. Unit</th>
+                        <th class="py-2 px-3 text-right border-b">Subtotal</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-100">
+                    {% for detail in details %}
+                    <tr>
+                        <td class="py-2 px-3">{{ detail.product.name }}</td>
+                        <td class="py-2 px-3 text-center">{{ detail.quantity }}</td>
+                        <td class="py-2 px-3 text-right">${{ detail.price|floatformat:2 }}</td>
+                        <td class="py-2 px-3 text-right font-medium">${{ detail.subtotal|floatformat:2 }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="flex justify-end">
+        <div class="w-full md:w-1/2 space-y-2">
+            <div class="flex justify-between text-sm">
+                <span class="text-gray-600">Subtotal:</span>
+                <span class="font-medium">${{ sale.subtotal|floatformat:2 }}</span>
+            </div>
+            <div class="flex justify-between text-sm">
+                <span class="text-gray-600">IVA:</span>
+                <span class="font-medium">${{ sale.iva|floatformat:2 }}</span>
+            </div>
+            <div class="flex justify-between text-sm">
+                <span class="text-gray-600">Descuento:</span>
+                <span class="font-medium">-${{ sale.discount|floatformat:2 }}</span>
+            </div>
+            <div class="flex justify-between text-lg font-bold border-t pt-2 text-green-700">
+                <span>Total:</span>
+                <span>${{ sale.total|floatformat:2 }}</span>
+            </div>
+        </div>
+    </div>
+</div>
