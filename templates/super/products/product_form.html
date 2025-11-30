@@ -7,7 +7,6 @@
     <form method="post" enctype="multipart/form-data" class="space-y-6">
         {% csrf_token %}
 
-        <!-- Nombre del Producto -->
         <div class="mb-6">
             <label for="id_name" class="block text-gray-700 font-semibold mb-2">Nombre del Producto</label> 
             <input type="text" name="name" id="id_name" value="{{ form.instance.name|default:'' }}" 
@@ -22,7 +21,6 @@
             {% endif %}
         </div> 
 
-        <!-- Categoría -->
         <div class="mb-6">
             <label for="id_category" class="block text-lg font-medium">Categoría</label> 
             <select name="category" id="id_category" class="mt-1 block w-full px-4 py-2 border rounded-lg focus:ring-green-500 focus:border-green-500">
@@ -40,7 +38,6 @@
             {% endif %}
         </div> 
 
-        <!-- Marca -->
         <div class="mb-6">
             <label for="id_brand" class="block text-lg font-medium">Marca</label> 
             <select name="brand" id="id_brand" class="mt-1 block w-full px-4 py-2 border rounded-lg focus:ring-green-500 focus:border-green-500">
@@ -58,7 +55,6 @@
             {% endif %}
         </div>
 
-        <!-- Descripción -->
         <div class="mb-6">
             <label for="id_description" class="block text-lg font-medium">Descripción</label>
             <textarea name="description" id="id_description" rows="5" class="mt-1 block w-full px-4 py-2 border rounded-lg focus:ring-green-500 focus:border-green-500">{{ form.instance.descripcion|default:'' }}</textarea>
@@ -71,7 +67,6 @@
             {% endif %}
         </div>
 
-        <!-- Precio -->
         <div class="mb-6">
             <label for="id_price" class="block text-lg font-medium">Precio</label>
             <input type="number" name="price" id="id_price" value="{{ form.instance.price|default:'' }}" 
@@ -86,7 +81,6 @@
             {% endif %}
         </div>
 
-        <!-- Stock -->
         <div class="mb-6"> 
             <label for="id_stock" class="block text-lg font-medium">Stock</label>
             <input type="number" name="stock" id="id_stock" value="{{ form.instance.stock|default:'' }}" min="0" 
@@ -100,7 +94,6 @@
             {% endif %} 
         </div>
 
-        <!-- Imagen del Producto -->
         <div class="mb-6">
             <label for="id_image" class="block text-lg font-medium">Imagen del Producto</label>
             {% if form.instance.image %}
@@ -118,7 +111,6 @@
             {% endif %}
         </div>
 
-        <!-- Fecha de Elaboración -->
         <div class="mb-6">
             <label for="id_production_date" class="block text-lg font-medium">Fecha de Elaboración</label>
             <input type="date" name="production_date" id="id_production_date" value="{{ form.instance.production_date|default:'' }}" 
@@ -132,7 +124,6 @@
             {% endif %}
         </div>
 
-        <!-- Fecha de Vencimiento -->
         <div class="mb-6">
             <label for="id_expiration_date" class="block text-lg font-medium">Fecha de Vencimiento</label>
             <input type="date" name="expiration_date" id="id_expiration_date" value="{{ form.instance.expiration_date|default:'' }}" 
@@ -146,17 +137,17 @@
             {% endif %} 
         </div>
 
-        <!-- Estado -->
         <div class="mb-6">
             <label for="id_state" class="block text-lg font-medium">Estado del Producto</label>
             <input type="text" name="state" id="id_state" value="{{ form.instance.state|yesno:'Agotado,Disponible' }}" readonly>
         </div> 
 
-        <!-- Código de Barras -->
         <div class="mb-6">
             <label for="id_barcode" class="block text-lg font-medium">Código de Barras</label>
             <input type="text" name="barcode" id="id_barcode" value="{{ form.instance.barcode|default:'' }}" 
-            class="mt-1 block w-full px-4 py-2 border rounded-lg focus:ring-green-500 focus:border-green-500" placeholder="Ingrese el código de barras del producto">
+            class="mt-1 block w-full px-4 py-2 border rounded-lg focus:ring-green-500 focus:border-green-500 only-numbers" 
+            placeholder="Ingrese el código de barras del producto (13 dígitos)" 
+            maxlength="13" pattern="[0-9]{13}" autocomplete="off">
             {% if form.barcode.errors %}
                 <div class="text-red-500 text-sm mt-2">
                     {% for error in form.barcode.errors %}
@@ -166,7 +157,6 @@
             {% endif %}
         </div>
 
-        <!-- Botón de Acción -->
         <div class="flex justify-between items-center">
             <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-red-700 transition-all">Guardar Producto</button>
             <a href={{back_url}} class="bg-gray-500 text-white px-6 py-2 rounded-lg hover:bg-gray-600 transition-all">Cancelar</a>
@@ -177,13 +167,3 @@
 <script src="{% static 'js/state_stock.js' %}"></script>
 <script src="{% static 'js/barcode_validation.js' %}"></script>
 {% endblock %}
-
-
-
-
-
-
-
-
-
-
