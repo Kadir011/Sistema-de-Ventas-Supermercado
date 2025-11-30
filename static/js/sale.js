@@ -3,39 +3,60 @@ const IVA_RATE = 0.15;
 let currentRow = 0;
 
 document.addEventListener('DOMContentLoaded', function() {
+    console.log('Iniciando carga del formulario de ventas...');
+    
     // Obtener los datos iniciales
-    const initialDetails = JSON.parse(document.getElementById('saleForm').dataset.initialDetails || '[]');
-    const initialTotals = JSON.parse(document.getElementById('saleForm').dataset.initialTotals || '{}');
+    const saleForm = document.getElementById('saleForm');
+    let initialDetails = [];
+    let initialTotals = {};
+    
+    try {
+        const detailsAttr = saleForm.dataset.initialDetails;
+        const totalsAttr = saleForm.dataset.initialTotals;
+        
+        console.log('Raw initialDetails:', detailsAttr);
+        console.log('Raw initialTotals:', totalsAttr);
+        
+        if (detailsAttr && detailsAttr !== '[]') {
+            initialDetails = JSON.parse(detailsAttr);
+        }
+        if (totalsAttr && totalsAttr !== '{}') {
+            initialTotals = JSON.parse(totalsAttr);
+        }
+    } catch (error) {
+        console.error('Error al parsear datos iniciales:', error);
+    }
 
-    // Depuración: Verificar los datos iniciales
-    console.log('initialDetails:', initialDetails);
-    console.log('initialTotals:', initialTotals);
+    console.log('initialDetails parseados:', initialDetails);
+    console.log('initialTotals parseados:', initialTotals);
 
     // Precargar datos iniciales en los campos del formulario
-    if (initialDetails.length > 0) {
+    if (initialDetails && initialDetails.length > 0) {
         console.log('Cargando detalles iniciales...');
         initialDetails.forEach(detail => {
             console.log('Añadiendo detalle:', detail);
             addDetailRowWithData(detail);
         });
-        calculateTotals(); // Recalcular totales después de cargar los detalles
+        
+        // Recalcular totales después de cargar los detalles
+        setTimeout(() => {
+            calculateTotals();
+        }, 100);
     } else {
         console.log('No hay detalles iniciales, añadiendo una fila vacía...');
         addDetailRow();
     }
 
-    // Precargar totales y otros campos
-    if (initialTotals.subtotal !== undefined) {
+    // Precargar totales si existen
+    if (initialTotals && Object.keys(initialTotals).length > 0) {
         console.log('Precargando totales...');
-        document.querySelector('input[name="subtotal"]').value = initialTotals.subtotal.toFixed(2);
-        document.querySelector('input[name="iva"]').value = initialTotals.iva.toFixed(2);
-        document.querySelector('input[name="discount"]').value = initialTotals.discount.toFixed(2);
-        document.querySelector('input[name="total"]').value = initialTotals.total.toFixed(2);
-    } else {
-        console.log('No hay totales iniciales, calculando desde cero...');
-        calculateTotals();
+        document.querySelector('input[name="subtotal"]').value = parseFloat(initialTotals.subtotal || 0).toFixed(2);
+        document.querySelector('input[name="iva"]').value = parseFloat(initialTotals.iva || 0).toFixed(2);
+        document.querySelector('input[name="discount"]').value = parseFloat(initialTotals.discount || 0).toFixed(2);
+        document.querySelector('input[name="total"]').value = parseFloat(initialTotals.total || 0).toFixed(2);
     }
 
+    // Event listeners
     document.getElementById('add-product').addEventListener('click', addDetailRow);
     document.getElementById('saleForm').addEventListener('submit', function(e) {
         e.preventDefault();
@@ -50,7 +71,7 @@ document.addEventListener('DOMContentLoaded', function() {
  */
 function addDetailRow() {
     const template = document.getElementById('detail-row-template');
-    const tbody = document.getElementById('sale-details');
+    const tbody = document.getElementById('sale-details').querySelector('tbody');
     const clone = document.importNode(template.content, true);
     const row = clone.querySelector('.detail-row');
     row.dataset.rowId = currentRow++;
@@ -63,12 +84,6 @@ function addDetailRow() {
     quantityInput.addEventListener('input', () => updateRowPricesAndStock(row.dataset.rowId));
     deleteButton.addEventListener('click', function() {
         if (document.querySelectorAll('.detail-row').length > 1) {
-            const selectedOption = productSelect.options[productSelect.selectedIndex];
-            if (selectedOption) {
-                const initialStock = parseInt(selectedOption.dataset.stock) || 0;
-                const quantity = parseInt(quantityInput.value) || 0;
-                alert(`Stock devuelto (simulado): ${initialStock + quantity}`);
-            }
             row.remove();
             calculateTotals();
         } else {
@@ -76,7 +91,6 @@ function addDetailRow() {
         }
     });
 
-    if (tbody.children.length === 0) deleteButton.style.visibility = 'hidden';
     tbody.appendChild(clone);
     showProductModal(row.dataset.rowId);
 }
@@ -88,7 +102,7 @@ function addDetailRowWithData(detail) {
     console.log('Ejecutando addDetailRowWithData con detalle:', detail);
 
     const template = document.getElementById('detail-row-template');
-    const tbody = document.getElementById('sale-details');
+    const tbody = document.getElementById('sale-details').querySelector('tbody');
     const clone = document.importNode(template.content, true);
     const row = clone.querySelector('.detail-row');
     row.dataset.rowId = currentRow++;
@@ -99,26 +113,26 @@ function addDetailRowWithData(detail) {
     const subtotalInput = row.querySelector('.subtotal-input');
     const deleteButton = row.querySelector('.delete-row');
 
+    // Crear opción con los datos del producto
     let option = document.createElement('option');
     option.value = detail.product;
-    option.textContent = `Producto: ${detail.name}`;
+    option.textContent = detail.name;
     option.dataset.price = detail.price;
-    option.dataset.stock = detail.stock;
+    option.dataset.stock = detail.stock + detail.quantity; // Stock disponible + cantidad ya usada
+    option.selected = true;
     productSelect.appendChild(option);
-    productSelect.value = detail.product;
 
+    // Establecer valores
     quantityInput.value = detail.quantity;
-    quantityInput.dataset.initialQuantity = detail.quantity; // Guardar cantidad inicial para stock
-    priceInput.value = detail.price.toFixed(2);
-    subtotalInput.value = detail.subtotal.toFixed(2);
+    quantityInput.dataset.initialQuantity = detail.quantity;
+    priceInput.value = parseFloat(detail.price).toFixed(2);
+    subtotalInput.value = parseFloat(detail.subtotal).toFixed(2);
 
+    // Event listeners
     productSelect.addEventListener('change', () => updateRowPricesAndStock(row.dataset.rowId));
     quantityInput.addEventListener('input', () => updateRowPricesAndStock(row.dataset.rowId));
     deleteButton.addEventListener('click', function() {
         if (document.querySelectorAll('.detail-row').length > 1) {
-            const initialStock = parseInt(option.dataset.stock) || 0;
-            const quantity = parseInt(quantityInput.value) || 0;
-            alert(`Stock devuelto (simulado): ${initialStock + quantity}`);
             row.remove();
             calculateTotals();
         } else {
@@ -126,13 +140,12 @@ function addDetailRowWithData(detail) {
         }
     });
 
-    if (tbody.children.length === 0) deleteButton.style.visibility = 'hidden';
     console.log('Añadiendo fila al tbody:', row);
     tbody.appendChild(clone);
 }
 
 /**
- * Actualiza precios, subtotal y simula stock en tiempo real
+ * Actualiza precios y subtotal de una fila
  */
 function updateRowPricesAndStock(rowId) {
     const row = document.querySelector(`.detail-row[data-row-id="${rowId}"]`);
@@ -146,18 +159,18 @@ function updateRowPricesAndStock(rowId) {
     const selectedOption = productSelect.options[productSelect.selectedIndex];
     if (selectedOption && selectedOption.value) {
         const price = parseFloat(selectedOption.dataset.price) || 0;
+        const stock = parseInt(selectedOption.dataset.stock) || 0;
         let quantity = parseInt(quantityInput.value) || 1;
+        
         if (quantity < 1) quantity = 1;
+        if (quantity > stock) {
+            alert(`Stock disponible: ${stock} unidades`);
+            quantity = stock;
+        }
+        
         quantityInput.value = quantity;
-
         priceInput.value = price.toFixed(2);
         subtotalInput.value = (price * quantity).toFixed(2);
-
-        // Simular stock en tiempo real
-        const initialStock = parseInt(selectedOption.dataset.stock) || 0;
-        const initialQuantity = parseInt(quantityInput.dataset.initialQuantity) || 0;
-        const newStock = initialStock + (initialQuantity - quantity);
-        alert(`Stock disponible (simulado): ${newStock}`);
     } else {
         priceInput.value = '0.00';
         subtotalInput.value = '0.00';
@@ -176,7 +189,11 @@ function calculateTotals() {
     const totalField = document.querySelector('input[name="total"]');
 
     let subtotal = 0;
-    subtotalInputs.forEach(input => subtotal += parseFloat(input.value) || 0);
+    subtotalInputs.forEach(input => {
+        const value = parseFloat(input.value) || 0;
+        subtotal += value;
+    });
+    
     const iva = subtotal * IVA_RATE;
     const discount = parseFloat(discountField.value) || 0;
     const total = subtotal + iva - discount;
@@ -190,9 +207,29 @@ function calculateTotals() {
  * Valida el formulario antes de enviarlo
  */
 function validateForm() {
+    const customerSelect = document.querySelector('select[name="customer"]');
+    if (!customerSelect.value) {
+        alert('Debe seleccionar un cliente');
+        customerSelect.focus();
+        return false;
+    }
+
+    const sellerSelect = document.querySelector('select[name="seller"]');
+    if (!sellerSelect.value) {
+        alert('Debe seleccionar un vendedor');
+        sellerSelect.focus();
+        return false;
+    }
+
+    const paymentSelect = document.querySelector('select[name="payment"]');
+    if (!paymentSelect.value) {
+        alert('Debe seleccionar una forma de pago');
+        paymentSelect.focus();
+        return false;
+    }
+
     const productSelects = document.querySelectorAll('.product-select');
     let hasProducts = false;
-
     for (const select of productSelects) {
         if (select.value) {
             hasProducts = true;
@@ -205,23 +242,6 @@ function validateForm() {
         return false;
     }
 
-    const customerSelect = document.querySelector('select[name="customer"]');
-    if (!customerSelect.value) {
-        alert('Debe seleccionar un cliente');
-        return false;
-    }
-
-    const sellerSelect = document.querySelector('select[name="seller"]');
-    if (!sellerSelect.value) {
-        alert('Debe seleccionar un vendedor');
-        return false;
-    }
-
-    const paymentSelect = document.querySelector('select[name="payment"]');
-    if (!paymentSelect.value) {
-        alert('Debe seleccionar una forma de pago');
-        return false;
-    }
     return true;
 }
 
@@ -263,13 +283,26 @@ function saveSale() {
     const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
     fetch(window.location.href, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrfToken },
+        headers: { 
+            'Content-Type': 'application/json', 
+            'X-CSRFToken': csrfToken 
+        },
         body: JSON.stringify(saleData)
     })
-    .then(response => response.ok ? response.json() : response.text().then(text => { throw new Error(text || 'Error desconocido'); }))
+    .then(response => {
+        if (!response.ok) {
+            return response.text().then(text => {
+                throw new Error(text || 'Error desconocido');
+            });
+        }
+        return response.json();
+    })
     .then(data => {
-        if (data.success) window.location.href = data.redirect_url;
-        else alert(data.error || 'Error al guardar la venta');
+        if (data.success) {
+            window.location.href = data.redirect_url;
+        } else {
+            alert(data.error || 'Error al guardar la venta');
+        }
     })
     .catch(error => {
         console.error('Error:', error);
@@ -286,7 +319,9 @@ function initProductModal() {
     const searchInput = document.getElementById('productSearch');
 
     closeButton.addEventListener('click', () => modal.classList.add('hidden'));
-    searchInput.addEventListener('input', () => filterProducts(this.value));
+    searchInput.addEventListener('input', function() {
+        filterProducts(this.value);
+    });
     window.addEventListener('click', event => {
         if (event.target === modal) modal.classList.add('hidden');
     });
@@ -299,18 +334,25 @@ function showProductModal(rowId) {
     const modal = document.getElementById('productModal');
     const productList = document.getElementById('productList');
 
-    productList.innerHTML = '';
+    productList.innerHTML = '<tr><td colspan="4" class="py-2 text-center">Cargando productos...</td></tr>';
+    
     fetch('/api/products/')
         .then(response => response.json())
         .then(products => {
+            productList.innerHTML = '';
+            if (products.length === 0) {
+                productList.innerHTML = '<tr><td colspan="4" class="py-2 text-center">No hay productos disponibles</td></tr>';
+                return;
+            }
+            
             products.forEach(product => {
                 const row = document.createElement('tr');
                 row.innerHTML = `
-                    <td class="py-2">${product.name}</td>
-                    <td class="py-2">${product.price.toFixed(2)}$</td>
-                    <td class="py-2">${product.stock}</td>
-                    <td class="py-2">
-                        <button type="button" class="select-product bg-blue-500 hover:bg-blue-700 text-white font-bold py-1 px-2 rounded"
+                    <td class="py-2 px-4 border-b">${product.name}</td>
+                    <td class="py-2 px-4 border-b">$${parseFloat(product.price).toFixed(2)}</td>
+                    <td class="py-2 px-4 border-b">${product.stock}</td>
+                    <td class="py-2 px-4 border-b text-center">
+                        <button type="button" class="select-product bg-blue-500 hover:bg-blue-700 text-white font-bold py-1 px-3 rounded"
                             data-id="${product.id}" data-name="${product.name}" data-price="${product.price}" data-stock="${product.stock}">
                             Seleccionar
                         </button>
@@ -325,7 +367,7 @@ function showProductModal(rowId) {
         })
         .catch(error => {
             console.error('Error al cargar productos:', error);
-            productList.innerHTML = '<tr><td colspan="4" class="py-2 text-center">Error al cargar productos</td></tr>';
+            productList.innerHTML = '<tr><td colspan="4" class="py-2 text-center text-red-500">Error al cargar productos</td></tr>';
         });
 
     modal.classList.remove('hidden');
@@ -338,8 +380,10 @@ function filterProducts(query) {
     const rows = document.querySelectorAll('#productList tr');
     const lowerQuery = query.toLowerCase();
     rows.forEach(row => {
-        const productName = row.querySelector('td:first-child').textContent.toLowerCase();
-        row.style.display = productName.includes(lowerQuery) ? '' : 'none';
+        const productName = row.querySelector('td:first-child')?.textContent.toLowerCase();
+        if (productName) {
+            row.style.display = productName.includes(lowerQuery) ? '' : 'none';
+        }
     });
 }
 
@@ -351,19 +395,20 @@ function selectProduct(rowId, productId, productName, productPrice, productStock
     if (!row) return;
 
     const productSelect = row.querySelector('.product-select');
-    let option = Array.from(productSelect.options).find(opt => opt.value == productId);
-    if (!option) {
-        option = document.createElement('option');
-        option.value = productId;
-        option.textContent = `Producto: ${productName}`;
-        option.dataset.price = productPrice;
-        option.dataset.stock = productStock;
-        productSelect.appendChild(option);
+    
+    // Limpiar opciones anteriores excepto la placeholder
+    while (productSelect.options.length > 1) {
+        productSelect.remove(1);
     }
+    
+    // Agregar nueva opción
+    let option = document.createElement('option');
+    option.value = productId;
+    option.textContent = productName;
+    option.dataset.price = productPrice;
+    option.dataset.stock = productStock;
     option.selected = true;
+    productSelect.appendChild(option);
+    
     updateRowPricesAndStock(rowId);
 }
-
-
-
-
