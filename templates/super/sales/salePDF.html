@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>{{ title }}</title>
+    <style>
+        @page {
+            size: a4 portrait;
+            margin: 2cm;
+            @frame footer_frame {           /* Static Frame */
+                -pdf-frame-content: footerContent;
+                bottom: 1cm;
+                margin-left: 2cm;
+                margin-right: 2cm;
+                height: 1cm;
+            }
+        }
+        body { font-family: Helvetica, sans-serif; font-size: 12px; color: #333; }
+        .header-title { font-size: 24px; font-weight: bold; color: #c53030; margin-bottom: 5px; }
+        .header-subtitle { font-size: 14px; color: #666; }
+        .invoice-box { width: 100%; margin-bottom: 20px; }
+        .invoice-header td { padding: 5px 0; }
+        
+        /* Tablas de info */
+        .info-table { width: 100%; margin-bottom: 20px; border-collapse: collapse; }
+        .info-table th { text-align: left; background-color: #f3f4f6; padding: 8px; border: 1px solid #ddd; }
+        .info-table td { padding: 8px; border: 1px solid #ddd; }
+        
+        /* Tabla de productos */
+        .details-table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+        .details-table th { background-color: #c53030; color: white; padding: 10px; text-align: left; }
+        .details-table td { padding: 8px; border-bottom: 1px solid #ddd; }
+        .text-right { text-align: right; }
+        .text-center { text-align: center; }
+        
+        /* Totales */
+        .totals-table { width: 40%; float: right; border-collapse: collapse; }
+        .totals-table td { padding: 5px; }
+        .font-bold { font-weight: bold; }
+        .total-row { border-top: 2px solid #333; font-size: 14px; }
+    </style>
+</head>
+<body>
+    <table class="invoice-box">
+        <tr>
+            <td>
+                <div class="header-title">{{ company.name }}</div>
+                <div class="header-subtitle">{{ company.address }}</div>
+                <div class="header-subtitle">Tel: {{ company.phone }}</div>
+                <div class="header-subtitle">Email: {{ company.email }}</div>
+            </td>
+            <td class="text-right" valign="top">
+                <h2 style="margin:0;">FACTURA</h2>
+                <p>No. <strong>{{ sale.id_sale|stringformat:"06d" }}</strong></p>
+                <p>Fecha: {{ sale.sale_date|date:"d/m/Y" }}</p>
+            </td>
+        </tr>
+    </table>
+
+    <table class="info-table">
+        <tr>
+            <th width="50%">Información del Cliente</th>
+            <th width="50%">Información de la Venta</th>
+        </tr>
+        <tr>
+            <td valign="top">
+                <strong>Cliente:</strong> {{ sale.customer.get_full_name }}<br>
+                <strong>Cédula:</strong> {{ sale.customer.dni }}<br>
+                <strong>Dirección:</strong> {{ sale.customer.address|default:"Sin dirección" }}<br>
+                <strong>Email:</strong> {{ sale.customer.email }}
+            </td>
+            <td valign="top">
+                <strong>Vendedor:</strong> {{ sale.seller.get_full_name }}<br>
+                <strong>Forma de Pago:</strong> {{ sale.payment.name }}
+            </td>
+        </tr>
+    </table>
+
+    <table class="details-table">
+        <thead>
+            <tr>
+                <th width="10%">Cant.</th>
+                <th width="50%">Producto</th>
+                <th width="20%" class="text-right">P. Unit</th>
+                <th width="20%" class="text-right">Subtotal</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for detail in details %}
+            <tr>
+                <td class="text-center">{{ detail.quantity }}</td>
+                <td>{{ detail.product.name }}</td>
+                <td class="text-right">${{ detail.price|floatformat:2 }}</td>
+                <td class="text-right">${{ detail.subtotal|floatformat:2 }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <table class="totals-table" align="right">
+        <tr>
+            <td class="text-right font-bold">Subtotal:</td>
+            <td class="text-right">${{ sale.subtotal|floatformat:2 }}</td>
+        </tr>
+        <tr>
+            <td class="text-right font-bold">IVA (15%):</td>
+            <td class="text-right">${{ sale.iva|floatformat:2 }}</td>
+        </tr>
+        <tr>
+            <td class="text-right font-bold">Descuento:</td>
+            <td class="text-right">-${{ sale.discount|floatformat:2 }}</td>
+        </tr>
+        <tr class="total-row">
+            <td class="text-right font-bold">TOTAL A PAGAR:</td>
+            <td class="text-right font-bold">${{ sale.total|floatformat:2 }}</td>
+        </tr>
+    </table>
+
+    <div id="footerContent" class="text-center" style="color: #888; border-top: 1px solid #ddd; padding-top: 5px;">
+        Gracias por su compra en {{ company.name }} - Página <pdf:pagenumber>
+    </div>
+</body>
+</html>
