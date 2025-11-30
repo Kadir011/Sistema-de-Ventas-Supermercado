@@ -7,83 +7,150 @@
     <title>{% block title %} {% endblock %}</title>
     <link rel="icon" type="image/x-icon" href="{% static 'favicon.ico' %}">
     <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+    
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    animation: {
+                        'fade-in': 'fadeIn 0.5s ease-out',
+                        'slide-up': 'slideUp 0.5s ease-out',
+                        'slide-in-right': 'slideInRight 0.3s ease-out',
+                    },
+                    keyframes: {
+                        fadeIn: {
+                            '0%': { opacity: '0' },
+                            '100%': { opacity: '1' },
+                        },
+                        slideUp: {
+                            '0%': { transform: 'translateY(20px)', opacity: '0' },
+                            '100%': { transform: 'translateY(0)', opacity: '1' },
+                        },
+                        slideInRight: {
+                            '0%': { transform: 'translateX(100%)' },
+                            '100%': { transform: 'translateX(0)' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
     <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
+    <style>
+        /* Estilos base adicionales si son necesarios */
+        .glass-effect {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+        }
+    </style>
 </head>
 <body class="bg-gray-100 font-sans leading-normal tracking-normal flex flex-col min-h-screen">
-    <nav class="bg-red-700 p-4">
-        <div class="container mx-auto flex justify-between items-center">
-            <a href="{% url 'super:home' %}" class="text-white text-xl font-bold">
-                MySupermarket
-            </a>
-            <div class="flex items-center">
-                <a href="{% url 'super:home' %}" class="text-white hover:text-gray-200 text-xl font-bold">Home</a>
-                <a href="{% url 'super:catalog'%}" class="text-white hover:text-gray-300 px-4">Catálogo</a> 
-                <a href="{% url 'super:about' %}" class="text-white hover:text-gray-300 px-4">Sobre Nosotros</a>
-                <a href="{% url 'super:contact'%}" class="text-white hover:text-gray-300 px-4">Contacto</a>
+    
+    <nav class="bg-red-700 shadow-lg sticky top-0 z-50">
+        <div class="container mx-auto px-4">
+            <div class="flex justify-between items-center py-4">
+                <a href="{% url 'super:home' %}" class="text-white text-2xl font-bold flex items-center gap-2 hover:scale-105 transition-transform duration-200">
+                    <i class='bx bxs-cart-alt'></i> MySupermarket
+                </a>
 
-                {% if user.is_authenticated %} 
-                    {% if user.is_superuser %}
-                        <a href="{% url 'super:menu' %}" class="text-white hover:text-gray-300 px-4">Menú</a>
+                <button id="mobile-menu-btn" class="md:hidden text-white focus:outline-none">
+                    <i class='bx bx-menu text-3xl'></i>
+                </button>
+
+                <div class="hidden md:flex items-center space-x-6">
+                    <a href="{% url 'super:home' %}" class="text-white hover:text-yellow-300 font-semibold transition-colors">Home</a>
+                    <a href="{% url 'super:catalog'%}" class="text-white hover:text-yellow-300 font-semibold transition-colors">Catálogo</a> 
+                    <a href="{% url 'super:about' %}" class="text-white hover:text-yellow-300 font-semibold transition-colors">Nosotros</a>
+                    <a href="{% url 'super:contact'%}" class="text-white hover:text-yellow-300 font-semibold transition-colors">Contacto</a>
+
+                    {% if user.is_authenticated %} 
+                        {% if user.is_superuser %}
+                            <a href="{% url 'super:menu' %}" class="text-white hover:text-yellow-300 font-semibold transition-colors">Menú</a>
+                        {% endif %}
+                        <a href="{% url 'security:logout' %}" class="bg-white text-red-700 hover:bg-red-100 px-4 py-2 rounded-full font-bold transition-all shadow-md transform hover:-translate-y-1">
+                            Logout
+                        </a>
+                    {% else %}
+                        <a href="{% url 'security:login' %}" class="bg-white text-red-700 hover:bg-red-100 px-4 py-2 rounded-full font-bold transition-all shadow-md transform hover:-translate-y-1">
+                            Login
+                        </a>
                     {% endif %}
-                    <a href="{% url 'security:logout' %}" class="text-white border border-white hover:bg-white hover:text-red-700 px-4 py-2 rounded-full transition-all duration-200">Logout</a>
-                {% else %}
-                    <a href="{% url 'security:login' %}" class="text-white border border-white hover:bg-white hover:text-red-700 px-4 py-2 rounded-full transition-all duration-200">
-                        Login
-                    </a>
-                {% endif %}
-            </div> 
+                </div> 
+            </div>
+
+            <div id="mobile-menu" class="hidden md:hidden pb-4 animate-slide-up">
+                <div class="flex flex-col space-y-3">
+                    <a href="{% url 'super:home' %}" class="text-white hover:bg-red-800 px-3 py-2 rounded transition-colors">Home</a>
+                    <a href="{% url 'super:catalog'%}" class="text-white hover:bg-red-800 px-3 py-2 rounded transition-colors">Catálogo</a>
+                    <a href="{% url 'super:about' %}" class="text-white hover:bg-red-800 px-3 py-2 rounded transition-colors">Nosotros</a>
+                    <a href="{% url 'super:contact'%}" class="text-white hover:bg-red-800 px-3 py-2 rounded transition-colors">Contacto</a>
+                    {% if user.is_authenticated %}
+                        {% if user.is_superuser %}
+                            <a href="{% url 'super:menu' %}" class="text-white hover:bg-red-800 px-3 py-2 rounded transition-colors">Menú</a>
+                        {% endif %}
+                        <a href="{% url 'security:logout' %}" class="bg-white text-red-700 text-center py-2 rounded font-bold">Logout</a>
+                    {% else %}
+                        <a href="{% url 'security:login' %}" class="bg-white text-red-700 text-center py-2 rounded font-bold">Login</a>
+                    {% endif %}
+                </div>
+            </div>
         </div>
     </nav>
 
-    <!-- Chatbot Button -->
-    <div id="chatbot-button" class="fixed bottom-5 right-5 z-50">
-        <img src="{% static 'img/chatbot.png' %}" alt="Chatbot" class="cursor-pointer w-12 h-12" />
+    <div id="chatbot-button" class="fixed bottom-5 right-5 z-50 hover:scale-110 transition-transform duration-300">
+        <img src="{% static 'img/chatbot.png' %}" alt="Chatbot" class="cursor-pointer w-14 h-14 drop-shadow-lg" />
     </div>
 
-    <!-- Chatbot Modal -->
-    <div id="chatbot-modal" class="hidden fixed inset-0 bg-gray-800 bg-opacity-70 flex items-center justify-center z-40">
-        <div class="bg-white rounded-lg shadow-lg w-96">
+    <div id="chatbot-modal" class="hidden fixed inset-0 bg-gray-800 bg-opacity-70 flex items-center justify-center z-40 backdrop-blur-sm">
+        <div class="bg-white rounded-lg shadow-2xl w-96 transform transition-all scale-100 animate-slide-up">
+            <div class="p-4 bg-red-600 rounded-t-lg text-white flex justify-between items-center">
+                <h2 class="text-xl font-semibold">Asistente Virtual</h2>
+                <button id="close-chatbot" class="hover:text-gray-200 text-2xl">&times;</button>
+            </div>
             <div class="p-4">
-                <h2 class="text-xl font-semibold text-center mb-4">Chatbot</h2>
-                <div id="message-container" class="border border-gray-300 rounded h-72 overflow-y-auto p-3 mb-3 bg-gray-100">
-                    <!-- Messages will be appended here -->
-                </div>
-                <textarea id="chat-input" rows="2" class="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Escribe tu mensaje..."></textarea>
-                <div class="flex justify-between mt-2">
-                    <button id="send-message" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition duration-150">Enviar</button>
-                    <button id="close-chatbot" class="text-red-500 hover:text-red-700 transition duration-150">Cerrar</button>
+                <div id="message-container" class="border border-gray-200 rounded-lg h-72 overflow-y-auto p-3 mb-3 bg-gray-50 text-sm">
+                    </div>
+                <div class="flex gap-2">
+                    <input id="chat-input" class="flex-1 p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500" placeholder="Escribe tu mensaje...">
+                    <button id="send-message" class="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition duration-150">
+                        <i class='bx bxs-send'></i>
+                    </button>
                 </div>
             </div>
         </div>
     </div>
 
-    <main class="container mx-auto flex-1">
+    <main class="container mx-auto flex-1 px-4 py-6 animate-fade-in">
         {% block content %}
-            <!-- Aquí va el contenido específico de cada página -->
         {% endblock %}
     </main>
 
-    <footer class="bg-red-600 text-white p-8 mt-12 text-lg">
-        <div class="container mx-auto flex justify-between items-center">
-            <!-- Textos alineados a la izquierda -->
-            <p>&copy; 2024 Catálogo Supermercado. Todos los derechos reservados.</p>
-    
-            <!-- Íconos alineados a la derecha -->
+    <footer class="bg-gray-800 text-white py-8 mt-auto">
+        <div class="container mx-auto px-4 flex flex-col md:flex-row justify-between items-center gap-4">
+            <div class="text-center md:text-left">
+                <p class="font-bold text-lg">MySupermarket</p>
+                <p class="text-gray-400 text-sm">&copy; 2025 Todos los derechos reservados.</p>
+            </div>
             <div class="flex gap-6">
-                <a href="#" class="hover:text-white">
-                    <i class="bx bxl-facebook text-2xl"></i>
-                </a>
-                <a href="#" class="hover:text-white">
-                    <i class="bx bxl-twitter text-2xl"></i>
-                </a>
-                <a href="#" class="hover:text-white">
-                    <i class="bx bxl-instagram text-2xl"></i>
-                </a>
+                <a href="#" class="hover:text-red-500 transition-colors transform hover:scale-125"><i class="bx bxl-facebook text-2xl"></i></a>
+                <a href="#" class="hover:text-red-500 transition-colors transform hover:scale-125"><i class="bx bxl-twitter text-2xl"></i></a>
+                <a href="#" class="hover:text-red-500 transition-colors transform hover:scale-125"><i class="bx bxl-instagram text-2xl"></i></a>
             </div>
         </div>
     </footer> 
+
     <script src="{% static 'js/chatbot.js' %}"></script>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const btn = document.getElementById('mobile-menu-btn');
+            const menu = document.getElementById('mobile-menu');
+
+            btn.addEventListener('click', () => {
+                menu.classList.toggle('hidden');
+            });
+        });
+    </script>
 </body>
 </html>
-
