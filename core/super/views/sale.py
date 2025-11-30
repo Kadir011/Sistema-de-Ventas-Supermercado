@@ -5,7 +5,7 @@ from django.views.decorators.http import require_http_methods
 from django.utils.decorators import method_decorator
 from django.urls import reverse_lazy
 from django.views import View
-from django.views.generic import ListView, CreateView, UpdateView, DeleteView
+from django.views.generic import ListView, CreateView, UpdateView, DeleteView, DetailView
 from django.http import JsonResponse
 from django.db import transaction
 from django.db.models import Q
@@ -16,6 +16,7 @@ from django.contrib.staticfiles import finders
 from django.conf import settings
 from django.http import HttpResponse
 from django.template.loader import get_template
+from django.shortcuts import render
 from xhtml2pdf import pisa
 
 class SaleListView(ListView):
@@ -296,7 +297,7 @@ class SalePDFView(View):
             context = {
                 'sale': sale,
                 'details': details,
-                'title': f'Factura - {sale.id_sale}',
+                'title': f'Factura - {sale.id_sale} - {sale.sale_date}',
                 # Puedes agregar info de la empresa aquí estáticamente o desde DB si existiera
                 'company': {
                     'name': 'My Supermarket',
@@ -327,5 +328,30 @@ class SalePDFView(View):
                 return HttpResponse('Hubo un error al generar el PDF <pre>' + html + '</pre>')
             
             return response
+        except Exception as e:
+            return HttpResponse(f'Error: {str(e)}')
+
+# View para DetailView de cada venta
+class SaleDetailView(DetailView):
+    model = Sale
+    template_name = 'super/sales/sale_detail.html'
+
+    def get(self, request, *args, **kwargs):
+        try:
+            sale = self.get_object()
+            details = SaleDetail.objects.filter(sale=sale)
+
+            context = {
+                'sale':sale,
+                'details':details,
+                'company': {
+                    'name': 'My Supermarket',
+                    'address': 'Av. Principal 123, Guayaquil',
+                    'phone': '0999999999',
+                    'email': 'contacto@mysupermarket.com'
+                }
+            }
+
+            return render(request, self.template_name, context)
         except Exception as e:
             return HttpResponse(f'Error: {str(e)}')
