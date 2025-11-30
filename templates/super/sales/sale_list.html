@@ -5,6 +5,7 @@
 <div class="container mx-auto py-8 px-16">
     <h1 class="text-3xl font-bold mb-6">Lista de {{ title }}</h1>
     <a href={{create_url}} class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-red-700 transition-all mb-8">Agregar Nueva Venta</a>
+    
     <div class="overflow-x-auto bg-white shadow-md rounded-lg mt-6">
         <table class="min-w-full text-sm">
             <thead>
@@ -27,24 +28,71 @@
                         <td class="py-3 px-4">{{s.customer.get_full_name}}</td>
                         <td class="py-3 px-4">{{s.seller.get_full_name}}</td>
                         <td class="py-3 px-4">{{s.payment.name}}</td>
-                        <td class="py-3 px-4">${{s.subtotal|floatformat:2}}</td>
-                        <td class="py-3 px-4">${{s.iva|floatformat:2}}</td>
-                        <td class="py-3 px-4">{{s.discount|floatformat:2}}</td>
-                        <td class="py-3 px-4">${{s.total|floatformat:2}}</td>
-                        <td class="py-3 px-4">
-                            <a href="{% url 'super:sale_update' s.pk %}" class="text-blue-500 hover:underline" label="Editar"><i class='bx bxs-edit'></i></a> 
-                            <a href="{% url 'super:sale_delete' s.pk %}" class="text-red-500 hover:underline" label="Eliminar"><i class='bx bxs-eraser'></i></a>
-                            <a href="{% url 'super:sale_pdf' s.pk %}" class="text-green-500 hover:underline" label="Factura"><i class='bx bxs-file-pdf'></i></a>
+                        <td class="py-3 px-4 font-bold text-green-600">${{s.subtotal|floatformat:2}}</td>
+                        <td class="py-3 px-4 font-bold text-green-600">${{s.iva|floatformat:2}}</td>
+                        <td class="py-3 px-4 font-bold text-green-600">${{s.discount|floatformat:2}}</td>
+                        <td class="py-3 px-4 font-bold text-green-600">${{s.total|floatformat:2}}</td>
+                        <td class="py-3 px-4 flex gap-2">
+                            <button onclick="openDetailModal('{% url 'super:sale_detail' s.pk %}')" 
+                                    class="text-blue-500 hover:text-blue-700 transition-transform hover:scale-110" 
+                                    title="Ver Detalle">
+                                <i class='bx bx-show text-xl'></i>
+                            </button>
+                            
+                            <a href="{% url 'super:sale_pdf' s.pk %}" target="_blank" 
+                               class="text-red-500 hover:text-red-700 transition-transform hover:scale-110" 
+                               title="PDF">
+                                <i class='bx bxs-file-pdf text-xl'></i>
+                            </a>
+
+                            <a href="{% url 'super:sale_update' s.pk %}" 
+                               class="text-yellow-500 hover:text-yellow-700 transition-transform hover:scale-110" 
+                               title="Editar">
+                                <i class='bx bxs-edit text-xl'></i>
+                            </a> 
+
+                            <a href="{% url 'super:sale_delete' s.pk %}" 
+                               class="text-gray-500 hover:text-gray-700 transition-transform hover:scale-110" 
+                               title="Eliminar">
+                                <i class='bx bxs-eraser text-xl'></i>
+                            </a>
                         </td> 
                    </tr> 
                    {% empty %}
                    <tr>
-                       <td colspan="7" class="py-3 px-4">No hay ventas registradas</td>
+                       <td colspan="6" class="py-3 px-4 text-center">No hay ventas registradas</td>
                    </tr>
                 {% endfor %} 
             </tbody> 
         </table> 
     </div> 
 </div> 
-{% endblock %}
 
+<div id="detailModal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-50 backdrop-blur-sm transition-opacity duration-300">
+    <div class="bg-white rounded-xl shadow-2xl w-11/12 md:w-3/4 lg:w-1/2 max-h-[90vh] flex flex-col transform scale-95 transition-transform duration-300" id="modalContentContainer">
+        
+        <div class="flex justify-between items-center p-4 border-b bg-gray-50 rounded-t-xl">
+            <h3 class="text-xl font-bold text-gray-800 flex items-center gap-2">
+                <i class='bx bx-receipt text-blue-600'></i> Detalle de Venta
+            </h3>
+            <button onclick="closeDetailModal()" class="text-gray-500 hover:text-red-500 hover:bg-red-100 rounded-full p-1 transition-all">
+                <i class='bx bx-x text-3xl'></i>
+            </button>
+        </div>
+
+        <div id="modalBody" class="p-6 overflow-y-auto">
+            <div class="flex justify-center items-center py-10">
+                <i class='bx bx-loader-alt bx-spin text-4xl text-blue-600'></i>
+            </div>
+        </div>
+
+        <div class="p-4 border-t bg-gray-50 rounded-b-xl flex justify-end">
+            <button onclick="closeDetailModal()" class="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600 transition-colors">
+                Cerrar
+            </button>
+        </div>
+    </div>
+</div>
+
+<script src="{% static 'js/sale_detail.js' %}"></script>
+{% endblock %}
