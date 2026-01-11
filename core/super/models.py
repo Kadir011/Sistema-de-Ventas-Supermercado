@@ -1,6 +1,7 @@
 from django.db import models
 from django.db.models import CheckConstraint, Q
 from django.utils import timezone
+from django.conf import settings
 from decimal import Decimal
 from config.utils import get_image
 from django.forms import model_to_dict
@@ -253,7 +254,54 @@ class SaleDetail(models.Model):
             CheckConstraint(check=Q(subtotal__gte=0), name='saledetail_subtotal_non_negative')
         ]
 
+# Models para clientes compradores
+
+# Agregar al archivo core/super/models.py
+
+from django.conf import settings
+from decimal import Decimal
+
+class Cart(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, verbose_name="Usuario")
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="Fecha de creación")
+    updated_at = models.DateTimeField(auto_now=True, verbose_name="Última actualización")
+    
+    def __str__(self):
+        return f'Carrito de {self.user.username}'
+    
+    def get_total(self):
+        items = self.items.all()  # Ahora usa 'items' en lugar de 'cartitem_set'
+        total = sum(item.get_subtotal() for item in items)
+        return total
+    
+    def get_subtotal(self):
+        return self.get_total() / Decimal('1.15')  # Sin IVA
+    
+    def get_iva(self):
+        return self.get_total() - self.get_subtotal()
+    
+    def get_item_count(self):
+        return self.items.count()  # Ahora usa 'items' en lugar de 'cartitem_set'
+    
+    class Meta:
+        verbose_name = "Carrito"
+        verbose_name_plural = "Carritos"
 
 
-
+class CartItem(models.Model):
+    cart = models.ForeignKey(Cart, on_delete=models.CASCADE, related_name='items', verbose_name="Carrito")
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, verbose_name="Producto")
+    quantity = models.IntegerField(default=1, verbose_name="Cantidad")
+    added_at = models.DateTimeField(auto_now_add=True, verbose_name="Fecha de agregado")
+    
+    def __str__(self):
+        return f'{self.quantity}x {self.product.name}'
+    
+    def get_subtotal(self):
+        return self.product.price * self.quantity
+    
+    class Meta:
+        verbose_name = "Item del Carrito"
+        verbose_name_plural = "Items del Carrito"
+        unique_together = ('cart', 'product')
 

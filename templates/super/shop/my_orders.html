@@ -1,0 +1,113 @@
+{% extends 'components/base.html' %}
+{% block title %}{{ title }}{% endblock %}
+{% block content %}
+<div class="container mx-auto py-8 px-4">
+    <h1 class="text-3xl font-bold mb-6 text-gray-800">
+        <i class='bx bx-receipt text-green-600'></i> {{ title }}
+    </h1>
+    
+    {% if orders %}
+        <div class="space-y-4">
+            {% for order in orders %}
+            <div class="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-all">
+                <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <!-- Información de la orden -->
+                    <div class="flex-1">
+                        <div class="flex items-center gap-3 mb-2">
+                            <span class="bg-green-100 text-green-700 px-3 py-1 rounded-full text-sm font-bold">
+                                Orden #{{ order.id_sale|stringformat:"06d" }}
+                            </span>
+                            <span class="text-gray-500 text-sm">
+                                <i class='bx bx-calendar'></i> {{ order.sale_date|date:"d/m/Y" }}
+                            </span>
+                        </div>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-2 text-sm">
+                            <div>
+                                <span class="text-gray-600">Método de pago:</span>
+                                <span class="font-semibold text-gray-800">{{ order.payment.name }}</span>
+                            </div>
+                            <div>
+                                <span class="text-gray-600">Subtotal:</span>
+                                <span class="font-semibold text-gray-800">${{ order.subtotal|floatformat:2 }}</span>
+                            </div>
+                            <div>
+                                <span class="text-gray-600">IVA:</span>
+                                <span class="font-semibold text-gray-800">${{ order.iva|floatformat:2 }}</span>
+                            </div>
+                        </div>
+                        
+                        {% if order.discount > 0 %}
+                        <div class="mt-2 text-sm">
+                            <span class="text-gray-600">Descuento:</span>
+                            <span class="font-semibold text-red-600">-${{ order.discount|floatformat:2 }}</span>
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Total y acciones -->
+                    <div class="flex flex-col md:flex-row items-center gap-4">
+                        <div class="text-center md:text-right">
+                            <p class="text-sm text-gray-600 mb-1">Total Pagado</p>
+                            <p class="text-3xl font-bold text-green-600">${{ order.total|floatformat:2 }}</p>
+                        </div>
+                        
+                        <div class="flex gap-2">
+                            <a href="{% url 'super:order_detail' order.pk %}" 
+                               class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-all flex items-center gap-2">
+                                <i class='bx bx-show'></i> Ver Detalle
+                            </a>
+                            <a href="{% url 'super:sale_pdf' order.pk %}" target="_blank"
+                               class="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition-all flex items-center gap-2">
+                                <i class='bx bxs-file-pdf'></i> PDF
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        
+        <!-- Paginación -->
+        {% if page_obj.paginator.num_pages > 1 %}
+        <div class="mt-8 flex justify-center items-center gap-2">
+            {% if page_obj.has_previous %}
+                <a href="?page=1" 
+                   class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-all">
+                    Primera
+                </a>
+                <a href="?page={{ page_obj.previous_page_number }}" 
+                   class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-all">
+                    Anterior
+                </a>
+            {% endif %}
+            
+            <span class="px-4 py-2 bg-green-600 text-white rounded-lg font-semibold">
+                {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}
+            </span>
+            
+            {% if page_obj.has_next %}
+                <a href="?page={{ page_obj.next_page_number }}" 
+                   class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-all">
+                    Siguiente
+                </a>
+                <a href="?page={{ page_obj.paginator.num_pages }}" 
+                   class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-all">
+                    Última
+                </a>
+            {% endif %}
+        </div>
+        {% endif %}
+    {% else %}
+        <div class="text-center py-12 bg-white rounded-lg shadow-md">
+            <i class='bx bx-receipt text-8xl text-gray-400 mb-4'></i>
+            <h2 class="text-2xl font-bold text-gray-700 mb-2">No tienes compras registradas</h2>
+            <p class="text-gray-600 mb-6">¡Comienza a comprar en nuestra tienda!</p>
+            <a href="{% url 'super:shop' %}" 
+               class="inline-block bg-green-600 text-white px-8 py-3 rounded-lg font-bold hover:bg-green-700 transition-all">
+                <i class='bx bx-store'></i> Ir a la Tienda
+            </a>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

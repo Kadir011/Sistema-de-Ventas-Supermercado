@@ -4,12 +4,18 @@ from django.contrib.auth.models import AbstractUser, Group
 from django.utils.translation import gettext_lazy as _
 
 class User(AbstractUser):
+    USER_TYPE_CHOICES = (
+        ('admin', 'Administrador'),
+        ('customer', 'Cliente/Comprador'),
+    )
+    
     email = models.EmailField(_('email address'), unique=True)
     phone_number = models.CharField(max_length=10, blank=True, help_text="Número de teléfono del usuario.")
     address = models.CharField(max_length=255, blank=True, help_text="Dirección del usuario.")
     date_of_birth = models.DateField(null=True, blank=True, help_text="Fecha de nacimiento del usuario.")
     gender = models.CharField(max_length=10, choices=[('M', 'Masculino'), ('F', 'Femenino'), ('O', 'Otro')], blank=True, help_text="Género del usuario.")
     image = models.ImageField(upload_to='usuarios', blank=True, null=True, help_text="Imagen del usuario.", max_length=255)
+    user_type = models.CharField(max_length=10, choices=USER_TYPE_CHOICES, default='customer', help_text="Tipo de usuario")
     
     USERNAME_FIELD = 'username'
     REQUIRED_FIELDS = ['email', 'first_name', 'last_name']
@@ -32,18 +38,19 @@ class User(AbstractUser):
 
     def get_image_url(self):
         return get_image(self.image)
+    
+    def is_admin_user(self):
+        return self.user_type == 'admin' or self.is_superuser
+    
+    def is_customer_user(self):
+        return self.user_type == 'customer'
 
-    #save para contraseña aleatoria
     def save(self, *args, **kwargs):
-        self.set_password(self.password)
+        # Solo hashear si es una nueva contraseña (no ya hasheada)
+        if self.pk is None:  # Nuevo usuario
+            self.set_password(self.password)
+        else:  # Usuario existente
+            old_user = User.objects.get(pk=self.pk)
+            if old_user.password != self.password:
+                self.set_password(self.password)
         super().save(*args, **kwargs)
-
-
-
-
-
-
-
-
-
-

@@ -1,0 +1,162 @@
+{% extends 'components/base.html' %}
+{% block title %}{{ title }}{% endblock %}
+{% block content %}
+<div class="container mx-auto py-8 px-4">
+    <h1 class="text-3xl font-bold mb-6 text-gray-800">
+        <i class='bx bx-store text-green-600'></i> {{ title }}
+    </h1>
+    
+    <!-- Filtros y búsqueda -->
+    <div class="mb-6 bg-white p-4 rounded-lg shadow-md">
+        <form method="get" class="flex flex-wrap gap-4 items-center">
+            <!-- Filtro de marca -->
+            <select name="brand" class="border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-green-500" onchange="this.form.submit()">
+                <option value="">Todas las Marcas</option>
+                {% for m in brands %}
+                    <option value="{{ m.id_brand }}" {% if m.id_brand|stringformat:"s" == selected_brand %}selected{% endif %}>
+                        {{ m.name }}
+                    </option>
+                {% endfor %}
+            </select>
+            
+            <!-- Filtro de categoría -->
+            <select name="category" class="border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-green-500" onchange="this.form.submit()">
+                <option value="">Todas las Categorías</option>
+                {% for c in categories %}
+                    <option value="{{ c.id_category }}" {% if c.id_category|stringformat:"s" == selected_category %}selected{% endif %}>
+                        {{ c.name }}
+                    </option>
+                {% endfor %}
+            </select>
+            
+            <!-- Barra de búsqueda -->
+            <div class="flex-1 flex gap-2">
+                <input type="text" name="search" placeholder="Buscar productos..." value="{{ search_query }}" 
+                       class="flex-1 border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-green-500" />
+                <button type="submit" class="bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700 transition-all">
+                    <i class='bx bx-search'></i> Buscar
+                </button>
+            </div>
+        </form>
+    </div>
+    
+    <!-- Productos -->
+    {% if products %}
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+            {% for p in products %}
+            <div class="bg-white rounded-lg shadow-md hover:shadow-xl transition-all overflow-hidden group">
+                <div class="relative h-48 bg-gray-100 overflow-hidden">
+                    {% if p.image %}
+                        <img src="{{ p.get_image_url }}" alt="{{ p.name }}" 
+                             class="w-full h-full object-contain group-hover:scale-110 transition-transform duration-300">
+                    {% else %}
+                        <div class="w-full h-full flex justify-center items-center bg-gray-200 text-gray-400">
+                            <i class='bx bx-package text-6xl'></i>
+                        </div>
+                    {% endif %}
+                    <div class="absolute top-2 right-2 bg-green-600 text-white px-2 py-1 rounded-full text-xs font-bold">
+                        Stock: {{ p.stock }}
+                    </div>
+                </div>
+                
+                <div class="p-4">
+                    <h3 class="text-lg font-bold text-gray-800 mb-2 truncate">{{ p.name }}</h3>
+                    <p class="text-gray-600 text-sm mb-3 line-clamp-2">{{ p.description|truncatewords:10 }}</p>
+                    
+                    <div class="flex justify-between items-center mb-3">
+                        <span class="text-2xl font-bold text-green-600">${{ p.price|floatformat:2 }}</span>
+                        {% if p.stock > 0 %}
+                            <span class="text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full">Disponible</span>
+                        {% else %}
+                            <span class="text-xs bg-red-100 text-red-700 px-2 py-1 rounded-full">Agotado</span>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="flex gap-2">
+                        <a href="{% url 'super:product_detail_customer' p.pk %}" 
+                           class="flex-1 bg-blue-500 text-white text-center py-2 rounded-lg hover:bg-blue-600 transition-all text-sm">
+                            <i class='bx bx-show'></i> Ver
+                        </a>
+                        <button onclick="addToCart({{ p.id_product }})" 
+                                class="flex-1 bg-green-600 text-white py-2 rounded-lg hover:bg-green-700 transition-all text-sm">
+                            <i class='bx bx-cart-add'></i> Agregar
+                        </button>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        
+        <!-- Paginación -->
+        <div class="mt-8 flex justify-center items-center gap-2">
+            {% if page_obj.has_previous %}
+                <a href="?page=1{% if search_query %}&search={{ search_query }}{% endif %}{% if selected_category %}&category={{ selected_category }}{% endif %}{% if selected_brand %}&brand={{ selected_brand }}{% endif %}" 
+                   class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300">
+                    Primera
+                </a>
+                <a href="?page={{ page_obj.previous_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if selected_category %}&category={{ selected_category }}{% endif %}{% if selected_brand %}&brand={{ selected_brand }}{% endif %}" 
+                   class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300">
+                    Anterior
+                </a>
+            {% endif %}
+            
+            <span class="px-4 py-2 bg-green-600 text-white rounded-lg font-semibold">
+                {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}
+            </span>
+            
+            {% if page_obj.has_next %}
+                <a href="?page={{ page_obj.next_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if selected_category %}&category={{ selected_category }}{% endif %}{% if selected_brand %}&brand={{ selected_brand }}{% endif %}" 
+                   class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300">
+                    Siguiente
+                </a>
+                <a href="?page={{ page_obj.paginator.num_pages }}{% if search_query %}&search={{ search_query }}{% endif %}{% if selected_category %}&category={{ selected_category }}{% endif %}{% if selected_brand %}&brand={{ selected_brand }}{% endif %}" 
+                   class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300">
+                    Última
+                </a>
+            {% endif %}
+        </div>
+    {% else %}
+        <div class="text-center py-12">
+            <i class='bx bx-package text-6xl text-gray-400 mb-4'></i>
+            <p class="text-xl text-gray-600">No hay productos disponibles</p>
+        </div>
+    {% endif %}
+</div>
+
+<script>
+function addToCart(productId) {
+    fetch(`/carrito/agregar/${productId}/`, {
+        method: 'GET',
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest',
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Actualizar contador del carrito
+            updateCartCount();
+            // Mostrar notificación
+            showNotification('¡Producto agregado al carrito!', 'success');
+        } else {
+            showNotification(data.error || 'Error al agregar producto', 'error');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showNotification('Error al agregar producto', 'error');
+    });
+}
+
+function showNotification(message, type) {
+    const notification = document.createElement('div');
+    notification.className = `fixed top-20 right-4 z-50 px-6 py-3 rounded-lg shadow-lg ${type === 'success' ? 'bg-green-600' : 'bg-red-600'} text-white animate-slide-in-right`;
+    notification.textContent = message;
+    document.body.appendChild(notification);
+    
+    setTimeout(() => {
+        notification.remove();
+    }, 3000);
+}
+</script>
+{% endblock %}
