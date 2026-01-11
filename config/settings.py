@@ -163,10 +163,3 @@ LOGIN_URL = 'security:login'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 SESSION_SERIALIZER = 'django.contrib.sessions.serializers.JSONSerializer'
-
-
-
-
-
-
-

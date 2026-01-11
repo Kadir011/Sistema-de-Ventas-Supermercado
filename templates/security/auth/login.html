@@ -21,6 +21,8 @@
         <form action="{% url 'security:login' %}" method="post">
             {% csrf_token %}
 
+            <input type="hidden" name="login_type" id="loginType" value="customer">
+
             <!-- Username -->
             <div class="mb-4">
                 <label for="username" class="block text-gray-700 font-semibold mb-2">
@@ -52,8 +54,7 @@
 
             <!-- Submit Button -->
             <div class="mt-6">
-                <button type="submit" 
-                        class="w-full bg-green-600 text-white py-2 rounded-lg font-semibold hover:bg-green-700 transition">
+                <button type="submit" class="w-full bg-green-600 text-white py-2 rounded-lg font-semibold hover:bg-green-700 transition">
                     <i class='bx bx-log-in'></i> Iniciar Sesión
                 </button>
             </div>
@@ -65,8 +66,7 @@
         <!-- Registration Prompt (solo para clientes) -->
         <div id="registerPrompt" class="text-sm text-gray-500 text-center">
             <p>¿No tienes cuenta? 
-                <a href="{% url 'security:register' %}" 
-                   class="text-green-700 font-medium hover:text-green-900 transition">
+                <a href="{% url 'security:register' %}" class="text-green-700 font-medium hover:text-green-900 transition">
                     Regístrate ahora
                 </a>
             </p>
@@ -86,33 +86,38 @@ function showTab(type) {
     const adminInfo = document.getElementById('adminInfo');
     const registerPrompt = document.getElementById('registerPrompt');
     const adminNote = document.getElementById('adminNote');
+    
+    // Referencia al input oculto
+    const loginTypeInput = document.getElementById('loginType');
 
     if (type === 'customer') {
-        // Activar tab de cliente
+        // Lógica Visual
         customerTab.classList.add('border-green-600', 'text-green-600', 'font-semibold');
         customerTab.classList.remove('border-transparent', 'text-gray-500');
-        
         adminTab.classList.remove('border-red-600', 'text-red-600', 'font-semibold');
         adminTab.classList.add('border-transparent', 'text-gray-500');
         
-        // Mostrar info de cliente
         customerInfo.classList.remove('hidden');
         adminInfo.classList.add('hidden');
         registerPrompt.classList.remove('hidden');
         adminNote.classList.add('hidden');
+        
+        // Actualizar valor oculto
+        loginTypeInput.value = 'customer';
     } else {
-        // Activar tab de admin
+        // Lógica Visual
         adminTab.classList.add('border-red-600', 'text-red-600', 'font-semibold');
         adminTab.classList.remove('border-transparent', 'text-gray-500');
-        
         customerTab.classList.remove('border-green-600', 'text-green-600', 'font-semibold');
         customerTab.classList.add('border-transparent', 'text-gray-500');
         
-        // Mostrar info de admin
         adminInfo.classList.remove('hidden');
         customerInfo.classList.add('hidden');
         registerPrompt.classList.add('hidden');
         adminNote.classList.remove('hidden');
+        
+        // Actualizar valor oculto
+        loginTypeInput.value = 'admin';
     }
 }
 </script>

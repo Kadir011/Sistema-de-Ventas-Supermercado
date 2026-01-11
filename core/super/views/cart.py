@@ -7,7 +7,7 @@ from django.contrib import messages
 from django.db import transaction
 from django.utils import timezone
 from decimal import Decimal
-from core.super.models import Cart, CartItem, Product, Sale, SaleDetail, Customer, PaymentMethod
+from core.super.models import Cart, CartItem, Product, Sale, SaleDetail, Customer, PaymentMethod, Seller
 
 @login_required
 def add_to_cart(request, product_id):
@@ -121,6 +121,14 @@ class CheckoutView(LoginRequiredMixin, TemplateView):
             context['iva'] = cart.get_iva()
             context['total'] = cart.get_total()
             context['payment_methods'] = PaymentMethod.objects.all()
+            
+            # Pre-llenar DNI si el cliente ya existe
+            try:
+                customer = Customer.objects.get(email=self.request.user.email)
+                context['customer_dni'] = customer.dni
+            except Customer.DoesNotExist:
+                context['customer_dni'] = ''
+                
         except Cart.DoesNotExist:
             return redirect('super:cart')
         
@@ -138,17 +146,41 @@ class CheckoutView(LoginRequiredMixin, TemplateView):
                 messages.error(request, 'El carrito está vacío')
                 return redirect('super:cart')
             
-            # Obtener o crear Customer asociado al usuario
-            customer, created = Customer.objects.get_or_create(
-                email=request.user.email,
+            # 1. Obtener o crear el Vendedor Online (Requerimiento: Venta con vendedor)
+            seller, _ = Seller.objects.get_or_create(
+                dni='9999999999',
                 defaults={
-                    'name': request.user.first_name,
-                    'last_name': request.user.last_name,
-                    'dni': request.POST.get('dni', '9999999999'),
-                    'phone': request.user.phone_number,
-                    'address': request.user.address,
+                    'name': 'Vendedor',
+                    'last_name': 'Online',
+                    'email': 'ventas@online.com',
+                    'address': 'Tienda Virtual',
+                    'phone': '9999999999',
+                    'gender': 1 # Masculino por defecto
                 }
             )
+
+            # 2. Obtener o Actualizar Cliente
+            dni_form = request.POST.get('dni', '9999999999')
+            
+            try:
+                # Intentamos buscar por email (que es único)
+                customer = Customer.objects.get(email=request.user.email)
+                # Si el DNI que viene del form es diferente y válido, actualizamos
+                if dni_form and dni_form != '9999999999' and customer.dni != dni_form:
+                    customer.dni = dni_form
+                    customer.save()
+            except Customer.DoesNotExist:
+                # Si no existe (ej. usuarios antiguos), lo creamos
+                customer = Customer.objects.create(
+                    email=request.user.email,
+                    name=request.user.first_name,
+                    last_name=request.user.last_name,
+                    dni=dni_form,
+                    phone=request.user.phone_number,
+                    address=request.user.address,
+                    # Mapeo simple de género si es necesario, o default
+                    gender=1 if request.user.gender == 'M' else 2
+                )
             
             # Datos del pago
             payment_method_id = request.POST.get('payment_method')
@@ -167,10 +199,10 @@ class CheckoutView(LoginRequiredMixin, TemplateView):
             
             change = amount_received - total
             
-            # Crear la venta
+            # Crear la venta ASIGNANDO EL VENDEDOR
             sale = Sale.objects.create(
                 customer=customer,
-                seller=None,  # Venta por cliente, sin vendedor
+                seller=seller,  # Ahora asignamos el vendedor online
                 payment=payment_method,
                 sale_date=timezone.now(),
                 subtotal=subtotal,
