@@ -104,10 +104,10 @@
                         <a href="{% url 'super:shop' %}" class="text-white hover:text-yellow-300 font-semibold transition-colors">
                             <i class='bx bx-store'></i> Tienda
                         </a>
-                        <a href="{% url 'super:cart' %}" class="text-white hover:text-yellow-300 font-semibold transition-colors relative">
+                        <a href="{% url 'super:cart' %}" class="white hover:text-yellow-300 font-semibold transition-colors relative">
                             <i class='bx bx-cart text-xl'></i> Carrito
                             <span id="cart-count" class="absolute -top-2 -right-2 bg-yellow-400 text-green-800 text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
-                                0
+                                {{ cart_count|default:0 }}
                             </span>
                         </a>
                         <a href="{% url 'super:my_orders' %}" class="text-white hover:text-yellow-300 font-semibold transition-colors">
