@@ -6,24 +6,22 @@
     <div class="bg-white shadow-md rounded-lg p-8 max-w-md mx-auto">
         <h2 class="text-2xl font-bold mb-6 text-center">Iniciar Sesión</h2>
         
-        <!-- Tabs para seleccionar tipo de usuario -->
         <div class="flex mb-6 border-b">
             <button type="button" onclick="showTab('customer')" id="customerTab" 
-                    class="flex-1 py-2 px-4 text-center border-b-2 border-green-600 text-green-600 font-semibold">
+                    class="flex-1 py-2 px-4 text-center border-b-2 border-green-600 text-green-600 font-semibold transition-all duration-300">
                 Cliente
             </button>
             <button type="button" onclick="showTab('admin')" id="adminTab" 
-                    class="flex-1 py-2 px-4 text-center border-b-2 border-transparent text-gray-500 hover:text-gray-700">
+                    class="flex-1 py-2 px-4 text-center border-b-2 border-transparent text-gray-500 hover:text-gray-700 transition-all duration-300">
                 Administrador
             </button>
         </div>
 
-        <form action="{% url 'security:login' %}" method="post">
+        <form action="{% url 'security:login' %}" method="post" id="loginForm">
             {% csrf_token %}
 
             <input type="hidden" name="login_type" id="loginType" value="customer">
 
-            <!-- Username -->
             <div class="mb-4">
                 <label for="username" class="block text-gray-700 font-semibold mb-2">
                     <i class='bx bx-user'></i> Nombre de Usuario
@@ -33,7 +31,6 @@
                        placeholder="Ingresa tu usuario" required>
             </div>
 
-            <!-- Password -->
             <div class="mb-6">
                 <label for="password" class="block text-gray-700 font-semibold mb-2">
                     <i class='bx bx-lock-alt'></i> Contraseña
@@ -43,7 +40,6 @@
                        placeholder="Ingresa tu contraseña" required>
             </div>
 
-            <!-- Información contextual según el tipo -->
             <div id="customerInfo" class="mb-4 p-3 bg-green-50 border-l-4 border-green-500 text-sm text-gray-700">
                 <p><i class='bx bx-info-circle'></i> Inicia sesión para acceder a tu carrito y realizar compras.</p>
             </div>
@@ -52,18 +48,16 @@
                 <p><i class='bx bx-shield-alt'></i> Acceso restringido solo para administradores del sistema.</p>
             </div>
 
-            <!-- Submit Button -->
             <div class="mt-6">
-                <button type="submit" class="w-full bg-green-600 text-white py-2 rounded-lg font-semibold hover:bg-green-700 transition">
+                <button type="submit" id="submitBtn"
+                        class="w-full bg-green-600 text-white py-2 rounded-lg font-semibold hover:bg-green-700 transition duration-300">
                     <i class='bx bx-log-in'></i> Iniciar Sesión
                 </button>
             </div>
         </form>
 
-        <!-- Divider -->
         <hr class="my-6 border-gray-300">
 
-        <!-- Registration Prompt (solo para clientes) -->
         <div id="registerPrompt" class="text-sm text-gray-500 text-center">
             <p>¿No tienes cuenta? 
                 <a href="{% url 'security:register' %}" class="text-green-700 font-medium hover:text-green-900 transition">
@@ -86,37 +80,50 @@ function showTab(type) {
     const adminInfo = document.getElementById('adminInfo');
     const registerPrompt = document.getElementById('registerPrompt');
     const adminNote = document.getElementById('adminNote');
-    
-    // Referencia al input oculto
     const loginTypeInput = document.getElementById('loginType');
+    const submitBtn = document.getElementById('submitBtn');
+    const usernameInput = document.getElementById('username');
+    const passwordInput = document.getElementById('password');
 
     if (type === 'customer') {
-        // Lógica Visual
+        // Estilos de Pestaña Cliente
         customerTab.classList.add('border-green-600', 'text-green-600', 'font-semibold');
         customerTab.classList.remove('border-transparent', 'text-gray-500');
         adminTab.classList.remove('border-red-600', 'text-red-600', 'font-semibold');
         adminTab.classList.add('border-transparent', 'text-gray-500');
         
+        // Visibilidad de Info
         customerInfo.classList.remove('hidden');
         adminInfo.classList.add('hidden');
         registerPrompt.classList.remove('hidden');
         adminNote.classList.add('hidden');
         
-        // Actualizar valor oculto
+        // Cambio de color del botón e inputs
+        submitBtn.classList.replace('bg-red-600', 'bg-green-600');
+        submitBtn.classList.replace('hover:bg-red-700', 'hover:bg-green-700');
+        usernameInput.classList.replace('focus:ring-red-500', 'focus:ring-green-500');
+        passwordInput.classList.replace('focus:ring-red-500', 'focus:ring-green-500');
+
         loginTypeInput.value = 'customer';
     } else {
-        // Lógica Visual
+        // Estilos de Pestaña Admin
         adminTab.classList.add('border-red-600', 'text-red-600', 'font-semibold');
         adminTab.classList.remove('border-transparent', 'text-gray-500');
         customerTab.classList.remove('border-green-600', 'text-green-600', 'font-semibold');
         customerTab.classList.add('border-transparent', 'text-gray-500');
         
+        // Visibilidad de Info
         adminInfo.classList.remove('hidden');
         customerInfo.classList.add('hidden');
         registerPrompt.classList.add('hidden');
         adminNote.classList.remove('hidden');
-        
-        // Actualizar valor oculto
+
+        // Cambio de color del botón e inputs
+        submitBtn.classList.replace('bg-green-600', 'bg-red-600');
+        submitBtn.classList.replace('hover:bg-green-700', 'hover:bg-red-700');
+        usernameInput.classList.add('focus:ring-red-500');
+        passwordInput.classList.add('focus:ring-red-500');
+
         loginTypeInput.value = 'admin';
     }
 }
