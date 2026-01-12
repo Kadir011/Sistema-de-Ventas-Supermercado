@@ -46,11 +46,6 @@ class User(AbstractUser):
         return self.user_type == 'customer'
 
     def save(self, *args, **kwargs):
-        # Solo hashear si es una nueva contraseña (no ya hasheada)
-        if self.pk is None:  # Nuevo usuario
-            self.set_password(self.password)
-        else:  # Usuario existente
-            old_user = User.objects.get(pk=self.pk)
-            if old_user.password != self.password:
-                self.set_password(self.password)
+        # Django ya maneja el hashing en create_user, createsuperuser 
+        # y en los formularios AuthenticationForm/UserCreationForm.
         super().save(*args, **kwargs)
