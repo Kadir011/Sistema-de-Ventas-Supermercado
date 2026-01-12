@@ -87,31 +87,27 @@ class UserLoginView(LoginView):
         user = self.request.user
         if user.is_admin_user():
             return reverse_lazy('super:menu')
-        else:
-            return reverse_lazy('super:shop')
+        return reverse_lazy('super:shop')
 
     def form_valid(self, form):
-        # El usuario ya fue autenticado correctamente por el form, ahora verificamos permisos
         user = form.get_user()
         login_type = self.request.POST.get('login_type', 'customer')
 
-        # CASO 1: Admin intentando entrar como cliente
+        # CASO: Admin intentando entrar por la pestaña de Cliente
         if login_type == 'customer' and user.is_admin_user():
             messages.error(self.request, 'Solo ingreso de clientes')
-            # Renderizamos de nuevo el login con el error, sin loguear al usuario
             return self.render_to_response(self.get_context_data(form=form))
 
-        # CASO 2: Cliente (o intruso) intentando entrar como admin
+        # CASO: Cliente intentando entrar por la pestaña de Admin
         if login_type == 'admin' and not user.is_admin_user():
             messages.error(self.request, 'Acceso no autorizado. Solo administrador@')
             return self.render_to_response(self.get_context_data(form=form))
 
-        # Si pasa las validaciones, procedemos con el login estándar
         messages.success(self.request, 'Inicio de sesión exitoso')
         return super().form_valid(form)
 
     def form_invalid(self, form):
-        # CASO 3: Credenciales incorrectas
+        # CASO: Credenciales incorrectas (Usuario o contraseña mal escritos)
         messages.error(self.request, 'Credenciales Incorrectas, intente de nuevo...')
         return super().form_invalid(form)
 
