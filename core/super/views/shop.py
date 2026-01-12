@@ -1,7 +1,7 @@
 from django.views.generic import ListView, DetailView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models import Q
-from core.super.models import Product, Category, Brand, Sale, SaleDetail
+from core.super.models import Customer, Product, Category, Brand, Sale, SaleDetail
 
 class ShopView(LoginRequiredMixin, ListView):
     model = Product
@@ -60,16 +60,19 @@ class MyOrdersView(LoginRequiredMixin, ListView):
     login_url = '/security/login/'
 
     def get_queryset(self):
-        # Filtrar solo las compras del usuario actual
-        return Sale.objects.filter(
-            customer__user=self.request.user
-        ).order_by('-sale_date')
+        # 1. Buscamos el objeto Customer que tenga el mismo email que el usuario autenticado
+        try:
+            customer = Customer.objects.get(email=self.request.user.email)
+            # 2. Filtramos las ventas que pertenecen a ese Customer específico
+            return Sale.objects.filter(customer=customer).order_by('-sale_date')
+        except Customer.DoesNotExist:
+            # Si el usuario no tiene un registro vinculado en el CRUD de clientes, no mostramos nada
+            return Sale.objects.none()
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['title'] = 'Mis Compras'
         return context
-
 
 class OrderDetailView(LoginRequiredMixin, DetailView):
     model = Sale
@@ -78,8 +81,12 @@ class OrderDetailView(LoginRequiredMixin, DetailView):
     login_url = '/security/login/'
 
     def get_queryset(self):
-        # Solo permitir ver sus propias órdenes
-        return Sale.objects.filter(customer__user=self.request.user)
+        # Aplicamos la misma lógica de seguridad para que un usuario no vea órdenes ajenas
+        try:
+            customer = Customer.objects.get(email=self.request.user.email)
+            return Sale.objects.filter(customer=customer)
+        except Customer.DoesNotExist:
+            return Sale.objects.none()
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
