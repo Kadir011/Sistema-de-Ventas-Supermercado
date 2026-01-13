@@ -159,6 +159,14 @@
                         <span class="text-gray-800">Total Pagado:</span>
                         <span class="text-green-600">${{ order.total|floatformat:2 }}</span>
                     </div>
+                    <div class="flex justify-between text-sm text-gray-500">
+                        <span>Efectivo Recibido:</span>
+                        <span>${{ order.amount_received|floatformat:2 }}</span>
+                    </div>
+                    <div class="flex justify-between text-lg font-bold text-blue-600 bg-blue-50 p-2 rounded">
+                        <span>Su Cambio:</span>
+                        <span>${{ order.change|floatformat:2 }}</span>
+                    </div>
                 </div>
             </div>
         </div>
