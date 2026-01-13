@@ -286,7 +286,8 @@ class ProductView(View):
 class SalePDFView(View):
     def get(self, request, *args, **kwargs):
         try:
-            sale = get_object_or_404(Sale, pk=kwargs['pk'])
+            # Obtenemos la venta y sus detalles
+            sale = get_object_or_404(Sale, pk=self.kwargs['pk'])
             details = SaleDetail.objects.filter(sale=sale)
 
             context = {
@@ -295,25 +296,28 @@ class SalePDFView(View):
                 'title': f'Factura #{sale.id_sale:06d}',
                 'company': {
                     'name': 'My Supermarket',
-                    'address': 'Av. Principal 123, Guayaquil',
+                    'address': 'Guayaquil, Ecuador',
                     'phone': '0999999999',
                     'email': 'contacto@mysupermarket.com'
                 }
             }
 
-            template_path = 'super/sales/salePDF.html'
-            template = get_template(template_path)
+            # Cargar plantilla y generar PDF
+            template = get_template('super/sales/salePDF.html')
             html = template.render(context)
-
+            
             response = HttpResponse(content_type='application/pdf')
             response['Content-Disposition'] = f'inline; filename="factura_{sale.id_sale}.pdf"'
 
+            # Crear PDF
             pisa_status = pisa.CreatePDF(html, dest=response)
+            
             if pisa_status.err:
-                return HttpResponse('Error al generar PDF')
+                return HttpResponse('Ocurrió un error al generar el PDF', status=400)
             return response
+            
         except Exception as e:
-            return HttpResponse(f'Error: {str(e)}')
+            return HttpResponse(f'Error: {str(e)}', status=500)
 
 # View para DetailView de cada venta
 class SaleDetailView(DetailView):
