@@ -197,6 +197,8 @@ class Product(models.Model):
 
 class Sale(models.Model):
     id_sale = models.AutoField(primary_key=True, verbose_name="ID", blank=False, null=False, unique=True)
+    # NUEVO CAMPO: Para saber qué cuenta de usuario hizo la compra
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, verbose_name="Usuario que compró", null=True, blank=True)
     customer = models.ForeignKey(Customer, on_delete=models.CASCADE, verbose_name="Cliente", blank=True, null=True)
     seller = models.ForeignKey(Seller, on_delete=models.CASCADE, verbose_name="Vendedor", blank=True, null=True)
     payment = models.ForeignKey(PaymentMethod, on_delete=models.CASCADE, verbose_name="Forma de pago", blank=True, null=True)
