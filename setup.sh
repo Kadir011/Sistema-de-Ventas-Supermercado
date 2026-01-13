@@ -53,6 +53,7 @@ psql -h "$DB_HOST" -p "$DB_PORT" -U "$PG_USER" -d postgres -c "CREATE DATABASE $
 
 # 6. Ejecutar migraciones
 echo -e "\n${GREEN}[3/5] Ejecutando migraciones de Django...${NC}"
+python manage.py makemigrations
 python manage.py migrate
 
 # 7. Cargar datos iniciales (LISTA COMPLETA)
