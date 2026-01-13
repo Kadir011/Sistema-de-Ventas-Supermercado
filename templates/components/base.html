@@ -71,7 +71,7 @@
                     </a>
                     <div class="flex items-center gap-3">
                         <span class="text-white text-sm">
-                            <i class='bx bxs-user-circle'></i> {{ user.username }}
+                            <i class='bx bxs-user-circle'></i> {{ user.get_full_name }} ({{ user.username }})
                         </span>
                         <a href="{% url 'security:logout' %}" class="bg-white text-red-700 hover:bg-red-100 px-4 py-2 rounded-full font-bold transition-all shadow-md transform hover:-translate-y-1">
                             <i class='bx bx-log-out'></i> Salir
