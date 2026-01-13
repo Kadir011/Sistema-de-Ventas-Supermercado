@@ -1,4 +1,3 @@
-import os
 import json
 from django.shortcuts import get_object_or_404
 from django.views.decorators.http import require_http_methods 
@@ -12,8 +11,6 @@ from django.db.models import Q
 from decimal import Decimal
 from core.super.models import Sale, SaleDetail, Product
 from core.super.form.sale import SaleForm
-from django.contrib.staticfiles import finders
-from django.conf import settings
 from django.http import HttpResponse
 from django.template.loader import get_template
 from django.shortcuts import render
@@ -245,7 +242,7 @@ class SaleDeleteView(DeleteView):
         context = super().get_context_data(**kwargs)
         context['title'] = 'Eliminar Venta'
         context['grabar'] = 'Eliminar Venta'
-        context['description'] = f'¿Está seguro de eliminar la venta?'
+        context['description'] = f'¿Está seguro de eliminar la venta #{self.get_object().id_sale}?'
         context['back_url'] = self.success_url
         return context
     
@@ -289,16 +286,13 @@ class ProductView(View):
 class SalePDFView(View):
     def get(self, request, *args, **kwargs):
         try:
-            # 1. Obtener la venta y sus detalles
             sale = get_object_or_404(Sale, pk=kwargs['pk'])
             details = SaleDetail.objects.filter(sale=sale)
 
-            # 2. Contexto para la template
             context = {
                 'sale': sale,
                 'details': details,
-                'title': f'Factura - {sale.id_sale} - {sale.sale_date}',
-                # Puedes agregar info de la empresa aquí estáticamente o desde DB si existiera
+                'title': f'Factura #{sale.id_sale:06d}',
                 'company': {
                     'name': 'My Supermarket',
                     'address': 'Av. Principal 123, Guayaquil',
@@ -307,26 +301,16 @@ class SalePDFView(View):
                 }
             }
 
-            # 3. Renderizar el template
             template_path = 'super/sales/salePDF.html'
             template = get_template(template_path)
             html = template.render(context)
 
-            # 4. Crear el PDF
             response = HttpResponse(content_type='application/pdf')
-            # Si quieres que se descargue automáticamente usa: attachment
-            # response['Content-Disposition'] = f'attachment; filename="factura_{sale.id_sale}.pdf"'
-            # Si quieres verlo en el navegador usa: inline
-            response['Content-Disposition'] = f'inline; filename="factura_{sale.id_sale}_{sale.sale_date}.pdf"'
+            response['Content-Disposition'] = f'inline; filename="factura_{sale.id_sale}.pdf"'
 
-            # Generar PDF
-            pisa_status = pisa.CreatePDF(
-                html, dest=response
-            )
-
+            pisa_status = pisa.CreatePDF(html, dest=response)
             if pisa_status.err:
-                return HttpResponse('Hubo un error al generar el PDF <pre>' + html + '</pre>')
-            
+                return HttpResponse('Error al generar PDF')
             return response
         except Exception as e:
             return HttpResponse(f'Error: {str(e)}')
