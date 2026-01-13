@@ -7,12 +7,10 @@
     </h1>
     
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <!-- Formulario de pago -->
         <div class="lg:col-span-2">
             <form method="post" class="bg-white rounded-lg shadow-md p-6 space-y-6">
                 {% csrf_token %}
                 
-                <!-- Información del cliente -->
                 <div>
                     <h2 class="text-xl font-bold mb-4 text-gray-800 flex items-center gap-2">
                         <i class='bx bx-user'></i> Información del Cliente
@@ -20,35 +18,30 @@
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
                             <label class="block text-gray-700 font-semibold mb-2">Nombre</label>
-                            <input type="text" value="{{ user.first_name }}" readonly
-                                   class="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-100">
+                            <input type="text" value="{{ user.first_name }}" readonly class="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-100">
                         </div>
                         <div>
                             <label class="block text-gray-700 font-semibold mb-2">Apellido</label>
-                            <input type="text" value="{{ user.last_name }}" readonly
-                                   class="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-100">
+                            <input type="text" value="{{ user.last_name }}" readonly class="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-100">
                         </div>
                         <div>
                             <label class="block text-gray-700 font-semibold mb-2">Email</label>
-                            <input type="email" value="{{ user.email }}" readonly
-                                   class="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-100">
+                            <input type="email" value="{{ user.email }}" readonly class="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-100">
                         </div>
                         <div>
                             <label class="block text-gray-700 font-semibold mb-2">Cédula *</label>
-                            <input type="text" name="dni" placeholder="Ingrese su cédula" required
+                            <input type="text" name="dni" value="{{ customer_dni }}" placeholder="Ingrese su cédula" required
                                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500"
                                    pattern="[0-9]{10}" maxlength="10">
                         </div>
                     </div>
                 </div>
                 
-                <!-- Método de pago -->
                 <div>
                     <h2 class="text-xl font-bold mb-4 text-gray-800 flex items-center gap-2">
                         <i class='bx bx-wallet'></i> Método de Pago
                     </h2>
-                    <select name="payment_method" required
-                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500">
+                    <select name="payment_method" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500">
                         <option value="">Seleccione un método de pago</option>
                         {% for payment in payment_methods %}
                             <option value="{{ payment.id_payment_method }}">{{ payment.name }}</option>
@@ -56,7 +49,6 @@
                     </select>
                 </div>
                 
-                <!-- Monto recibido -->
                 <div>
                     <h2 class="text-xl font-bold mb-4 text-gray-800 flex items-center gap-2">
                         <i class='bx bx-dollar'></i> Pago
@@ -70,7 +62,7 @@
                         <div>
                             <label class="block text-gray-700 font-semibold mb-2">Monto Recibido *</label>
                             <input type="number" name="amount_received" id="amount_received" 
-                                   step="0.01" min="{{ total }}" placeholder="Ingrese el monto recibido" required
+                                   step="0.01" min="{{ total|stringformat:'.2f' }}" placeholder="Ingrese el monto recibido" required
                                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500"
                                    oninput="calculateChange()">
                         </div>
@@ -82,70 +74,37 @@
                     </div>
                 </div>
                 
-                <!-- Botones -->
                 <div class="flex gap-4">
-                    <a href="{% url 'super:cart' %}" 
-                       class="flex-1 bg-gray-200 text-gray-700 text-center py-3 rounded-lg font-bold hover:bg-gray-300 transition-all">
-                        <i class='bx bx-left-arrow-alt'></i> Volver al Carrito
+                    <a href="{% url 'super:cart' %}" class="flex-1 bg-gray-200 text-gray-700 text-center py-3 rounded-lg font-bold hover:bg-gray-300">
+                        <i class='bx bx-left-arrow-alt'></i> Volver
                     </a>
-                    <button type="submit" 
-                            class="flex-1 bg-green-600 text-white py-3 rounded-lg font-bold hover:bg-green-700 transition-all">
+                    <button type="submit" class="flex-1 bg-green-600 text-white py-3 rounded-lg font-bold hover:bg-green-700">
                         <i class='bx bx-check-circle'></i> Confirmar Compra
                     </button>
                 </div>
             </form>
         </div>
         
-        <!-- Resumen del pedido -->
         <div class="lg:col-span-1">
             <div class="bg-white rounded-lg shadow-md p-6 sticky top-24">
-                <h2 class="text-xl font-bold mb-4 text-gray-800">Resumen</h2>
-                
-                <!-- Lista de productos -->
+                <h2 class="text-xl font-bold mb-4">Resumen de Pedido</h2>
                 <div class="space-y-3 mb-4 max-h-64 overflow-y-auto">
                     {% for item in items %}
-                    <div class="flex gap-2 text-sm">
-                        <div class="flex-shrink-0 w-12 h-12 bg-gray-100 rounded overflow-hidden">
-                            {% if item.product.image %}
-                                <img src="{{ item.product.get_image_url }}" alt="{{ item.product.name }}" 
-                                     class="w-full h-full object-contain">
-                            {% endif %}
-                        </div>
-                        <div class="flex-1">
-                            <p class="font-semibold text-gray-800">{{ item.product.name }}</p>
-                            <p class="text-gray-600">{{ item.quantity }}x ${{ item.product.price|floatformat:2 }}</p>
-                        </div>
-                        <div class="text-right">
-                            <p class="font-bold">${{ item.get_subtotal|floatformat:2 }}</p>
-                        </div>
+                    <div class="flex justify-between text-sm">
+                        <span class="text-gray-600">{{ item.quantity }}x {{ item.product.name }}</span>
+                        <span class="font-bold">${{ item.get_subtotal|floatformat:2 }}</span>
                     </div>
                     {% endfor %}
                 </div>
-                
-                <hr class="border-gray-300 my-4">
-                
-                <!-- Totales -->
+                <hr class="my-4">
                 <div class="space-y-2">
-                    <div class="flex justify-between text-gray-600">
-                        <span>Subtotal:</span>
-                        <span class="font-semibold">${{ subtotal|floatformat:2 }}</span>
-                    </div>
-                    <div class="flex justify-between text-gray-600">
-                        <span>IVA (15%):</span>
-                        <span class="font-semibold">${{ iva|floatformat:2 }}</span>
-                    </div>
-
+                    <div class="flex justify-between"><span>Subtotal:</span><span>${{ subtotal|floatformat:2 }}</span></div>
+                    <div class="flex justify-between"><span>IVA:</span><span>${{ iva|floatformat:2 }}</span></div>
                     {% if discount > 0 %}
-                    <div class="flex justify-between text-red-600">
-                        <span>Descuento ({{ discount_pct }}%):</span>
-                        <span class="font-semibold">-${{ discount|floatformat:2 }}</span>
-                    </div>
+                    <div class="flex justify-between text-red-600"><span>Descuento:</span><span>-${{ discount|floatformat:2 }}</span></div>
                     {% endif %}
-
-                    <hr class="border-gray-300">
-                    <div class="flex justify-between text-xl font-bold text-gray-800">
-                        <span>Total a Pagar:</span>
-                        <span class="text-green-600">${{ total|floatformat:2 }}</span>
+                    <div class="flex justify-between text-xl font-bold border-t pt-2">
+                        <span>Total:</span><span class="text-green-600">${{ total|floatformat:2 }}</span>
                     </div>
                 </div>
             </div>
@@ -154,20 +113,21 @@
 </div>
 
 <script>
-const total = parseFloat('{{ total }}'); // Este total ya trae el descuento restado
+    function calculateChange() {
+        // Forzamos el formato con punto decimal desde Django para evitar errores de locale
+        const total = parseFloat("{{ total|stringformat:'.2f' }}");
+        const amountInput = document.getElementById('amount_received');
+        const amountReceived = parseFloat(amountInput.value) || 0;
+        const changeDisplay = document.getElementById('change_display');
+        const changeAmount = document.getElementById('change_amount');
 
-function calculateChange() {
-    const amountReceived = parseFloat(document.getElementById('amount_received').value) || 0;
-    const changeDisplay = document.getElementById('change_display');
-    const changeAmount = document.getElementById('change_amount');
-    
-    if (amountReceived >= total) {
-        const change = amountReceived - total;
-        changeAmount.value = `$${change.toFixed(2)}`;
-        changeDisplay.classList.remove('hidden');
-    } else {
-        changeDisplay.classList.add('hidden');
+        if (amountReceived >= total) {
+            const change = amountReceived - total;
+            changeAmount.value = `$${change.toFixed(2)}`;
+            changeDisplay.classList.remove('hidden');
+        } else {
+            changeDisplay.classList.add('hidden');
+        }
     }
-}
 </script>
 {% endblock %}
