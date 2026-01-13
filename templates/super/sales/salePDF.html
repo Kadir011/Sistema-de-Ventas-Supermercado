@@ -113,9 +113,8 @@
                     <td>{{ sale.customer.get_full_name }}</td>
                 </tr>
                 <tr>
-                    <td class="font-bold">Cédula:</td>
+                    <td width="15%" class="font-bold">Cédula:</td>
                     <td>
-                        {# Vacío si es Consumidor Final (9999999999) #}
                         {% if sale.customer.dni == '9999999999' %}
                             {% else %}
                             {{ sale.customer.dni }}
