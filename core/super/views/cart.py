@@ -114,11 +114,9 @@ class CheckoutView(LoginRequiredMixin, TemplateView):
             cart = Cart.objects.get(user=self.request.user)
             items = CartItem.objects.filter(cart=cart).select_related('product')
             
-            # 1. Identificar al Cliente y su beneficio de descuento
             customer = Customer.objects.filter(email=self.request.user.email).first()
             discount_pct = customer.discount_percentage if customer else Decimal('0.00')
             
-            # 2. Cálculos de totales con descuento
             cart_total = cart.get_total()
             discount_amount = cart_total * (discount_pct / 100)
             final_total = cart_total - discount_amount
@@ -130,8 +128,6 @@ class CheckoutView(LoginRequiredMixin, TemplateView):
             context['discount_pct'] = discount_pct
             context['total'] = final_total
             context['payment_methods'] = PaymentMethod.objects.all()
-            
-            # Pre-llenar DNI para conveniencia del usuario
             context['customer_dni'] = customer.dni if customer else ''
                 
         except Cart.DoesNotExist:
@@ -147,56 +143,49 @@ class CheckoutView(LoginRequiredMixin, TemplateView):
             items = CartItem.objects.filter(cart=cart).select_related('product')
             
             if not items.exists():
-                messages.error(request, 'El carrito está vacío')
                 return redirect('super:cart')
             
-            # 1. Asegurar Vendedor Online (para que no sea null en el CRUD)
-            seller, _ = Seller.objects.get_or_create(
-                dni='9999999999',
-                defaults={
-                    'name': 'Vendedor',
-                    'last_name': 'Online',
-                    'email': 'online@market.com',
-                    'phone': '9999999999',
-                    'address': 'Tienda Virtual',
-                    'gender': 1
-                }
-            )
+            # Lógica Consumidor Final vs Datos Personales
+            dni_type = request.POST.get('dni_type')
+            if dni_type == 'final':
+                customer_dni = '9999999999'
+                # Buscamos el cliente genérico
+                customer, _ = Customer.objects.get_or_create(
+                    dni=customer_dni,
+                    defaults={'name': 'CONSUMIDOR', 'last_name': 'FINAL', 'address': 'S/N'}
+                )
+            else:
+                customer_dni = request.POST.get('dni')
+                customer, _ = Customer.objects.get_or_create(
+                    email=request.user.email,
+                    defaults={
+                        'name': request.user.first_name,
+                        'last_name': request.user.last_name,
+                        'dni': customer_dni,
+                        'phone': request.user.phone_number,
+                        'address': request.user.address
+                    }
+                )
+                if customer.dni != customer_dni:
+                    customer.dni = customer_dni
+                    customer.save()
 
-            # 2. Obtener o Actualizar registro del Cliente
-            dni_form = request.POST.get('dni', '9999999999')
-            customer, created = Customer.objects.get_or_create(
-                email=request.user.email,
-                defaults={
-                    'name': request.user.first_name,
-                    'last_name': request.user.last_name,
-                    'dni': dni_form,
-                    'phone': request.user.phone_number,
-                    'address': request.user.address,
-                    'gender': 1 if request.user.gender == 'M' else 2
-                }
-            )
-            
-            # Si el cliente ya existía pero envió un DNI diferente, lo actualizamos
-            if not created and dni_form != customer.dni:
-                customer.dni = dni_form
-                customer.save()
+            # Asegurar Vendedor Online
+            seller, _ = Seller.objects.get_or_create(dni='9999999999', defaults={'name': 'Vendedor', 'last_name': 'Online'})
 
-            # 3. Cálculos Finales
+            # Totales
             cart_total = cart.get_total()
             discount_amount = cart_total * (customer.discount_percentage / 100)
             final_total = cart_total - discount_amount
-            
             amount_received = Decimal(request.POST.get('amount_received', '0'))
             
             if amount_received < final_total:
-                messages.error(request, 'El monto recibido es insuficiente')
+                messages.error(request, 'Monto recibido insuficiente')
                 return redirect('super:checkout')
             
-            # Cálculo correcto del cambio (Recibido - Total con descuento)
             change = amount_received - final_total
-            
-            # 4. Registrar la Venta
+
+            # Crear Venta
             sale = Sale.objects.create(
                 customer=customer,
                 seller=seller,
@@ -210,27 +199,18 @@ class CheckoutView(LoginRequiredMixin, TemplateView):
                 change=change
             )
             
-            # 5. Guardar detalles y reducir Stock
             for item in items:
-                if item.product.stock < item.quantity:
-                    raise ValueError(f'Stock insuficiente para {item.product.name}')
-                
                 SaleDetail.objects.create(
-                    sale=sale,
-                    product=item.product,
-                    quantity=item.quantity,
-                    price=item.product.price,
-                    subtotal=item.get_subtotal()
+                    sale=sale, product=item.product, quantity=item.quantity,
+                    price=item.product.price, subtotal=item.get_subtotal()
                 )
-                
                 item.product.stock -= item.quantity
                 item.product.save()
             
-            # 6. Limpiar Carrito
             items.delete()
             cart.delete()
             
-            messages.success(request, f'¡Compra realizada! Su cambio es: ${change:.2f}')
+            messages.success(request, '¡Compra finalizada!')
             return redirect('super:order_detail', pk=sale.pk)
             
         except Customer.DoesNotExist:

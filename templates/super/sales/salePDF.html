@@ -1,133 +1,190 @@
 <!DOCTYPE html>
-<html>
+<html lang="es">
 <head>
-    <meta charset="utf-8">
+    <meta charset="UTF-8">
     <title>{{ title }}</title>
     <style>
         @page {
-            size: a4 portrait;
-            margin: 2cm;
-            @frame footer_frame {           /* Static Frame */
-                -pdf-frame-content: footerContent;
-                bottom: 1cm;
-                margin-left: 2cm;
-                margin-right: 2cm;
-                height: 1cm;
-            }
+            size: A4;
+            margin: 1.5cm;
         }
-        body { font-family: Helvetica, sans-serif; font-size: 12px; color: #333; }
-        .header-title { font-size: 24px; font-weight: bold; color: #c53030; margin-bottom: 5px; }
-        .header-subtitle { font-size: 14px; color: #666; }
-        .invoice-box { width: 100%; margin-bottom: 20px; }
-        .invoice-header td { padding: 5px 0; }
-        
-        /* Tablas de info */
-        .info-table { width: 100%; margin-bottom: 20px; border-collapse: collapse; }
-        .info-table th { text-align: left; background-color: #f3f4f6; padding: 8px; border: 1px solid #ddd; }
-        .info-table td { padding: 8px; border: 1px solid #ddd; }
-        
-        /* Tabla de productos */
-        .details-table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
-        .details-table th { background-color: #c53030; color: white; padding: 10px; text-align: left; }
-        .details-table td { padding: 8px; border-bottom: 1px solid #ddd; }
+        body {
+            font-family: Helvetica, Arial, sans-serif;
+            font-size: 11pt;
+            color: #333;
+            line-height: 1.4;
+        }
+        .header-table {
+            width: 100%;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #16a34a;
+            padding-bottom: 10px;
+        }
+        .company-name {
+            font-size: 22pt;
+            font-weight: bold;
+            color: #16a34a;
+        }
+        .invoice-title {
+            font-size: 16pt;
+            font-weight: bold;
+            text-align: right;
+        }
+        .info-section {
+            width: 100%;
+            margin-bottom: 20px;
+        }
+        .info-box {
+            padding: 10px;
+            border: 1px solid #ddd;
+            background-color: #f9f9f9;
+        }
+        .details-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        .details-table th {
+            background-color: #16a34a;
+            color: white;
+            padding: 8px;
+            font-size: 10pt;
+            text-align: left;
+        }
+        .details-table td {
+            border-bottom: 1px solid #eee;
+            padding: 8px;
+            font-size: 10pt;
+        }
+        .totals-table {
+            width: 40%;
+            float: right;
+        }
+        .totals-table td {
+            padding: 4px 8px;
+            font-size: 10pt;
+        }
         .text-right { text-align: right; }
-        .text-center { text-align: center; }
-        
-        /* Totales */
-        .totals-table { width: 40%; float: right; border-collapse: collapse; }
-        .totals-table td { padding: 5px; }
         .font-bold { font-weight: bold; }
-        .total-row { border-top: 2px solid #333; font-size: 14px; }
+        .total-row {
+            background-color: #f0fdf4;
+            font-size: 12pt !important;
+            color: #166534;
+        }
+        .payment-highlight {
+            color: #1e40af;
+            background-color: #eff6ff;
+        }
+        .footer {
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            text-align: center;
+            font-size: 8pt;
+            color: #777;
+            border-top: 1px solid #eee;
+            padding-top: 5px;
+        }
     </style>
 </head>
 <body>
-    <table class="invoice-box">
+
+    <table class="header-table">
         <tr>
             <td>
-                <div class="header-title">{{ company.name }}</div>
-                <div class="header-subtitle">{{ company.address }}</div>
-                <div class="header-subtitle">Tel: {{ company.phone }}</div>
-                <div class="header-subtitle">Email: {{ company.email }}</div>
+                <div class="company-name">MY SUPERMARKET</div>
+                <div>{{ company.address }}</div>
+                <div>Telf: {{ company.phone }}</div>
+                <div>Email: {{ company.email }}</div>
             </td>
-            <td class="text-right" valign="top">
-                <h2 style="margin:0;">FACTURA</h2>
-                <p>No. <strong>{{ sale.id_sale|stringformat:"06d" }}</strong></p>
-                <p>Fecha: {{ sale.sale_date|date:"d/m/Y" }}</p>
+            <td class="invoice-title">
+                FACTURA DE VENTA<br>
+                <span style="color: #666;">N° {{ sale.id_sale|stringformat:"06d" }}</span><br>
+                <span style="font-size: 10pt; font-weight: normal;">Fecha: {{ sale.sale_date|date:"d/m/Y H:i" }}</span>
             </td>
         </tr>
     </table>
 
-    <table class="info-table">
-        <tr>
-            <th width="50%">Información del Cliente</th>
-            <th width="50%">Información de la Venta</th>
-        </tr>
-        <tr>
-            <td valign="top">
-                <strong>Cliente:</strong> {{ sale.customer.get_full_name }}<br>
-                <strong>Cédula:</strong> {{ sale.customer.dni }}<br>
-                <strong>Dirección:</strong> {{ sale.customer.address|default:"Sin dirección" }}<br>
-                <strong>Email:</strong> {{ sale.customer.email }}
-            </td>
-            <td valign="top">
-                <strong>Vendedor:</strong> {{ sale.seller.get_full_name }}<br>
-                <strong>Forma de Pago:</strong> {{ sale.payment.name }}
-            </td>
-        </tr>
-    </table>
+    <div class="info-section">
+        <div class="info-box">
+            <table style="width: 100%;">
+                <tr>
+                    <td width="15%" class="font-bold">Cliente:</td>
+                    <td>{{ sale.customer.get_full_name }}</td>
+                </tr>
+                <tr>
+                    <td class="font-bold">Cédula:</td>
+                    <td>
+                        {# Vacío si es Consumidor Final (9999999999) #}
+                        {% if sale.customer.dni == '9999999999' %}
+                            {% else %}
+                            {{ sale.customer.dni }}
+                        {% endif %}
+                    </td>
+                </tr>
+                <tr>
+                    <td class="font-bold">Método Pago:</td>
+                    <td>{{ sale.payment.name }}</td>
+                </tr>
+            </table>
+        </div>
+    </div>
 
     <table class="details-table">
         <thead>
             <tr>
-                <th width="10%">Cant.</th>
                 <th width="50%">Producto</th>
-                <th width="20%" class="text-right">P. Unit</th>
+                <th width="10%" class="text-right">Cant.</th>
+                <th width="20%" class="text-right">P. Unitario</th>
                 <th width="20%" class="text-right">Subtotal</th>
             </tr>
         </thead>
         <tbody>
-            {% for detail in details %}
+            {% for d in details %}
             <tr>
-                <td class="text-center">{{ detail.quantity }}</td>
-                <td>{{ detail.product.name }}</td>
-                <td class="text-right">${{ detail.price|floatformat:2 }}</td>
-                <td class="text-right">${{ detail.subtotal|floatformat:2 }}</td>
+                <td>{{ d.product.name }}</td>
+                <td class="text-right">{{ d.quantity }}</td>
+                <td class="text-right">${{ d.price|floatformat:2 }}</td>
+                <td class="text-right">${{ d.subtotal|floatformat:2 }}</td>
             </tr>
             {% endfor %}
         </tbody>
     </table>
 
-    <table class="totals-table" align="right">
+    <table class="totals-table">
         <tr>
-            <td class="text-right font-bold">Subtotal:</td>
+            <td class="text-right">Subtotal:</td>
             <td class="text-right">${{ sale.subtotal|floatformat:2 }}</td>
         </tr>
         <tr>
-            <td class="text-right font-bold">IVA (15%):</td>
+            <td class="text-right">IVA (15%):</td>
             <td class="text-right">${{ sale.iva|floatformat:2 }}</td>
         </tr>
         {% if sale.discount > 0 %}
         <tr>
-            <td class="text-right font-bold">Descuento ({{ sale.discount_pct }}%):</td>
-            <td class="text-right">-${{ sale.discount|floatformat:2 }}</td>
-        </tr> 
+            <td class="text-right" style="color: #dc2626;">Descuento:</td>
+            <td class="text-right" style="color: #dc2626;">-${{ sale.discount|floatformat:2 }}</td>
+        </tr>
         {% endif %}
         <tr class="total-row">
-            <td class="text-right font-bold">TOTAL PAGADO:</td>
+            <td class="text-right font-bold">TOTAL:</td>
             <td class="text-right font-bold">${{ sale.total|floatformat:2 }}</td>
-        </tr> 
-        <tr>
-            <td class="text-right" style="padding-top: 10px;">Efectivo Recibido:</td>
-            <td class="text-right" style="padding-top: 10px;">${{ sale.amount_received|floatformat:2 }}</td>
         </tr>
+        
         <tr>
-            <td class="text-right font-bold" style="color: #1a56db;">Cambio:</td>
-            <td class="text-right font-bold" style="color: #1a56db;">${{ sale.change|floatformat:2 }}</td>
+            <td class="text-right" style="padding-top: 15px;">Efectivo Recibido:</td>
+            <td class="text-right" style="padding-top: 15px;">${{ sale.amount_received|floatformat:2 }}</td>
+        </tr>
+        <tr class="payment-highlight">
+            <td class="text-right font-bold">Cambio:</td>
+            <td class="text-right font-bold">${{ sale.change|floatformat:2 }}</td>
         </tr>
     </table>
 
-    <div id="footerContent" class="text-center" style="color: #888; border-top: 1px solid #ddd; padding-top: 5px;">
-        Gracias por su compra en {{ company.name }} - Página <pdf:pagenumber>
+    <div class="footer">
+        <p>Gracias por su compra en My Supermarket.</p>
+        <p>Este documento es una representación impresa de una transacción electrónica.</p>
     </div>
+
 </body>
 </html>

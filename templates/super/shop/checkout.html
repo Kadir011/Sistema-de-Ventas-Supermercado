@@ -8,31 +8,41 @@
     
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div class="lg:col-span-2">
-            <form method="post" class="bg-white rounded-lg shadow-md p-6 space-y-6">
+            <form method="post" id="checkout-form" class="bg-white rounded-lg shadow-md p-6 space-y-6">
                 {% csrf_token %}
                 
-                <div>
-                    <h2 class="text-xl font-bold mb-4 text-gray-800 flex items-center gap-2">
-                        <i class='bx bx-user'></i> Información del Cliente
+                <div class="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                    <h2 class="text-lg font-bold mb-3 text-gray-800">¿Cómo desea su factura?</h2>
+                    <div class="flex gap-4">
+                        <label class="flex-1 cursor-pointer">
+                            <input type="radio" name="dni_type" value="final" class="hidden peer" onchange="toggleDniField(this.value)" checked>
+                            <div class="text-center py-3 rounded-lg border-2 border-gray-200 peer-checked:border-green-600 peer-checked:bg-green-50 peer-checked:text-green-700 transition-all">
+                                <i class='bx bx-user-circle text-xl'></i><br>Consumidor Final
+                            </div>
+                        </label>
+                        <label class="flex-1 cursor-pointer">
+                            <input type="radio" name="dni_type" value="personal" class="hidden peer" onchange="toggleDniField(this.value)">
+                            <div class="text-center py-3 rounded-lg border-2 border-gray-200 peer-checked:border-green-600 peer-checked:bg-green-50 peer-checked:text-green-700 transition-all">
+                                <i class='bx bx-id-card text-xl'></i><br>Datos Personales
+                            </div>
+                        </label>
+                    </div>
+                </div>
+
+                <div id="customer_data_section" class="hidden space-y-4 border-t pt-4">
+                    <h2 class="text-xl font-bold text-gray-800 flex items-center gap-2">
+                        <i class='bx bx-user'></i> Información de Facturación
                     </h2>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
-                            <label class="block text-gray-700 font-semibold mb-2">Nombre</label>
-                            <input type="text" value="{{ user.first_name }}" readonly class="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-100">
-                        </div>
-                        <div>
-                            <label class="block text-gray-700 font-semibold mb-2">Apellido</label>
-                            <input type="text" value="{{ user.last_name }}" readonly class="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-100">
-                        </div>
-                        <div>
-                            <label class="block text-gray-700 font-semibold mb-2">Email</label>
-                            <input type="email" value="{{ user.email }}" readonly class="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-100">
-                        </div>
-                        <div>
                             <label class="block text-gray-700 font-semibold mb-2">Cédula *</label>
-                            <input type="text" name="dni" value="{{ customer_dni }}" placeholder="Ingrese su cédula" required
+                            <input type="text" name="dni" id="id_dni_input" value="{{ customer_dni }}" placeholder="Ingrese su cédula"
                                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500"
                                    pattern="[0-9]{10}" maxlength="10">
+                        </div>
+                        <div>
+                            <label class="block text-gray-700 font-semibold mb-2">Nombre Completo</label>
+                            <input type="text" value="{{ user.get_full_name }}" readonly class="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-100">
                         </div>
                     </div>
                 </div>
@@ -41,45 +51,43 @@
                     <h2 class="text-xl font-bold mb-4 text-gray-800 flex items-center gap-2">
                         <i class='bx bx-wallet'></i> Método de Pago
                     </h2>
-                    <select name="payment_method" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500">
+                    <select name="payment_method" id="id_payment_method" required 
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500">
                         <option value="">Seleccione un método de pago</option>
                         {% for payment in payment_methods %}
-                            <option value="{{ payment.id_payment_method }}">{{ payment.name }}</option>
+                            <option value="{{ payment.id_payment_method }}" {% if payment.name == 'Efectivo' %}data-cash="true"{% endif %}>
+                                {{ payment.name }}
+                            </option>
                         {% endfor %}
                     </select>
+                    <p id="payment_note" class="text-xs text-orange-600 mt-2 italic hidden">
+                        * Para Consumidor Final el pago es obligatorio en Efectivo.
+                    </p>
                 </div>
                 
-                <div>
-                    <h2 class="text-xl font-bold mb-4 text-gray-800 flex items-center gap-2">
-                        <i class='bx bx-dollar'></i> Pago
-                    </h2>
-                    <div class="space-y-4">
+                <div class="bg-green-50 p-6 rounded-lg border border-green-100">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>
-                            <label class="block text-gray-700 font-semibold mb-2">Total a Pagar</label>
-                            <input type="text" value="${{ total|floatformat:2 }}" readonly
-                                   class="w-full px-4 py-2 border border-gray-300 rounded-lg bg-green-50 text-green-700 font-bold text-xl">
+                            <label class="block text-green-800 font-bold mb-2">Total a Pagar</label>
+                            <div class="text-3xl font-black text-green-700">${{ total|floatformat:2 }}</div>
                         </div>
                         <div>
-                            <label class="block text-gray-700 font-semibold mb-2">Monto Recibido *</label>
+                            <label class="block text-gray-700 font-bold mb-2">Monto Recibido *</label>
                             <input type="number" name="amount_received" id="amount_received" 
-                                   step="0.01" min="{{ total|stringformat:'.2f' }}" placeholder="Ingrese el monto recibido" required
-                                   class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500"
+                                   step="0.01" min="{{ total|stringformat:'.2f' }}" placeholder="0.00" required
+                                   class="w-full px-4 py-3 border-2 border-green-200 rounded-lg focus:ring-2 focus:ring-green-500 text-xl font-bold"
                                    oninput="calculateChange()">
                         </div>
-                        <div id="change_display" class="hidden">
-                            <label class="block text-gray-700 font-semibold mb-2">Cambio</label>
-                            <input type="text" id="change_amount" readonly
-                                   class="w-full px-4 py-2 border border-gray-300 rounded-lg bg-blue-50 text-blue-700 font-bold text-xl">
-                        </div>
+                    </div>
+                    <div id="change_display" class="hidden mt-4 pt-4 border-t border-green-200">
+                        <label class="block text-blue-800 font-bold mb-1 text-sm">Su Cambio:</label>
+                        <div id="change_amount_text" class="text-4xl font-black text-blue-600">$0.00</div>
                     </div>
                 </div>
                 
                 <div class="flex gap-4">
-                    <a href="{% url 'super:cart' %}" class="flex-1 bg-gray-200 text-gray-700 text-center py-3 rounded-lg font-bold hover:bg-gray-300">
-                        <i class='bx bx-left-arrow-alt'></i> Volver
-                    </a>
-                    <button type="submit" class="flex-1 bg-green-600 text-white py-3 rounded-lg font-bold hover:bg-green-700">
-                        <i class='bx bx-check-circle'></i> Confirmar Compra
+                    <button type="submit" class="w-full bg-green-600 text-white py-4 rounded-xl font-black hover:bg-green-700 transition-all text-xl shadow-xl transform hover:-translate-y-1">
+                        <i class='bx bx-check-circle'></i> FINALIZAR COMPRA
                     </button>
                 </div>
             </form>
@@ -87,7 +95,7 @@
         
         <div class="lg:col-span-1">
             <div class="bg-white rounded-lg shadow-md p-6 sticky top-24">
-                <h2 class="text-xl font-bold mb-4">Resumen de Pedido</h2>
+                <h2 class="text-xl font-bold mb-4 border-b pb-2">Resumen</h2>
                 <div class="space-y-3 mb-4 max-h-64 overflow-y-auto">
                     {% for item in items %}
                     <div class="flex justify-between text-sm">
@@ -96,15 +104,14 @@
                     </div>
                     {% endfor %}
                 </div>
-                <hr class="my-4">
-                <div class="space-y-2">
+                <div class="space-y-2 text-sm border-t pt-4">
                     <div class="flex justify-between"><span>Subtotal:</span><span>${{ subtotal|floatformat:2 }}</span></div>
-                    <div class="flex justify-between"><span>IVA:</span><span>${{ iva|floatformat:2 }}</span></div>
+                    <div class="flex justify-between"><span>IVA (15%):</span><span>${{ iva|floatformat:2 }}</span></div>
                     {% if discount > 0 %}
-                    <div class="flex justify-between text-red-600"><span>Descuento:</span><span>-${{ discount|floatformat:2 }}</span></div>
+                    <div class="flex justify-between text-red-600"><span>Descuento ({{ discount_pct }}%):</span><span>-${{ discount|floatformat:2 }}</span></div>
                     {% endif %}
-                    <div class="flex justify-between text-xl font-bold border-t pt-2">
-                        <span>Total:</span><span class="text-green-600">${{ total|floatformat:2 }}</span>
+                    <div class="flex justify-between text-xl font-black text-gray-800 pt-2 border-t">
+                        <span>TOTAL:</span><span class="text-green-600">${{ total|floatformat:2 }}</span>
                     </div>
                 </div>
             </div>
@@ -113,21 +120,53 @@
 </div>
 
 <script>
+    function toggleDniField(val) {
+        const section = document.getElementById('customer_data_section');
+        const dniInput = document.getElementById('id_dni_input');
+        const paymentSelect = document.getElementById('id_payment_method');
+        const note = document.getElementById('payment_note');
+
+        if (val === 'final') {
+            section.classList.add('hidden');
+            dniInput.removeAttribute('required');
+            
+            // Forzar Efectivo y bloquear
+            for (let option of paymentSelect.options) {
+                if (option.getAttribute('data-cash') === 'true') {
+                    paymentSelect.value = option.value;
+                    break;
+                }
+            }
+            paymentSelect.classList.add('bg-gray-100', 'cursor-not-allowed');
+            paymentSelect.style.pointerEvents = 'none';
+            note.classList.remove('hidden');
+        } else {
+            section.classList.remove('hidden');
+            dniInput.setAttribute('required', 'required');
+            paymentSelect.classList.remove('bg-gray-100', 'cursor-not-allowed');
+            paymentSelect.style.pointerEvents = 'auto';
+            note.classList.add('hidden');
+        }
+    }
+
     function calculateChange() {
-        // Forzamos el formato con punto decimal desde Django para evitar errores de locale
+        // CORRECCIÓN CRUCIAL: total|stringformat:".2f" asegura que el separador sea punto
         const total = parseFloat("{{ total|stringformat:'.2f' }}");
-        const amountInput = document.getElementById('amount_received');
-        const amountReceived = parseFloat(amountInput.value) || 0;
+        const amountReceived = parseFloat(document.getElementById('amount_received').value) || 0;
         const changeDisplay = document.getElementById('change_display');
-        const changeAmount = document.getElementById('change_amount');
+        const changeText = document.getElementById('change_amount_text');
 
         if (amountReceived >= total) {
+            // El cambio es Recibido - Total
             const change = amountReceived - total;
-            changeAmount.value = `$${change.toFixed(2)}`;
+            changeText.innerText = `$${change.toFixed(2)}`;
             changeDisplay.classList.remove('hidden');
         } else {
             changeDisplay.classList.add('hidden');
         }
     }
+
+    // Inicializar estado
+    document.addEventListener('DOMContentLoaded', () => toggleDniField('final'));
 </script>
 {% endblock %}

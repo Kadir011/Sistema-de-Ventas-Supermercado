@@ -45,18 +45,14 @@
                         </div>
                         <div class="flex justify-between">
                             <span class="text-gray-600">Cédula:</span>
-                            <span class="font-semibold text-gray-800">{{ order.customer.dni }}</span>
+                            <span class="font-bold text-gray-800">
+                                {% if order.customer.dni == '9999999999' %}
+                                    <span class="text-blue-600 italic">Consumidor Final</span>
+                                {% else %}
+                                    {{ order.customer.dni }}
+                                {% endif %}
+                            </span>
                         </div>
-                        <div class="flex justify-between">
-                            <span class="text-gray-600">Email:</span>
-                            <span class="font-semibold text-gray-800">{{ order.customer.email }}</span>
-                        </div>
-                        {% if order.customer.phone %}
-                        <div class="flex justify-between">
-                            <span class="text-gray-600">Teléfono:</span>
-                            <span class="font-semibold text-gray-800">{{ order.customer.phone }}</span>
-                        </div>
-                        {% endif %}
                     </div>
                 </div>
                 
