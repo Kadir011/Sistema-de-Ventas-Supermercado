@@ -1,5 +1,5 @@
 from django.urls import path 
-from core.super.views import customer, product, seller, sale, scan_barcode, shop, cart
+from core.super.views import customer, product, seller, sale, scan_barcode, shop, cart, chatbot
 from core.super.views import home
 
 app_name = 'super'
@@ -60,4 +60,7 @@ urlpatterns = [
     
     # ESCANEAR PRODUCTOS
     path('scan_barcode/', scan_barcode.ScannerTemplate.as_view(), name='scan_barcode'),
+
+    # CHATBOT
+    path('chatbot/api/', chatbot.ChatbotProxyView.as_view(), name='chatbot_api'),
 ]
