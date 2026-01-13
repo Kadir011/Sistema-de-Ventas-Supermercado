@@ -134,9 +134,17 @@
                         <span>IVA (15%):</span>
                         <span class="font-semibold">${{ iva|floatformat:2 }}</span>
                     </div>
+
+                    {% if discount > 0 %}
+                    <div class="flex justify-between text-red-600">
+                        <span>Descuento ({{ discount_pct }}%):</span>
+                        <span class="font-semibold">-${{ discount|floatformat:2 }}</span>
+                    </div>
+                    {% endif %}
+
                     <hr class="border-gray-300">
                     <div class="flex justify-between text-xl font-bold text-gray-800">
-                        <span>Total:</span>
+                        <span>Total a Pagar:</span>
                         <span class="text-green-600">${{ total|floatformat:2 }}</span>
                     </div>
                 </div>
@@ -146,7 +154,7 @@
 </div>
 
 <script>
-const total = parseFloat('{{ total }}');
+const total = parseFloat('{{ total }}'); // Este total ya trae el descuento restado
 
 function calculateChange() {
     const amountReceived = parseFloat(document.getElementById('amount_received').value) || 0;
