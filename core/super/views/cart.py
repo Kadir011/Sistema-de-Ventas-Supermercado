@@ -104,7 +104,6 @@ class CartView(LoginRequiredMixin, TemplateView):
         context['title'] = 'Mi Carrito'
         return context
 
-
 class CheckoutView(LoginRequiredMixin, TemplateView):
     template_name = 'super/shop/checkout.html'
     login_url = '/security/login/'
