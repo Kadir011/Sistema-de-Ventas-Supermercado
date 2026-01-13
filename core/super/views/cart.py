@@ -149,7 +149,6 @@ class CheckoutView(LoginRequiredMixin, TemplateView):
             dni_type = request.POST.get('dni_type')
             if dni_type == 'final':
                 customer_dni = '9999999999'
-                # Buscamos el cliente genérico
                 customer, _ = Customer.objects.get_or_create(
                     dni=customer_dni,
                     defaults={'name': 'CONSUMIDOR', 'last_name': 'FINAL', 'address': 'S/N'}
@@ -170,7 +169,6 @@ class CheckoutView(LoginRequiredMixin, TemplateView):
                     customer.dni = customer_dni
                     customer.save()
 
-            # Asegurar Vendedor Online
             seller, _ = Seller.objects.get_or_create(dni='9999999999', defaults={'name': 'Vendedor', 'last_name': 'Online'})
 
             # Totales
@@ -187,6 +185,7 @@ class CheckoutView(LoginRequiredMixin, TemplateView):
 
             # Crear Venta
             sale = Sale.objects.create(
+                user=request.user,  # Esto evita el error 404
                 customer=customer,
                 seller=seller,
                 payment_id=request.POST.get('payment_method'),
