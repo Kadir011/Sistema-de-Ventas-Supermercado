@@ -1,7 +1,7 @@
 from django.views.generic import ListView, DetailView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models import Q
-from core.super.models import Customer, Product, Category, Brand, Sale, SaleDetail
+from core.super.models import Product, Category, Brand, Sale, SaleDetail
 
 class ShopView(LoginRequiredMixin, ListView):
     model = Product
@@ -60,14 +60,8 @@ class MyOrdersView(LoginRequiredMixin, ListView):
     login_url = '/security/login/'
 
     def get_queryset(self):
-        # 1. Buscamos el objeto Customer que tenga el mismo email que el usuario autenticado
-        try:
-            customer = Customer.objects.get(email=self.request.user.email)
-            # 2. Filtramos las ventas que pertenecen a ese Customer específico
-            return Sale.objects.filter(customer=customer).order_by('-sale_date')
-        except Customer.DoesNotExist:
-            # Si el usuario no tiene un registro vinculado en el CRUD de clientes, no mostramos nada
-            return Sale.objects.none()
+        # Filtramos directamente por el usuario autenticado
+        return Sale.objects.filter(user=self.request.user).order_by('-sale_date')
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -81,12 +75,8 @@ class OrderDetailView(LoginRequiredMixin, DetailView):
     login_url = '/security/login/'
 
     def get_queryset(self):
-        # Aplicamos la misma lógica de seguridad para que un usuario no vea órdenes ajenas
-        try:
-            customer = Customer.objects.get(email=self.request.user.email)
-            return Sale.objects.filter(customer=customer)
-        except Customer.DoesNotExist:
-            return Sale.objects.none()
+        # Seguridad: Solo puedes ver la orden si tú la compraste
+        return Sale.objects.filter(user=self.request.user)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
