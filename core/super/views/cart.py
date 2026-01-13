@@ -1,4 +1,4 @@
-from django.shortcuts import render, redirect, get_object_or_404
+from django.shortcuts import redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic import TemplateView
@@ -115,19 +115,25 @@ class CheckoutView(LoginRequiredMixin, TemplateView):
             cart = Cart.objects.get(user=self.request.user)
             items = CartItem.objects.filter(cart=cart).select_related('product')
             
-            context['cart'] = cart
+            # 1. Identificar al Cliente y su beneficio de descuento
+            customer = Customer.objects.filter(email=self.request.user.email).first()
+            discount_pct = customer.discount_percentage if customer else Decimal('0.00')
+            
+            # 2. Cálculos de totales con descuento
+            cart_total = cart.get_total()
+            discount_amount = cart_total * (discount_pct / 100)
+            final_total = cart_total - discount_amount
+
             context['items'] = items
             context['subtotal'] = cart.get_subtotal()
             context['iva'] = cart.get_iva()
-            context['total'] = cart.get_total()
+            context['discount'] = discount_amount
+            context['discount_pct'] = discount_pct
+            context['total'] = final_total
             context['payment_methods'] = PaymentMethod.objects.all()
             
-            # Pre-llenar DNI si el cliente ya existe
-            try:
-                customer = Customer.objects.get(email=self.request.user.email)
-                context['customer_dni'] = customer.dni
-            except Customer.DoesNotExist:
-                context['customer_dni'] = ''
+            # Pre-llenar DNI para conveniencia del usuario
+            context['customer_dni'] = customer.dni if customer else ''
                 
         except Cart.DoesNotExist:
             return redirect('super:cart')
@@ -137,7 +143,6 @@ class CheckoutView(LoginRequiredMixin, TemplateView):
 
     @transaction.atomic
     def post(self, request, *args, **kwargs):
-        """Procesar la compra"""
         try:
             cart = Cart.objects.get(user=request.user)
             items = CartItem.objects.filter(cart=cart).select_related('product')
@@ -146,72 +151,67 @@ class CheckoutView(LoginRequiredMixin, TemplateView):
                 messages.error(request, 'El carrito está vacío')
                 return redirect('super:cart')
             
-            # 1. Obtener o crear el Vendedor Online (Requerimiento: Venta con vendedor)
+            # 1. Asegurar Vendedor Online (para que no sea null en el CRUD)
             seller, _ = Seller.objects.get_or_create(
                 dni='9999999999',
                 defaults={
                     'name': 'Vendedor',
                     'last_name': 'Online',
-                    'email': 'ventas@online.com',
-                    'address': 'Tienda Virtual',
+                    'email': 'online@market.com',
                     'phone': '9999999999',
-                    'gender': 1 # Masculino por defecto
+                    'address': 'Tienda Virtual',
+                    'gender': 1
                 }
             )
 
-            # 2. Obtener o Actualizar Cliente
+            # 2. Obtener o Actualizar registro del Cliente
             dni_form = request.POST.get('dni', '9999999999')
+            customer, created = Customer.objects.get_or_create(
+                email=request.user.email,
+                defaults={
+                    'name': request.user.first_name,
+                    'last_name': request.user.last_name,
+                    'dni': dni_form,
+                    'phone': request.user.phone_number,
+                    'address': request.user.address,
+                    'gender': 1 if request.user.gender == 'M' else 2
+                }
+            )
             
-            try:
-                # Intentamos buscar por email (que es único)
-                customer = Customer.objects.get(email=request.user.email)
-                # Si el DNI que viene del form es diferente y válido, actualizamos
-                if dni_form and dni_form != '9999999999' and customer.dni != dni_form:
-                    customer.dni = dni_form
-                    customer.save()
-            except Customer.DoesNotExist:
-                # Si no existe (ej. usuarios antiguos), lo creamos
-                customer = Customer.objects.create(
-                    email=request.user.email,
-                    name=request.user.first_name,
-                    last_name=request.user.last_name,
-                    dni=dni_form,
-                    phone=request.user.phone_number,
-                    address=request.user.address,
-                    # Mapeo simple de género si es necesario, o default
-                    gender=1 if request.user.gender == 'M' else 2
-                )
+            # Si el cliente ya existía pero envió un DNI diferente, lo actualizamos
+            if not created and dni_form != customer.dni:
+                customer.dni = dni_form
+                customer.save()
+
+            # 3. Cálculos Finales
+            cart_total = cart.get_total()
+            discount_amount = cart_total * (customer.discount_percentage / 100)
+            final_total = cart_total - discount_amount
             
-            # Datos del pago
-            payment_method_id = request.POST.get('payment_method')
-            payment_method = PaymentMethod.objects.get(pk=payment_method_id)
             amount_received = Decimal(request.POST.get('amount_received', '0'))
             
-            # Calcular totales
-            subtotal = cart.get_subtotal()
-            iva = cart.get_iva()
-            total = cart.get_total()
-            
-            # Verificar que el monto recibido sea suficiente
-            if amount_received < total:
+            if amount_received < final_total:
                 messages.error(request, 'El monto recibido es insuficiente')
                 return redirect('super:checkout')
             
-            change = amount_received - total
+            # Cálculo correcto del cambio (Recibido - Total con descuento)
+            change = amount_received - final_total
             
-            # Crear la venta ASIGNANDO EL VENDEDOR
+            # 4. Registrar la Venta
             sale = Sale.objects.create(
                 customer=customer,
-                seller=seller,  # Ahora asignamos el vendedor online
-                payment=payment_method,
+                seller=seller,
+                payment_id=request.POST.get('payment_method'),
                 sale_date=timezone.now(),
-                subtotal=subtotal,
-                iva=iva,
-                discount=Decimal('0.00'),
-                total=total
+                subtotal=cart.get_subtotal(),
+                iva=cart.get_iva(),
+                discount=discount_amount,
+                total=final_total,
+                amount_received=amount_received,
+                change=change
             )
             
-            # Crear detalles y actualizar stock
+            # 5. Guardar detalles y reducir Stock
             for item in items:
                 if item.product.stock < item.quantity:
                     raise ValueError(f'Stock insuficiente para {item.product.name}')
@@ -224,15 +224,14 @@ class CheckoutView(LoginRequiredMixin, TemplateView):
                     subtotal=item.get_subtotal()
                 )
                 
-                # Actualizar stock
                 item.product.stock -= item.quantity
                 item.product.save()
             
-            # Vaciar carrito
+            # 6. Limpiar Carrito
             items.delete()
             cart.delete()
             
-            messages.success(request, f'¡Compra realizada exitosamente! Su cambio es: ${change:.2f}')
+            messages.success(request, f'¡Compra realizada! Su cambio es: ${change:.2f}')
             return redirect('super:order_detail', pk=sale.pk)
             
         except Customer.DoesNotExist:
