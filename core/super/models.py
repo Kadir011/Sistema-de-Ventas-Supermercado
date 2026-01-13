@@ -78,6 +78,13 @@ class Customer(models.Model):
     birth_date = models.DateField(verbose_name="Fecha de nacimiento", blank=True, null=True)
     gender = models.IntegerField(choices=GenderChoices.choices, default=GenderChoices.Male, verbose_name="Genero", blank=True, null=True)
 
+    discount_percentage = models.DecimalField(
+        max_digits=5, 
+        decimal_places=2, 
+        default=Decimal('0.00'), 
+        verbose_name="Descuento (%)"
+    )
+
     @property
     def id(self):
         return self.id_customer
@@ -193,11 +200,19 @@ class Sale(models.Model):
     customer = models.ForeignKey(Customer, on_delete=models.CASCADE, verbose_name="Cliente", blank=True, null=True)
     seller = models.ForeignKey(Seller, on_delete=models.CASCADE, verbose_name="Vendedor", blank=True, null=True)
     payment = models.ForeignKey(PaymentMethod, on_delete=models.CASCADE, verbose_name="Forma de pago", blank=True, null=True)
-    sale_date = models.DateField(default=timezone.now, verbose_name="Fecha de venta", blank=True, null=True)
+    sale_date = models.DateTimeField(
+        default=timezone.now, 
+        verbose_name="Fecha y Hora de venta", 
+        blank=True, 
+        null=True
+    )
     subtotal = models.DecimalField(max_digits=10, decimal_places=2, default=Decimal('0.00'), verbose_name="Subtotal", blank=True, null=True)
     iva = models.DecimalField(max_digits=10, decimal_places=2, default=Decimal('0.00'), verbose_name="IVA", blank=True, null=True)
     discount = models.DecimalField(max_digits=10, decimal_places=2, default=Decimal('0.00'), verbose_name="Descuento", blank=True, null=True)
     total = models.DecimalField(max_digits=10, decimal_places=2, default=Decimal('0.00'), verbose_name="Total", blank=True, null=True)
+
+    amount_received = models.DecimalField(max_digits=10, decimal_places=2, default=Decimal('0.00'), verbose_name="Monto Recibido", blank=True, null=True)
+    change = models.DecimalField(max_digits=10, decimal_places=2, default=Decimal('0.00'), verbose_name="Cambio", blank=True, null=True)
 
     @property
     def id(self):
@@ -256,11 +271,6 @@ class SaleDetail(models.Model):
 
 # Models para clientes compradores
 
-# Agregar al archivo core/super/models.py
-
-from django.conf import settings
-from decimal import Decimal
-
 class Cart(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, verbose_name="Usuario")
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Fecha de creación")
@@ -287,7 +297,6 @@ class Cart(models.Model):
         verbose_name = "Carrito"
         verbose_name_plural = "Carritos"
 
-
 class CartItem(models.Model):
     cart = models.ForeignKey(Cart, on_delete=models.CASCADE, related_name='items', verbose_name="Carrito")
     product = models.ForeignKey(Product, on_delete=models.CASCADE, verbose_name="Producto")
@@ -304,4 +313,3 @@ class CartItem(models.Model):
         verbose_name = "Item del Carrito"
         verbose_name_plural = "Items del Carrito"
         unique_together = ('cart', 'product')
-
