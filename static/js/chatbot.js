@@ -1,4 +1,5 @@
 document.addEventListener("DOMContentLoaded", () => {
+    console.log("Chatbot de Gemini cargado correctamente");
     const chatbotButton = document.getElementById("chatbot-button");
     const chatbotModal = document.getElementById("chatbot-modal");
     const closeChatbot = document.getElementById("close-chatbot");
@@ -51,23 +52,23 @@ document.addEventListener("DOMContentLoaded", () => {
         messageContainer.appendChild(loadingDiv);
 
         const response = await sendToGemini(userMessage);
-        
+
         // Quitar indicador de carga y mostrar respuesta
         const loader = document.getElementById("bot-loading");
-        if(loader) loader.remove();
+        if (loader) loader.remove();
         displayMessage(response, "bot");
     }
 
     function displayMessage(message, sender) {
         const messageDiv = document.createElement("div");
         messageDiv.classList.add("mb-3", "p-2", "rounded-lg", "max-w-[80%]", "text-sm");
-        
+
         if (sender === "user") {
             messageDiv.classList.add("ml-auto", "bg-green-100", "text-green-800");
         } else {
             messageDiv.classList.add("bg-gray-200", "text-gray-800");
         }
-        
+
         messageDiv.textContent = message;
         messageContainer.appendChild(messageDiv);
         messageContainer.scrollTop = messageContainer.scrollHeight;
@@ -75,7 +76,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     async function sendToGemini(message) {
         try {
-            const response = await fetch('/chatbot/api/', { // Tu endpoint de Django
+            const response = await fetch('/chatbot/api/', {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -85,10 +86,14 @@ document.addEventListener("DOMContentLoaded", () => {
             });
 
             const data = await response.json();
-            return data.reply || data.error || "Lo siento, hubo un problema técnico.";
+            if (data.error) {
+                console.error("Error del Servidor:", data.error); // <--- Útil para depurar
+                return "El asistente tiene problemas técnicos: " + data.error;
+            }
+            return data.reply || "No obtuve respuesta.";
         } catch (error) {
-            console.error("Error:", error);
-            return "Error de conexión. Intenta más tarde.";
+            console.error("Error de Red:", error);
+            return "Error de conexión. Revisa el servidor.";
         }
     }
 });
