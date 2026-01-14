@@ -83,6 +83,19 @@ python manage.py migrate
 python manage.py runserver
 ```
 
+## Adicionales
+Para no crear la base de datos, ni ejecutar el entorno virtual, ni instalar dependencias, ni ejecutar migraciones, ni insertar los datos de administración (marcas, categorias y metodos de pago) puede utilizar el comando:
+```bash
+./setup.sh
+```
+
+Pero antes debes darle los permisos de ejecución a este script:
+```bash
+chmod +x setup.sh
+```
+
+**OJO:** Debes tener instalado postgresql en tu sistema para que este script funcione.
+
 ## Datos del Autor
 - **Nombre:** Kadir Barquet
 
