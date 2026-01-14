@@ -29,11 +29,5 @@ media/
 !**/migrations
 !**/migrations/__init__.py 
 
-
-
-
-
-
-
-
-
+# Ignorar staticfiles
+staticfiles/
