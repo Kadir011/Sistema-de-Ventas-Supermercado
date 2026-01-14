@@ -93,5 +93,5 @@ uritemplate==4.2.0
 uritools==5.0.0
 urllib3==2.5.0
 webencodings==0.5.1
-websockets==15.0.1
+websockets==14.2
 xhtml2pdf==0.2.17
