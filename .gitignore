@@ -31,3 +31,6 @@ media/
 
 # Ignorar staticfiles
 staticfiles/
+
+# Ignorar core/super/test_gemini.py
+core/super/test_gemini.py
