@@ -61,15 +61,22 @@ document.addEventListener("DOMContentLoaded", () => {
 
     function displayMessage(message, sender) {
         const messageDiv = document.createElement("div");
-        messageDiv.classList.add("mb-3", "p-2", "rounded-lg", "max-w-[80%]", "text-sm");
+        messageDiv.classList.add("mb-3", "p-3", "rounded-lg", "max-w-[85%]", "text-sm", "leading-relaxed");
 
         if (sender === "user") {
             messageDiv.classList.add("ml-auto", "bg-green-100", "text-green-800");
+            messageDiv.textContent = message;
         } else {
-            messageDiv.classList.add("bg-gray-200", "text-gray-800");
+            messageDiv.classList.add("bg-white", "text-gray-800", "shadow-sm", "border", "border-gray-100");
+            // Convertir Markdown básico a HTML
+            const formatted = message
+                .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")       // **negrita**
+                .replace(/\*(.*?)\*/g, "<em>$1</em>")                   // *cursiva*
+                .replace(/\n\n/g, "</p><p class='mt-2'>")               // párrafos
+                .replace(/\n/g, "<br>");                                 // saltos de línea
+            messageDiv.innerHTML = `<p>${formatted}</p>`;
         }
 
-        messageDiv.textContent = message;
         messageContainer.appendChild(messageDiv);
         messageContainer.scrollTop = messageContainer.scrollHeight;
     }
