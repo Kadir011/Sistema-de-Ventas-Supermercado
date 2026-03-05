@@ -1,4 +1,5 @@
 {% extends 'components/base.html' %}
+{% load static %}
 {% block title %}{{ title }}{% endblock %}
 {% block content %}
 <div class="container mx-auto py-8 px-4">
@@ -11,6 +12,7 @@
             <form method="post" id="checkout-form" class="bg-white rounded-lg shadow-md p-6 space-y-6">
                 {% csrf_token %}
                 
+                <!-- TIPO DE FACTURA -->
                 <div class="bg-gray-50 p-4 rounded-lg border border-gray-200">
                     <h2 class="text-lg font-bold mb-3 text-gray-800">¿Cómo desea su factura?</h2>
                     <div class="flex gap-4">
@@ -29,6 +31,7 @@
                     </div>
                 </div>
 
+                <!-- DATOS PERSONALES -->
                 <div id="customer_data_section" class="hidden space-y-4 border-t pt-4">
                     <h2 class="text-xl font-bold text-gray-800 flex items-center gap-2">
                         <i class='bx bx-user'></i> Información de Facturación
@@ -36,45 +39,234 @@
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
                             <label class="block text-gray-700 font-semibold mb-2">Cédula *</label>
-                            <input type="text" name="dni" id="id_dni_input" value="{{ customer_dni }}" placeholder="Ingrese su cédula"
+                            <input type="text" name="dni" id="id_dni_input" value="{{ customer_dni }}"
+                                   placeholder="Ingrese su cédula"
                                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500"
                                    pattern="[0-9]{10}" maxlength="10">
                         </div>
                         <div>
                             <label class="block text-gray-700 font-semibold mb-2">Nombre Completo</label>
-                            <input type="text" value="{{ user.get_full_name }}" readonly class="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-100">
+                            <input type="text" value="{{ user.get_full_name }}" readonly
+                                   class="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-100">
                         </div>
                     </div>
                 </div>
                 
+                <!-- MÉTODO DE PAGO -->
                 <div>
                     <h2 class="text-xl font-bold mb-4 text-gray-800 flex items-center gap-2">
                         <i class='bx bx-wallet'></i> Método de Pago
                     </h2>
-                    <select name="payment_method" id="id_payment_method" required 
+                    <select name="payment_method" id="id_payment_method" required
+                            onchange="onPaymentChange(this)"
                             class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500">
                         <option value="">Seleccione un método de pago</option>
                         {% for payment in payment_methods %}
-                            <option value="{{ payment.id_payment_method }}" {% if payment.name == 'Efectivo' %}data-cash="true"{% endif %}>
+                            <option value="{{ payment.id_payment_method }}"
+                                    {% if payment.name == 'Efectivo' %}data-cash="true"{% endif %}>
                                 {{ payment.name }}
                             </option>
                         {% endfor %}
                     </select>
+
+                    <!-- Aviso método no vigente -->
+                    <div id="payment_unavailable_notice"
+                         class="hidden mt-3 flex items-start gap-2 bg-yellow-50 border border-yellow-400 text-yellow-800 px-4 py-3 rounded-lg">
+                        <i class='bx bx-error text-xl mt-0.5 flex-shrink-0'></i>
+                        <div>
+                            <p class="font-bold">Método de Pago No Disponible</p>
+                            <p class="text-sm">Este método no está habilitado actualmente. Use:
+                               <strong>Efectivo, Tarjeta de Crédito, Tarjeta de Débito o Transferencia Bancaria</strong>.</p>
+                        </div>
+                    </div>
+
                     <p id="payment_note" class="text-xs text-orange-600 mt-2 italic hidden">
                         * Para Consumidor Final el pago es obligatorio en Efectivo.
                     </p>
                 </div>
-                
+
+                <!-- ══════════════════════════════════════
+                     SECCIÓN TARJETA
+                     ══════════════════════════════════════ -->
+                <div id="card_section" class="hidden border border-blue-100 rounded-xl p-5 space-y-5 bg-blue-50">
+                    <h3 class="text-lg font-bold text-gray-800 flex items-center gap-2">
+                        <i class='bx bx-credit-card text-blue-600'></i>
+                        Datos de la Tarjeta
+                        <span id="card_type_label" class="text-sm font-normal text-blue-500"></span>
+                    </h3>
+
+                    <!-- Logos de redes -->
+                    <div class="flex items-center gap-3 flex-wrap">
+                        <span class="text-xs text-gray-500">Aceptamos:</span>
+
+                        <div id="logo_visa" class="card-logo opacity-30 transition-all duration-300 cursor-default" title="Visa">
+                            <svg width="50" height="32" viewBox="0 0 50 32" xmlns="http://www.w3.org/2000/svg">
+                                <rect width="50" height="32" rx="5" fill="#1A1F71"/>
+                                <text x="7" y="22" font-family="Arial" font-size="15" font-weight="bold" fill="white">VISA</text>
+                            </svg>
+                        </div>
+
+                        <div id="logo_mastercard" class="card-logo opacity-30 transition-all duration-300 cursor-default" title="Mastercard">
+                            <svg width="50" height="32" viewBox="0 0 50 32" xmlns="http://www.w3.org/2000/svg">
+                                <rect width="50" height="32" rx="5" fill="#252525"/>
+                                <circle cx="19" cy="16" r="10" fill="#EB001B"/>
+                                <circle cx="31" cy="16" r="10" fill="#F79E1B"/>
+                                <path d="M25 7.5a10 10 0 0 1 0 17A10 10 0 0 1 25 7.5z" fill="#FF5F00"/>
+                            </svg>
+                        </div>
+
+                        <div id="logo_amex" class="card-logo opacity-30 transition-all duration-300 cursor-default" title="American Express">
+                            <svg width="50" height="32" viewBox="0 0 50 32" xmlns="http://www.w3.org/2000/svg">
+                                <rect width="50" height="32" rx="5" fill="#007BC1"/>
+                                <text x="4" y="21" font-family="Arial" font-size="10" font-weight="bold" fill="white">AMEX</text>
+                            </svg>
+                        </div>
+
+                        <div id="logo_discover" class="card-logo opacity-30 transition-all duration-300 cursor-default" title="Discover">
+                            <svg width="50" height="32" viewBox="0 0 50 32" xmlns="http://www.w3.org/2000/svg">
+                                <rect width="50" height="32" rx="5" fill="#F76F20"/>
+                                <text x="3" y="21" font-family="Arial" font-size="9" font-weight="bold" fill="white">DISC</text>
+                                <circle cx="38" cy="16" r="9" fill="#F9D55E"/>
+                            </svg>
+                        </div>
+
+                        <span id="card_network_badge"
+                              class="hidden ml-auto text-xs font-bold px-3 py-1 rounded-full bg-blue-200 text-blue-800">
+                            <i class='bx bx-check-circle'></i>
+                            <span id="card_network_name"></span>
+                        </span>
+                    </div>
+
+                    <!-- ── Tarjeta visual preview ── -->
+                    <div id="card_preview"
+                         class="relative w-full max-w-sm mx-auto h-44 rounded-2xl shadow-xl text-white p-5 flex flex-col justify-between overflow-hidden transition-all duration-500"
+                         style="background: linear-gradient(135deg,#1a1f71 0%,#2563eb 100%)">
+                        <div class="flex justify-between items-start">
+                            <!-- Chip EMV -->
+                            <div class="w-10 h-7 bg-yellow-300 rounded-md flex items-center justify-center grid grid-cols-2 gap-0.5 p-1">
+                                <div class="w-full h-full bg-yellow-500 rounded-sm"></div>
+                                <div class="w-full h-full bg-yellow-500 rounded-sm"></div>
+                                <div class="w-full h-full bg-yellow-500 rounded-sm"></div>
+                                <div class="w-full h-full bg-yellow-500 rounded-sm"></div>
+                            </div>
+                            <span id="preview_network" class="text-xs font-bold opacity-80 uppercase tracking-widest"></span>
+                        </div>
+                        <div class="font-mono text-xl tracking-widest text-center" id="preview_number">
+                            •••• •••• •••• ••••
+                        </div>
+                        <div class="flex justify-between items-end text-xs">
+                            <div>
+                                <p class="opacity-60 uppercase tracking-wider text-xs">Titular</p>
+                                <p id="preview_holder" class="font-semibold uppercase max-w-[160px] truncate">NOMBRE APELLIDO</p>
+                            </div>
+                            <div class="text-right">
+                                <p class="opacity-60 uppercase tracking-wider text-xs">Vence</p>
+                                <p id="preview_expiry" class="font-semibold">MM/AA</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ── Número de tarjeta ── -->
+                    <div>
+                        <label class="block text-gray-700 font-semibold mb-1 text-sm">Número de Tarjeta *</label>
+                        <div class="relative">
+                            <input type="text" id="card_number" name="card_number"
+                                   placeholder="0000 0000 0000 0000"
+                                   maxlength="19"
+                                   class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none font-mono text-lg tracking-widest transition-colors"
+                                   oninput="onCardNumberInput(this)"
+                                   autocomplete="cc-number">
+                            <span id="luhn_icon" class="absolute right-3 top-1/2 -translate-y-1/2 text-2xl hidden"></span>
+                        </div>
+                        <!-- Barra semáforo -->
+                        <div class="mt-1 h-1.5 rounded-full bg-gray-200 overflow-hidden">
+                            <div id="card_progress"
+                                 class="h-full rounded-full transition-all duration-300 bg-gray-300"
+                                 style="width:0%"></div>
+                        </div>
+                        <p id="luhn_msg" class="text-xs mt-1 hidden"></p>
+                    </div>
+
+                    <!-- ── Titular + Fecha ── -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-gray-700 font-semibold mb-1 text-sm">Nombre del Titular *</label>
+                            <input type="text" id="card_holder" name="card_holder"
+                                   placeholder="Como aparece en la tarjeta"
+                                   class="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-blue-400 uppercase"
+                                   oninput="this.value=this.value.toUpperCase(); updateCardPreview();"
+                                   autocomplete="cc-name">
+                        </div>
+                        <div>
+                            <label class="block text-gray-700 font-semibold mb-1 text-sm">Fecha de Vencimiento *</label>
+                            <input type="text" id="card_expiry" name="card_expiry"
+                                   placeholder="MM/AA"
+                                   maxlength="5"
+                                   class="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-blue-400 font-mono"
+                                   oninput="onExpiryInput(this)"
+                                   autocomplete="cc-exp">
+                            <p id="expiry_msg" class="text-xs mt-1 hidden text-red-600"></p>
+                        </div>
+                    </div>
+
+                    <!-- ── Banco + Voucher ── -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-gray-700 font-semibold mb-1 text-sm">Banco Emisor *</label>
+                            <select id="card_bank" name="card_bank"
+                                    class="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-blue-400">
+                                <option value="">Seleccione el banco</option>
+                                <optgroup label="Bancos Privados">
+                                    <option value="Banco Pichincha">Banco Pichincha</option>
+                                    <option value="Banco de Guayaquil">Banco de Guayaquil</option>
+                                    <option value="Banco del Pacífico">Banco del Pacífico</option>
+                                    <option value="Produbanco">Produbanco</option>
+                                    <option value="Banco Internacional">Banco Internacional</option>
+                                    <option value="Banco Bolivariano">Banco Bolivariano</option>
+                                    <option value="Banco del Austro">Banco del Austro</option>
+                                    <option value="Banco General Rumiñahui">Banco General Rumiñahui</option>
+                                    <option value="Banco Solidario">Banco Solidario</option>
+                                    <option value="Diners Club">Diners Club</option>
+                                </optgroup>
+                                <optgroup label="Bancos Públicos">
+                                    <option value="BanEcuador">BanEcuador</option>
+                                    <option value="Banco del Estado">Banco del Estado</option>
+                                    <option value="CFN">CFN</option>
+                                </optgroup>
+                                <optgroup label="Cooperativas">
+                                    <option value="JEP">JEP</option>
+                                    <option value="Jardín Azuayo">Jardín Azuayo</option>
+                                    <option value="Cooprogreso">Cooprogreso</option>
+                                </optgroup>
+                                <optgroup label="Internacional">
+                                    <option value="Otro / Internacional">Otro / Internacional</option>
+                                </optgroup>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-gray-700 font-semibold mb-1 text-sm">N° de Autorización / Voucher *</label>
+                            <input type="text" id="card_voucher" name="card_voucher"
+                                   placeholder="Ej: 123456"
+                                   maxlength="20"
+                                   class="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-blue-400 font-mono"
+                                   oninput="this.value=this.value.replace(/[^0-9A-Za-z]/g,'').toUpperCase()">
+                            <p class="text-xs text-gray-400 mt-1">Número impreso en el comprobante del datáfono.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- ══ FIN TARJETA ══ -->
+
+                <!-- TOTAL + MONTO RECIBIDO -->
                 <div class="bg-green-50 p-6 rounded-lg border border-green-100">
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>
                             <label class="block text-green-800 font-bold mb-2">Total a Pagar</label>
                             <div class="text-3xl font-black text-green-700">${{ total|floatformat:2 }}</div>
                         </div>
-                        <div>
+                        <div id="cash_received_section">
                             <label class="block text-gray-700 font-bold mb-2">Monto Recibido *</label>
-                            <input type="number" name="amount_received" id="amount_received" 
-                                   step="0.01" min="{{ total|stringformat:'.2f' }}" placeholder="0.00" required
+                            <input type="number" name="amount_received" id="amount_received"
+                                   step="0.01" min="{{ total|stringformat:'.2f' }}" placeholder="0.00"
                                    class="w-full px-4 py-3 border-2 border-green-200 rounded-lg focus:ring-2 focus:ring-green-500 text-xl font-bold"
                                    oninput="calculateChange()">
                         </div>
@@ -86,13 +278,15 @@
                 </div>
                 
                 <div class="flex gap-4">
-                    <button type="submit" class="w-full bg-green-600 text-white py-4 rounded-xl font-black hover:bg-green-700 transition-all text-xl shadow-xl transform hover:-translate-y-1">
+                    <button type="submit" id="submit_btn"
+                            class="w-full bg-green-600 text-white py-4 rounded-xl font-black hover:bg-green-700 transition-all text-xl shadow-xl transform hover:-translate-y-1">
                         <i class='bx bx-check-circle'></i> FINALIZAR COMPRA
                     </button>
                 </div>
             </form>
         </div>
         
+        <!-- RESUMEN LATERAL -->
         <div class="lg:col-span-1">
             <div class="bg-white rounded-lg shadow-md p-6 sticky top-24">
                 <h2 class="text-xl font-bold mb-4 border-b pb-2">Resumen</h2>
@@ -108,10 +302,14 @@
                     <div class="flex justify-between"><span>Subtotal:</span><span>${{ subtotal|floatformat:2 }}</span></div>
                     <div class="flex justify-between"><span>IVA (15%):</span><span>${{ iva|floatformat:2 }}</span></div>
                     {% if discount > 0 %}
-                    <div class="flex justify-between text-red-600"><span>Descuento ({{ discount_pct }}%):</span><span>-${{ discount|floatformat:2 }}</span></div>
+                    <div class="flex justify-between text-red-600">
+                        <span>Descuento ({{ discount_pct }}%):</span>
+                        <span>-${{ discount|floatformat:2 }}</span>
+                    </div>
                     {% endif %}
                     <div class="flex justify-between text-xl font-black text-gray-800 pt-2 border-t">
-                        <span>TOTAL:</span><span class="text-green-600">${{ total|floatformat:2 }}</span>
+                        <span>TOTAL:</span>
+                        <span class="text-green-600">${{ total|floatformat:2 }}</span>
                     </div>
                 </div>
             </div>
@@ -119,54 +317,5 @@
     </div>
 </div>
 
-<script>
-    function toggleDniField(val) {
-        const section = document.getElementById('customer_data_section');
-        const dniInput = document.getElementById('id_dni_input');
-        const paymentSelect = document.getElementById('id_payment_method');
-        const note = document.getElementById('payment_note');
-
-        if (val === 'final') {
-            section.classList.add('hidden');
-            dniInput.removeAttribute('required');
-            
-            // Forzar Efectivo y bloquear
-            for (let option of paymentSelect.options) {
-                if (option.getAttribute('data-cash') === 'true') {
-                    paymentSelect.value = option.value;
-                    break;
-                }
-            }
-            paymentSelect.classList.add('bg-gray-100', 'cursor-not-allowed');
-            paymentSelect.style.pointerEvents = 'none';
-            note.classList.remove('hidden');
-        } else {
-            section.classList.remove('hidden');
-            dniInput.setAttribute('required', 'required');
-            paymentSelect.classList.remove('bg-gray-100', 'cursor-not-allowed');
-            paymentSelect.style.pointerEvents = 'auto';
-            note.classList.add('hidden');
-        }
-    }
-
-    function calculateChange() {
-        // CORRECCIÓN CRUCIAL: total|stringformat:".2f" asegura que el separador sea punto
-        const total = parseFloat("{{ total|stringformat:'.2f' }}");
-        const amountReceived = parseFloat(document.getElementById('amount_received').value) || 0;
-        const changeDisplay = document.getElementById('change_display');
-        const changeText = document.getElementById('change_amount_text');
-
-        if (amountReceived >= total) {
-            // El cambio es Recibido - Total
-            const change = amountReceived - total;
-            changeText.innerText = `$${change.toFixed(2)}`;
-            changeDisplay.classList.remove('hidden');
-        } else {
-            changeDisplay.classList.add('hidden');
-        }
-    }
-
-    // Inicializar estado
-    document.addEventListener('DOMContentLoaded', () => toggleDniField('final'));
-</script>
+<script src="{% static 'js/checkout.js' %}"></script>
 {% endblock %}
