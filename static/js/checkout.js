@@ -294,6 +294,7 @@ function onTransferBankChange() {
     document.getElementById('transfer_account_type_section').classList.remove('hidden');
     document.querySelectorAll('input[name="transfer_account_type"]').forEach(r => r.checked = false);
     document.getElementById('transfer_account_info').classList.add('hidden');
+    document.getElementById('transfer_account_number_input').value = '';
 }
 
 function onTransferAccountTypeChange() {
@@ -306,16 +307,26 @@ function onTransferAccountTypeChange() {
     const typeName = typeVal === 'ahorros' ? 'Cuenta de Ahorros' : 'Cuenta Corriente';
     const total    = parseFloat("{{ total|stringformat:'.2f' }}").toFixed(2);
 
+    // Mostrar información
     document.getElementById('tinfo_bank').textContent   = bank.name;
     document.getElementById('tinfo_type').textContent   = typeName;
-    document.getElementById('tinfo_number').textContent = number;
     document.getElementById('tinfo_amount').textContent = '$' + total;
 
+    // Pre-llenar el campo de número de cuenta con el número predeterminado
+    const numberInput = document.getElementById('transfer_account_number_input');
+    numberInput.value = number;
+
+    // Guardar en campos ocultos
     document.getElementById('transfer_bank_name').value         = bank.name;
     document.getElementById('transfer_account_number').value    = number;
     document.getElementById('transfer_account_type_value').value = typeName;
 
     document.getElementById('transfer_account_info').classList.remove('hidden');
+}
+
+function updateTransferAccountNumber() {
+    const accountNumber = document.getElementById('transfer_account_number_input').value;
+    document.getElementById('transfer_account_number').value = accountNumber;
 }
 
 /* ══════════════════════════════════════════
@@ -411,6 +422,12 @@ document.getElementById('checkout-form').addEventListener('submit', function(e) 
             errors.push('Seleccione el banco destino para la transferencia.');
         if (!document.querySelector('input[name="transfer_account_type"]:checked'))
             errors.push('Seleccione el tipo de cuenta para la transferencia.');
+        
+        const accountNumber = document.getElementById('transfer_account_number_input').value.trim();
+        if (!accountNumber)
+            errors.push('Ingrese el número de cuenta.');
+        else if (!/^\d+$/.test(accountNumber))
+            errors.push('El número de cuenta debe contener solo dígitos.');
     }
 
     if (errors.length > 0) {
