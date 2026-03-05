@@ -244,21 +244,78 @@ function onPaymentChange(sel) {
     btn.disabled = false;
     btn.classList.remove('opacity-50','cursor-not-allowed');
 
-    const isCard = text === 'Tarjeta de crédito' || text === 'Tarjeta de débito';
+    const isCard     = text === 'Tarjeta de crédito' || text === 'Tarjeta de débito';
+    const isTransfer = text === 'Transferencia bancaria';
+    const transferSec = document.getElementById('transfer_section');
 
     if (isCard) {
         cardSec.classList.remove('hidden');
+        transferSec.classList.add('hidden');
         cashSec.classList.add('hidden');
         changeSec.classList.add('hidden');
-        // Para tarjeta el monto recibido es igual al total (no hay vuelto)
         amtInput.value = "{{ total|stringformat:'.2f' }}";
         document.getElementById('card_type_label').textContent =
             text === 'Tarjeta de crédito' ? '— Crédito' : '— Débito';
+    } else if (isTransfer) {
+        transferSec.classList.remove('hidden');
+        cardSec.classList.add('hidden');
+        cashSec.classList.add('hidden');
+        changeSec.classList.add('hidden');
+        amtInput.value = "{{ total|stringformat:'.2f' }}";
+        document.querySelectorAll('input[name="transfer_bank"]').forEach(r => r.checked = false);
+        document.querySelectorAll('input[name="transfer_account_type"]').forEach(r => r.checked = false);
+        document.getElementById('transfer_account_type_section').classList.add('hidden');
+        document.getElementById('transfer_account_info').classList.add('hidden');
     } else {
         cardSec.classList.add('hidden');
+        transferSec.classList.add('hidden');
         cashSec.classList.remove('hidden');
         amtInput.value = '';
     }
+}
+
+/* ══════════════════════════════════════════
+   TRANSFERENCIA BANCARIA
+══════════════════════════════════════════ */
+const TRANSFER_ACCOUNTS = {
+    guayaquil: {
+        name: 'Banco de Guayaquil',
+        ahorros:   '0016823516',
+        corriente: '0024571839',
+    },
+    pichincha: {
+        name: 'Banco Pichincha',
+        ahorros:   '2209440206',
+        corriente: '2201938475',
+    }
+};
+
+function onTransferBankChange() {
+    document.getElementById('transfer_account_type_section').classList.remove('hidden');
+    document.querySelectorAll('input[name="transfer_account_type"]').forEach(r => r.checked = false);
+    document.getElementById('transfer_account_info').classList.add('hidden');
+}
+
+function onTransferAccountTypeChange() {
+    const bankVal  = document.querySelector('input[name="transfer_bank"]:checked')?.value;
+    const typeVal  = document.querySelector('input[name="transfer_account_type"]:checked')?.value;
+    if (!bankVal || !typeVal) return;
+
+    const bank     = TRANSFER_ACCOUNTS[bankVal];
+    const number   = bank[typeVal];
+    const typeName = typeVal === 'ahorros' ? 'Cuenta de Ahorros' : 'Cuenta Corriente';
+    const total    = parseFloat("{{ total|stringformat:'.2f' }}").toFixed(2);
+
+    document.getElementById('tinfo_bank').textContent   = bank.name;
+    document.getElementById('tinfo_type').textContent   = typeName;
+    document.getElementById('tinfo_number').textContent = number;
+    document.getElementById('tinfo_amount').textContent = '$' + total;
+
+    document.getElementById('transfer_bank_name').value         = bank.name;
+    document.getElementById('transfer_account_number').value    = number;
+    document.getElementById('transfer_account_type_value').value = typeName;
+
+    document.getElementById('transfer_account_info').classList.remove('hidden');
 }
 
 /* ══════════════════════════════════════════
@@ -284,6 +341,7 @@ function toggleDniField(val) {
 
         document.getElementById('payment_unavailable_notice').classList.add('hidden');
         document.getElementById('card_section').classList.add('hidden');
+        document.getElementById('transfer_section').classList.add('hidden');
         document.getElementById('cash_received_section').classList.remove('hidden');
         btn.disabled = false;
         btn.classList.remove('opacity-50','cursor-not-allowed');
@@ -319,33 +377,41 @@ function calculateChange() {
 document.getElementById('checkout-form').addEventListener('submit', function(e) {
     const sel  = document.getElementById('id_payment_method');
     const text = sel.options[sel.selectedIndex].text.trim();
-    const isCard = text === 'Tarjeta de crédito' || text === 'Tarjeta de débito';
-    if (!isCard) return;
-
+    const isCard     = text === 'Tarjeta de crédito' || text === 'Tarjeta de débito';
+    const isTransfer = text === 'Transferencia bancaria';
     const errors = [];
 
-    if (!luhnValid)
-        errors.push('El número de tarjeta no pasó la validación Luhn.');
+    if (isCard) {
+        if (!luhnValid)
+            errors.push('El número de tarjeta no pasó la validación Luhn.');
 
-    if (!document.getElementById('card_holder').value.trim())
-        errors.push('Ingrese el nombre del titular.');
+        if (!document.getElementById('card_holder').value.trim())
+            errors.push('Ingrese el nombre del titular.');
 
-    const exp = document.getElementById('card_expiry').value;
-    if (exp.length < 5) {
-        errors.push('Ingrese la fecha de vencimiento (MM/AA).');
-    } else {
-        const [mm, yy] = exp.split('/').map(Number);
-        const now = new Date();
-        const expDate = new Date(2000 + yy, mm - 1, 1);
-        if (mm < 1 || mm > 12 || expDate < new Date(now.getFullYear(), now.getMonth(), 1))
-            errors.push('La fecha de vencimiento es inválida o la tarjeta está expirada.');
+        const exp = document.getElementById('card_expiry').value;
+        if (exp.length < 5) {
+            errors.push('Ingrese la fecha de vencimiento (MM/AA).');
+        } else {
+            const [mm, yy] = exp.split('/').map(Number);
+            const now = new Date();
+            const expDate = new Date(2000 + yy, mm - 1, 1);
+            if (mm < 1 || mm > 12 || expDate < new Date(now.getFullYear(), now.getMonth(), 1))
+                errors.push('La fecha de vencimiento es inválida o la tarjeta está expirada.');
+        }
+
+        if (!document.getElementById('card_bank').value)
+            errors.push('Seleccione el banco emisor.');
+
+        if (!document.getElementById('card_voucher').value.trim())
+            errors.push('Ingrese el número de autorización/voucher.');
     }
 
-    if (!document.getElementById('card_bank').value)
-        errors.push('Seleccione el banco emisor.');
-
-    if (!document.getElementById('card_voucher').value.trim())
-        errors.push('Ingrese el número de autorización/voucher.');
+    if (isTransfer) {
+        if (!document.querySelector('input[name="transfer_bank"]:checked'))
+            errors.push('Seleccione el banco destino para la transferencia.');
+        if (!document.querySelector('input[name="transfer_account_type"]:checked'))
+            errors.push('Seleccione el tipo de cuenta para la transferencia.');
+    }
 
     if (errors.length > 0) {
         e.preventDefault();
