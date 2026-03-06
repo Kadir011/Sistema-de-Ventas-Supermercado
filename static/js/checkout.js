@@ -108,7 +108,9 @@ function onCardNumberInput(input) {
     const icon = document.getElementById('luhn_icon');
     const msg  = document.getElementById('luhn_msg');
 
-    if (trimmed.length === maxLen) {
+    const isValidLength = net && net.lengths.includes(trimmed.length);
+    
+    if (isValidLength) {
         luhnValid = luhnCheck(trimmed);
         icon.classList.remove('hidden');
         msg.classList.remove('hidden');
@@ -383,8 +385,32 @@ function calculateChange() {
 }
 
 /* ══════════════════════════════════════════
-   VALIDACIÓN AL ENVIAR
+   FUNCIONES DE CENSURA PARA FACTURACIÓN
 ══════════════════════════════════════════ */
+function maskCardNumber(cardNumber) {
+    // Remover espacios y mantener solo dígitos
+    const digits = cardNumber.replace(/\D/g, '');
+    if (digits.length < 4) return digits;
+
+    // Para tarjetas: mostrar primeros 4 dígitos, XXXX, últimos 4 dígitos
+    const first4 = digits.slice(0, 4);
+    const last4 = digits.slice(-4);
+    const masked = first4 + ' XXXX XXXX ' + last4;
+
+    return masked;
+}
+
+function maskAccountNumber(accountNumber) {
+    // Remover espacios y mantener solo dígitos
+    const digits = accountNumber.replace(/\D/g, '');
+    if (digits.length < 3) return digits;
+
+    // Para cuentas bancarias: mostrar XXX y últimos 3 dígitos
+    const last3 = digits.slice(-3);
+    const masked = 'XXX' + last3;
+
+    return masked;
+}
 document.getElementById('checkout-form').addEventListener('submit', function(e) {
     const sel  = document.getElementById('id_payment_method');
     const text = sel.options[sel.selectedIndex].text.trim();
@@ -415,6 +441,11 @@ document.getElementById('checkout-form').addEventListener('submit', function(e) 
 
         if (!document.getElementById('card_voucher').value.trim())
             errors.push('Ingrese el número de autorización/voucher.');
+
+        // Censurar número de tarjeta para facturación
+        const cardNumber = document.getElementById('card_number').value;
+        const maskedCard = maskCardNumber(cardNumber);
+        document.getElementById('card_number_masked').value = maskedCard;
     }
 
     if (isTransfer) {
@@ -428,6 +459,10 @@ document.getElementById('checkout-form').addEventListener('submit', function(e) 
             errors.push('Ingrese el número de cuenta.');
         else if (!/^\d+$/.test(accountNumber))
             errors.push('El número de cuenta debe contener solo dígitos.');
+
+        // Censurar número de cuenta para facturación
+        const maskedAccount = maskAccountNumber(accountNumber);
+        document.getElementById('transfer_account_masked').value = maskedAccount;
     }
 
     if (errors.length > 0) {
