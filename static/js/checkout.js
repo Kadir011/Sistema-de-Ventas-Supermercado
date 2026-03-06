@@ -411,6 +411,7 @@ function maskAccountNumber(accountNumber) {
 
     return masked;
 }
+
 document.getElementById('checkout-form').addEventListener('submit', function(e) {
     const sel  = document.getElementById('id_payment_method');
     const text = sel.options[sel.selectedIndex].text.trim();
@@ -419,7 +420,8 @@ document.getElementById('checkout-form').addEventListener('submit', function(e) 
     const errors = [];
 
     if (isCard) {
-        if (!luhnValid)
+        const cardRaw = document.getElementById('card_number').value.replace(/\D/g, '');
+        if (!luhnCheck(cardRaw))
             errors.push('El número de tarjeta no pasó la validación Luhn.');
 
         if (!document.getElementById('card_holder').value.trim())
