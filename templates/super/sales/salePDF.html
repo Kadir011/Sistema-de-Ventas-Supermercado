@@ -125,6 +125,18 @@
                     <td class="font-bold">Método Pago:</td>
                     <td>{{ sale.payment.name }}</td>
                 </tr>
+                {% if sale.card_number_masked %}
+                <tr>
+                    <td class="font-bold">N° Tarjeta:</td>
+                    <td>{{ sale.card_number_masked }}</td>
+                </tr>
+                {% endif %}
+                {% if sale.transfer_account_masked %}
+                <tr>
+                    <td class="font-bold">N° Cuenta:</td>
+                    <td>{{ sale.transfer_account_masked }}</td>
+                </tr>
+                {% endif %}
             </table>
         </div>
     </div>
