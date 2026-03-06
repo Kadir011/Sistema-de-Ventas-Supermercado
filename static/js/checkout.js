@@ -5,7 +5,7 @@ const ACTIVE_PAYMENT_METHODS = [
     'Efectivo',
     'Tarjeta de crédito',
     'Tarjeta de débito',
-    'Transferencia bancaria'
+    //'Transferencia bancaria' -> La transferencia bancaria en stand by hasta realizar investigación de funcionamiento en tiendas online
 ];
 
 const CARD_NETWORKS = [
