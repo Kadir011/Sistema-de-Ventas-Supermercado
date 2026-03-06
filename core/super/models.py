@@ -215,6 +215,10 @@ class Sale(models.Model):
 
     amount_received = models.DecimalField(max_digits=10, decimal_places=2, default=Decimal('0.00'), verbose_name="Monto Recibido", blank=True, null=True)
     change = models.DecimalField(max_digits=10, decimal_places=2, default=Decimal('0.00'), verbose_name="Cambio", blank=True, null=True)
+    
+    # Campos para datos censurados de pago
+    card_number_masked = models.CharField(max_length=50, verbose_name="Número de Tarjeta Censurado", blank=True, null=True, help_text="Número de tarjeta censurado (Ej: 1234 XXXX XXXX 5678)")
+    transfer_account_masked = models.CharField(max_length=20, verbose_name="Número de Cuenta Censurado", blank=True, null=True, help_text="Número de cuenta censurado (Ej: XXX123)")
 
     @property
     def id(self):
