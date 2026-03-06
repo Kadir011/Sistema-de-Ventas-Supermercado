@@ -18,9 +18,25 @@
             <p class="text-sm"><span class="font-bold">Email:</span> {{ sale.customer.email }}</p>
         </div>
         <div>
-            <h5 class="font-semibold text-green-600 mb-2 border-b border-green-200">Detalles</h5>
+            <h5 class="font-semibold text-green-600 mb-2 border-b border-green-200">Detalles de Pago</h5>
             <p class="text-sm"><span class="font-bold">Vendedor:</span> {{ sale.seller.get_full_name }}</p>
-            <p class="text-sm"><span class="font-bold">Pago:</span> {{ sale.payment.name }}</p>
+            <p class="text-sm"><span class="font-bold">Método:</span> {{ sale.payment.name }}</p>
+            {% if sale.card_number_masked %}
+            <p class="text-sm mt-1 flex items-center gap-1">
+                <span class="font-bold">N° Tarjeta:</span>
+                <span class="font-mono bg-blue-50 border border-blue-200 text-blue-800 px-2 py-0.5 rounded text-xs tracking-widest">
+                    <i class='bx bx-credit-card'></i> {{ sale.card_number_masked }}
+                </span>
+            </p>
+            {% endif %}
+            {% if sale.transfer_account_masked %}
+            <p class="text-sm mt-1 flex items-center gap-1">
+                <span class="font-bold">N° Cuenta:</span>
+                <span class="font-mono bg-green-50 border border-green-200 text-green-800 px-2 py-0.5 rounded text-xs tracking-widest">
+                    <i class='bx bx-transfer'></i> {{ sale.transfer_account_masked }}
+                </span>
+            </p>
+            {% endif %}
         </div>
     </div>
 
