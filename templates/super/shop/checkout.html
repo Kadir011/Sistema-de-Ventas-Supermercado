@@ -308,7 +308,6 @@
                                     <i class='bx bx-check-circle ml-auto text-green-600 text-xl hidden peer-checked:block'></i>
                                 </div>
                             </label>
-
                         </div>
                     </div>
 
@@ -374,6 +373,15 @@
                     <input type="hidden" name="transfer_bank_name" id="transfer_bank_name">
                     <input type="hidden" name="transfer_account_number" id="transfer_account_number">
                     <input type="hidden" name="transfer_account_type_value" id="transfer_account_type_value">
+                    <!-- Campos ocultos para datos censurados -->
+                    <input type="hidden" name="card_number_masked" id="card_number_masked">
+                    <input type="hidden" name="transfer_account_masked" id="transfer_account_masked">
+                    <!-- Campos ocultos para cálculos de factura PDF -->
+                    <input type="hidden" name="invoice_subtotal" value="{{ subtotal }}">
+                    <input type="hidden" name="invoice_iva" value="{{ iva }}">
+                    <input type="hidden" name="invoice_discount" value="{{ discount }}">
+                    <input type="hidden" name="invoice_discount_pct" value="{{ discount_pct }}">
+                    <input type="hidden" name="invoice_total" value="{{ total }}">
                 </div>
                 <!-- ══ FIN TRANSFERENCIA ══ -->
 
@@ -382,7 +390,24 @@
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>
                             <label class="block text-green-800 font-bold mb-2">Total a Pagar</label>
-                            <div class="text-3xl font-black text-green-700">${{ total|floatformat:2 }}</div>
+                            <div class="space-y-1 text-sm">
+                                <div class="flex justify-between">
+                                    <span>Subtotal:</span>
+                                    <span class="font-semibold">${{ subtotal|floatformat:2 }}</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span>IVA (15%):</span>
+                                    <span class="font-semibold">${{ iva|floatformat:2 }}</span>
+                                </div>
+                                {% if discount > 0 %}
+                                <div class="flex justify-between text-red-600">
+                                    <span>Descuento ({{ discount_pct }}%):</span>
+                                    <span class="font-semibold">-${{ discount|floatformat:2 }}</span>
+                                </div>
+                                {% endif %}
+                                <hr class="my-2 border-green-300">
+                                <div class="text-3xl font-black text-green-700">${{ total|floatformat:2 }}</div>
+                            </div>
                         </div>
                         <div id="cash_received_section">
                             <label class="block text-gray-700 font-bold mb-2">Monto Recibido *</label>
