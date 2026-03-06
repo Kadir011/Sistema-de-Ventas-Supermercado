@@ -6,6 +6,7 @@ from django.http import JsonResponse
 from django.contrib import messages
 from django.db import transaction
 from django.utils import timezone
+import decimal
 from decimal import Decimal
 from core.super.models import Cart, CartItem, Product, Sale, SaleDetail, Customer, PaymentMethod, Seller
 
@@ -175,13 +176,31 @@ class CheckoutView(LoginRequiredMixin, TemplateView):
             cart_total = cart.get_total()
             discount_amount = cart_total * (customer.discount_percentage / 100)
             final_total = cart_total - discount_amount
-            amount_received = Decimal(request.POST.get('amount_received', '0'))
-            
-            if amount_received < final_total:
-                messages.error(request, 'Monto recibido insuficiente')
-                return redirect('super:checkout')
-            
-            change = amount_received - final_total
+
+            # Obtener método de pago para determinar lógica
+            payment_method_id = request.POST.get('payment_method')
+            payment_method = PaymentMethod.objects.get(id_payment_method=payment_method_id)
+            payment_name = payment_method.name.lower()
+
+            # Lógica según método de pago
+            if 'transferencia' in payment_name or 'tarjeta' in payment_name:
+                # Para transferencias y tarjetas, el monto recibido es igual al total
+                # No hay vuelto en estos casos
+                amount_received = final_total
+                change = Decimal('0.00')
+            else:
+                # Para efectivo y otros métodos
+                amount_received_str = request.POST.get('amount_received', '0')
+                try:
+                    amount_received = Decimal(amount_received_str) if amount_received_str else Decimal('0')
+                except (ValueError, decimal.ConversionSyntax):
+                    amount_received = Decimal('0')
+
+                if amount_received < final_total:
+                    messages.error(request, 'Monto recibido insuficiente')
+                    return redirect('super:checkout')
+
+                change = amount_received - final_total
 
             # Crear Venta
             sale = Sale.objects.create(
@@ -195,8 +214,16 @@ class CheckoutView(LoginRequiredMixin, TemplateView):
                 discount=discount_amount,
                 total=final_total,
                 amount_received=amount_received,
-                change=change
+                change=change,
+                # Datos de pago censurados
+                card_number_masked=request.POST.get('card_number_masked', ''),
+                transfer_account_masked=request.POST.get('transfer_account_masked', '')
             )
+
+            # Agregar datos de transferencia si es transferencia bancaria
+            if 'transferencia' in payment_name or 'tarjeta' in payment_name:
+                # Los datos censurados ya se guardan en la creación de Sale
+                pass
             
             for item in items:
                 SaleDetail.objects.create(
@@ -218,8 +245,8 @@ class CheckoutView(LoginRequiredMixin, TemplateView):
         except PaymentMethod.DoesNotExist:
             messages.error(request, 'Método de pago inválido')
             return redirect('super:checkout')
-        except ValueError as e:
-            messages.error(request, str(e))
+        except (ValueError, decimal.ConversionSyntax) as e:
+            messages.error(request, f'Error en los datos numéricos: {str(e)}')
             return redirect('super:checkout')
         except Exception as e:
             messages.error(request, f'Error al procesar la compra: {str(e)}')
