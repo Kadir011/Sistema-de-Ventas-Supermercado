@@ -1,11 +1,13 @@
 from django.shortcuts import render, redirect
 from django.views.generic import TemplateView, ListView, View
-from core.super.models import Product, Category, Brand
+from core.super.models import Product, Category, Brand, Sale
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models import Q
 from django.contrib import messages
 from django.core.mail import EmailMessage
 from django.conf import settings
+from django.utils import timezone
+from datetime import timedelta
 
 class HomeView(TemplateView):
     template_name = 'components/home.html'
@@ -18,6 +20,16 @@ class HomeView(TemplateView):
 class MenuView(LoginRequiredMixin, TemplateView):
     template_name = 'components/menu.html'
     login_url = '/security/auth/login'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        # Ventas de las últimas 24 horas para la notificación de bienvenida
+        since = timezone.now() - timedelta(hours=24)
+        recent_sales_count = Sale.objects.filter(sale_date__gte=since).count()
+        context['recent_sales_count'] = recent_sales_count
+        
+        return context
 
 class AboutView(TemplateView):
     template_name = 'components/about.html'
