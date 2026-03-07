@@ -31,8 +31,8 @@ class ScannerTemplate(TemplateView):
             logger.info(f"Buscando producto con código: {barcode_data}")
 
             try:
-                # Buscar el producto activo y con stock
-                product = Product.objects.get(
+                # Buscar el producto activo y con stock (usar select_related para evitar queries adicionales al acceder a product.category y product.brand en el return)
+                product = Product.objects.select_related('category', 'brand').get(
                     Q(barcode=barcode_data), 
                     Q(state=True),
                     Q(stock__gt=0)
