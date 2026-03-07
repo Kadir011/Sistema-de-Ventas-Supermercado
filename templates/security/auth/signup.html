@@ -1,5 +1,6 @@
 {% extends 'components/base.html' %}
 {% load widget_tweaks %}
+{% load static %}
 {% block title %}Regístrate{% endblock %}
 {% block content %}
 <div class="container mx-auto py-12">
@@ -59,9 +60,16 @@
 
             <!-- Contraseñas -->
             <div class="mb-4">
-                <label for="id_password1" class="block text-gray-700 font-semibold mb-2">
-                    <i class='bx bx-lock-alt'></i> Contraseña *
-                </label>
+                <div class="flex justify-between items-center mb-2">
+                    <label for="id_password1" class="block text-gray-700 font-semibold">
+                        <i class='bx bx-lock-alt'></i> Contraseña *
+                    </label>
+                    <a href="#"
+                       id="id_sugerir"
+                       class="text-green-600 text-sm underline decoration-dotted underline-offset-2 hover:text-green-800 transition-colors cursor-pointer select-none">
+                        <i class='bx bx-refresh'></i> Generar contraseña
+                    </a>
+                </div>
                 <div class="relative">
                     <input type="password" name="password1" id="id_password1"
                            class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
@@ -153,4 +161,5 @@
         }
     }
 </script>
+<script src="{% static 'js/generate_password.js' %}"></script>
 {% endblock %}
