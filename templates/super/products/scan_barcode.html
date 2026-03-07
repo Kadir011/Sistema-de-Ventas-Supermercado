@@ -11,16 +11,31 @@
     <div class="bg-white p-6 rounded-lg shadow-lg flex flex-col items-center">
         <i class="bx bx-barcode-reader text-6xl text-blue-700 mb-4 animate-pulse"></i>
         <h3 class="text-2xl font-semibold text-gray-800 mb-2">{{ title }}</h3>
-        <p class="text-center mb-6 text-gray-600">Escanee códigos de barras EAN-13 para consultar precios</p>
+        <p class="text-center mb-2 text-gray-600">Escanee códigos de barras EAN-13 para consultar precios</p>
+
+        <!-- Consejos de uso -->
+        <div class="mb-6 bg-blue-50 border border-blue-200 rounded-lg px-4 py-3 text-sm text-blue-800 max-w-md w-full">
+            <p class="font-bold mb-1">💡 Consejos para un escaneo rápido:</p>
+            <ul class="list-disc list-inside space-y-1 text-xs">
+                <li>Asegúrate de tener <strong>buena iluminación</strong> (luz natural o lámpara)</li>
+                <li>Mantén el código <strong>plano y bien enfocado</strong> en el área central</li>
+                <li>Distancia ideal: <strong>10-20 cm</strong> del código</li>
+                <li>Si el empaque es brilloso, inclina levemente para <strong>evitar reflejos</strong></li>
+            </ul>
+        </div>
+
         <button id="openModal" class="bg-gradient-to-r from-green-500 to-green-700 hover:from-green-600 hover:to-green-800 text-white font-bold px-8 py-3 rounded-full transition-all duration-300 transform hover:scale-105 shadow-lg flex items-center">
             <i class='bx bx-camera text-xl mr-2'></i>
             Activar Escáner
         </button>
     </div>
 
+    <!-- ══════════════════════════════════════
+         MODAL DEL ESCÁNER
+    ══════════════════════════════════════ -->
     <div id="scannerModal" class="fixed inset-0 bg-black bg-opacity-90 flex items-center justify-center hidden z-50 backdrop-blur-sm">
         <div class="relative w-full max-w-lg h-full md:h-auto flex flex-col items-center justify-center p-4">
-            
+
             <button id="closeModal" class="absolute top-4 right-4 text-white hover:text-red-500 z-50 transition-colors bg-black bg-opacity-50 rounded-full p-2">
                 <i class='bx bx-x text-4xl'></i>
             </button>
@@ -28,26 +43,46 @@
             <h3 class="text-white text-xl font-bold mb-4 z-50 flex items-center shadow-sm">
                 <i class='bx bx-scan mr-2 text-green-400'></i> Escaneando...
             </h3>
-            
+
+            <!-- Viewport de la cámara -->
             <div id="interactive" class="viewport relative w-full rounded-2xl overflow-hidden shadow-2xl border-4 border-gray-800 bg-black">
+                <!-- Laser animado -->
                 <div class="absolute inset-0 z-10 pointer-events-none">
                     <div class="absolute w-full h-1 bg-red-600 shadow-[0_0_10px_rgba(255,0,0,0.8)] animate-laser top-1/2 transform -translate-y-1/2"></div>
-                    
-                    <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-64 h-40 border-2 border-green-500 rounded-lg opacity-50">
-                        <div class="absolute top-0 left-0 w-4 h-4 border-t-4 border-l-4 border-white -mt-1 -ml-1"></div>
-                        <div class="absolute top-0 right-0 w-4 h-4 border-t-4 border-r-4 border-white -mt-1 -mr-1"></div>
-                        <div class="absolute bottom-0 left-0 w-4 h-4 border-b-4 border-l-4 border-white -mb-1 -ml-1"></div>
-                        <div class="absolute bottom-0 right-0 w-4 h-4 border-b-4 border-r-4 border-white -mb-1 -mr-1"></div>
+
+                    <!-- Marco guía (ampliado respecto a la versión anterior) -->
+                    <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-72 h-44 border-2 border-green-500 rounded-lg opacity-60">
+                        <div class="absolute top-0 left-0 w-5 h-5 border-t-4 border-l-4 border-white -mt-1 -ml-1 rounded-tl"></div>
+                        <div class="absolute top-0 right-0 w-5 h-5 border-t-4 border-r-4 border-white -mt-1 -mr-1 rounded-tr"></div>
+                        <div class="absolute bottom-0 left-0 w-5 h-5 border-b-4 border-l-4 border-white -mb-1 -ml-1 rounded-bl"></div>
+                        <div class="absolute bottom-0 right-0 w-5 h-5 border-b-4 border-r-4 border-white -mb-1 -mr-1 rounded-br"></div>
                     </div>
                 </div>
             </div>
-            
+
+            <!-- Estado del escáner -->
             <div id="scanningStatus" class="text-center mt-4 font-semibold text-white min-h-6 z-50 bg-black bg-opacity-50 px-4 py-2 rounded-full">
                 Apunte la cámara al código de barras
+            </div>
+
+            <!-- ── Barra de progreso de confirmación (votos) ── -->
+            <!-- Se llena progresivamente mientras el escáner acumula
+                 lecturas del mismo código antes de confirmar. Esto evita
+                 falsos positivos por reflejos o empaques con texto similar -->
+            <div class="w-full max-w-xs mt-3 z-50">
+                <div class="h-2 bg-gray-700 rounded-full overflow-hidden">
+                    <div id="voteProgressBar"
+                         class="h-full bg-green-400 rounded-full transition-all duration-200"
+                         style="width: 0%"></div>
+                </div>
+                <p id="voteLabel" class="text-center text-xs text-gray-400 mt-1 h-4"></p>
             </div>
         </div>
     </div>
 
+    <!-- ══════════════════════════════════════
+         MODAL DE RESULTADO
+    ══════════════════════════════════════ -->
     <div id="resultModal" class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center hidden z-50 backdrop-blur-sm">
         <div class="bg-white p-8 rounded-2xl shadow-2xl w-11/12 max-w-md animate-fade-in relative">
             <div class="absolute -top-12 left-1/2 transform -translate-x-1/2">
@@ -55,17 +90,16 @@
                     <i class='bx bx-check text-4xl text-white'></i>
                 </div>
             </div>
-            
+
             <div class="mt-8 flex justify-between items-center mb-6 border-b pb-2">
                 <h3 class="text-2xl font-bold text-gray-800">Producto Encontrado</h3>
                 <button id="closeResultModal" class="text-gray-400 hover:text-gray-600 transition-colors">
                     <i class='bx bx-x text-2xl'></i>
                 </button>
             </div>
-            
-            <div id="resultContent" class="text-center">
-                </div>
-            
+
+            <div id="resultContent" class="text-center"></div>
+
             <div class="mt-8 flex justify-center w-full">
                 <button id="scanAgainButton" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold px-6 py-3 rounded-xl transition-all duration-200 shadow-md flex justify-center items-center">
                     <i class='bx bx-barcode-reader mr-2'></i>
@@ -78,18 +112,19 @@
     <style>
         /* Animación del laser */
         @keyframes laserScan {
-            0% { top: 10%; opacity: 0; }
-            10% { opacity: 1; }
-            90% { opacity: 1; }
-            100% { top: 90%; opacity: 0; }
+            0%   { top: 15%; opacity: 0; }
+            10%  { opacity: 1; }
+            90%  { opacity: 1; }
+            100% { top: 85%; opacity: 0; }
         }
         .animate-laser {
             animation: laserScan 2s linear infinite;
         }
-        
-        /* Ajustes para Quagga */
+
+        /* Quagga */
         #interactive.viewport { position: relative; }
-        #interactive.viewport > canvas, #interactive.viewport > video {
+        #interactive.viewport > canvas,
+        #interactive.viewport > video {
             max-width: 100%;
             width: 100%;
             height: auto;
@@ -103,16 +138,15 @@
     </style>
 
     <script src="{% static 'js/scan_barcode.js' %}"></script>
-    
+
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function () {
             const scanAgainButton = document.getElementById('scanAgainButton');
-            const resultModal = document.getElementById('resultModal');
-            const scannerModal = document.getElementById('scannerModal');
-            const startScanFn = window.startScanner; // Función global expuesta desde scan_barcode.js
+            const resultModal     = document.getElementById('resultModal');
+            const scannerModal    = document.getElementById('scannerModal');
 
             if (scanAgainButton) {
-                scanAgainButton.addEventListener('click', function() {
+                scanAgainButton.addEventListener('click', function () {
                     resultModal.classList.add('hidden');
                     scannerModal.classList.remove('hidden');
                     if (typeof window.initQuagga === 'function') {
