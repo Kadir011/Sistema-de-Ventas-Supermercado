@@ -1,7 +1,7 @@
 //script DOM para generar contraseña aleatoria 
-
 document.addEventListener('DOMContentLoaded', () => {
-    const password1 = document.getElementById('id_password1'); 
+    const password1 = document.getElementById('id_password1');
+    const password2 = document.getElementById('id_password2');
 
     // Función para generar contraseña aleatoria
     const generatePassword = () => {
@@ -10,10 +10,17 @@ document.addEventListener('DOMContentLoaded', () => {
         for (let i = 0; i < 12; i++) {
             password += chars.charAt(Math.floor(Math.random() * chars.length));
         }
-        password1.value = password;
+        // Rellenar ambos campos de contraseña
+        if (password1) password1.value = password;
+        if (password2) password2.value = password;
     };
 
-    // Asocia el evento al botón de sugerir contraseña
-    document.getElementById('id_sugerir').addEventListener('click', generatePassword);
+    // Asocia el evento al enlace de sugerir contraseña
+    const sugerirPassword = document.getElementById('id_sugerir');
+    if (sugerirPassword) {
+        sugerirPassword.addEventListener('click', (e) => {
+            e.preventDefault();
+            generatePassword();
+        });
+    }
 });
-
