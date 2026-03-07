@@ -360,4 +360,4 @@ document.addEventListener('DOMContentLoaded', function () {
         }
         return value;
     }
-});
+}); 
