@@ -45,7 +45,6 @@ INSTALLED_APPS = [
     'widget_tweaks',
     'crispy_forms',
     'crispy_bootstrap5',
-    'rest_framework',
     'django_extensions',
 
     #apps de usuario
