@@ -1,59 +1,141 @@
 {% extends 'components/base.html' %}
 {% block title %}{{ title }}{% endblock %}
 {% block content %}
-<div class="container mx-auto py-8 px-16">
-    <h1 class="text-3xl font-bold mb-6">Lista de {{ title }}</h1>
-    <a href={{create_url}} class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-green-700 transition-all mb-8">Agregar Nuevo Vendedor</a>
-    <div class="overflow-x-auto bg-white shadow-md rounded-lg mt-6">
-        <table class="min-w-full text-sm">
-            <thead>
-                <tr>
-                    <th class="py-3 px-4 text-left">Nombre</th>
-                    <th class="py-3 px-4 text-left">Cédula</th>
-                    <th class="py-3 px-4 text-left">Email</th>
-                    <th class="py-3 px-4 text-left">Teléfono</th>
-                    <th class="py-3 px-4 text-left">Dirección</th>
-                    <th class="py-3 px-4 text-left">Nacimiento</th>
-                    <th class="py-3 px-4 text-left">Genero</th>
-                    <th class="py-3 px-4 text-left">Acciones</th>
-                </tr> 
-            </thead> 
-            <tbody>
-                {% for s in sellers %}
-                   <tr>
-                        <td class="py-3 px-4">{{s.get_full_name}}</td> 
-                        <td class="py-3 px-4">{{s.dni}}</td> 
-                        <td class="py-3 px-4">{{s.email}}</td> 
-                        <td class="py-3 px-4">{{s.phone}}</td>
-                        <td class="py-3 px-4">{{s.address}}</td>
-                        <td class="py-3 px-4">{{s.birth_date}}</td>
-                        <!-- Genero  1 = Masculino, 2 = Femenino -->
-                        <td class="py-3 px-4">
+<div class="container mx-auto py-8 px-6">
+
+    <!-- Header -->
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
+        <div>
+            <h1 class="text-3xl font-bold text-gray-800">Lista de {{ title }}</h1>
+            <p class="text-gray-500 text-sm mt-1">Gestiona el equipo de vendedores</p>
+        </div>
+        <a href="{{ create_url }}"
+           class="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl font-semibold shadow-md transition-all transform hover:-translate-y-0.5">
+            <i class='bx bx-user-plus text-xl'></i> Agregar Vendedor
+        </a>
+    </div>
+
+    {% if sellers %}
+    <div class="bg-white rounded-2xl shadow-md overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="min-w-full text-sm">
+                <thead>
+                    <tr class="bg-gray-50 border-b border-gray-200">
+                        <th class="py-4 px-5 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Vendedor</th>
+                        <th class="py-4 px-5 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Cédula</th>
+                        <th class="py-4 px-5 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Contacto</th>
+                        <th class="py-4 px-5 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Dirección</th>
+                        <th class="py-4 px-5 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Nacimiento</th>
+                        <th class="py-4 px-5 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Género</th>
+                        <th class="py-4 px-5 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-100">
+                    {% for s in sellers %}
+                    <tr class="hover:bg-gray-50 transition-colors duration-150">
+
+                        <!-- Vendedor (avatar + nombre) -->
+                        <td class="py-4 px-5">
+                            <div class="flex items-center gap-3">
+                                <div class="w-9 h-9 rounded-full flex items-center justify-center font-bold text-sm text-white flex-shrink-0
+                                    {% if s.gender == 2 %} bg-pink-400 {% else %} bg-indigo-500 {% endif %}">
+                                    {{ s.get_full_name|first|upper }}
+                                </div>
+                                <div>
+                                    <p class="font-semibold text-gray-800">{{ s.get_full_name }}</p>
+                                    <p class="text-xs text-gray-400">Vendedor</p>
+                                </div>
+                            </div>
+                        </td>
+
+                        <!-- Cédula -->
+                        <td class="py-4 px-5">
+                            <span class="font-mono text-gray-600 bg-gray-100 px-2 py-1 rounded-lg text-xs">{{ s.dni }}</span>
+                        </td>
+
+                        <!-- Contacto -->
+                        <td class="py-4 px-5">
+                            <div class="flex flex-col gap-1">
+                                <span class="text-gray-700 flex items-center gap-1">
+                                    <i class='bx bx-envelope text-gray-400'></i> {{ s.email }}
+                                </span>
+                                <span class="text-gray-500 flex items-center gap-1 text-xs">
+                                    <i class='bx bx-phone text-gray-400'></i> {{ s.phone }}
+                                </span>
+                            </div>
+                        </td>
+
+                        <!-- Dirección -->
+                        <td class="py-4 px-5">
+                            <span class="text-gray-600 flex items-center gap-1">
+                                <i class='bx bx-map-pin text-gray-400'></i>
+                                <span class="max-w-[150px] truncate" title="{{ s.address }}">{{ s.address }}</span>
+                            </span>
+                        </td>
+
+                        <!-- Nacimiento -->
+                        <td class="py-4 px-5">
+                            <span class="text-gray-600 flex items-center gap-1">
+                                <i class='bx bx-calendar text-gray-400'></i>
+                                {{ s.birth_date|date:'d/m/Y' }}
+                            </span>
+                        </td>
+
+                        <!-- Género -->
+                        <td class="py-4 px-5">
                             {% if s.gender == 1 %}
-                                Masculino
+                                <span class="inline-flex items-center gap-1 bg-blue-50 text-blue-600 text-xs font-semibold px-2.5 py-1 rounded-full border border-blue-100">
+                                    <i class='bx bx-male'></i> Masculino
+                                </span>
                             {% elif s.gender == 2 %}
-                                Femenino
+                                <span class="inline-flex items-center gap-1 bg-pink-50 text-pink-600 text-xs font-semibold px-2.5 py-1 rounded-full border border-pink-100">
+                                    <i class='bx bx-female'></i> Femenino
+                                </span>
                             {% endif %}
                         </td>
-                        <td class="py-3 px-4">
-                            <a href="{% url 'super:seller_update' s.pk %}" class="text-blue-500 hover:underline" label="Editar"><i class='bx bxs-edit'></i></a> |
-                            <a href="{% url 'super:seller_delete' s.pk %}" class="text-red-500 hover:underline" label="Eliminar"><i class='bx bxs-eraser'></i></a>
+
+                        <!-- Acciones -->
+                        <td class="py-4 px-5">
+                            <div class="flex items-center justify-center gap-2">
+                                <a href="{% url 'super:seller_update' s.pk %}"
+                                   title="Editar"
+                                   class="flex items-center gap-1 bg-green-50 hover:bg-green-600 text-green-600 hover:text-white px-3 py-1.5 rounded-lg text-xs font-semibold transition-all duration-200">
+                                    <i class='bx bx-edit text-base'></i> Editar
+                                </a>
+                                <a href="{% url 'super:seller_delete' s.pk %}"
+                                   title="Eliminar"
+                                   class="flex items-center gap-1 bg-red-50 hover:bg-red-600 text-red-600 hover:text-white px-3 py-1.5 rounded-lg text-xs font-semibold transition-all duration-200">
+                                    <i class='bx bx-trash text-base'></i> Eliminar
+                                </a>
+                            </div>
                         </td>
-                   </tr> 
-                   {% empty %}
-                   <tr>
-                       <td colspan="7" class="py-3 px-4">No hay vendedores registrados</td>
-                   </tr>
-                {% endfor %}
-            </tbody> 
-        </table> 
-    </div> 
-</div> 
+
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Footer tabla -->
+        <div class="px-5 py-3 bg-gray-50 border-t border-gray-200">
+            <p class="text-sm text-gray-500">
+                <span class="font-semibold text-gray-700">{{ sellers|length }}</span> vendedor{{ sellers|length|pluralize:"es" }} registrado{{ sellers|length|pluralize }}
+            </p>
+        </div>
+    </div>
+
+    {% else %}
+    <!-- Estado vacío -->
+    <div class="text-center py-16 bg-white rounded-2xl shadow-sm border border-gray-100">
+        <i class='bx bx-user-x text-7xl text-gray-300 mb-4'></i>
+        <h3 class="text-xl font-bold text-gray-600 mb-2">No hay vendedores registrados</h3>
+        <p class="text-gray-400 mb-6">Comienza agregando tu primer vendedor al equipo.</p>
+        <a href="{{ create_url }}"
+           class="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl font-semibold transition-all">
+            <i class='bx bx-user-plus'></i> Agregar Vendedor
+        </a>
+    </div>
+    {% endif %}
+
+</div>
 {% endblock %}
-
-
-
-
-
-
-
