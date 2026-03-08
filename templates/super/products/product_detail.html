@@ -1,69 +1,137 @@
 {% extends 'components/base.html' %}
 {% block title %}{{ title }}{% endblock %}
 {% block content %}
-<div class="container mx-auto py-8 px-16">
-    <div class="bg-white shadow-lg rounded-lg overflow-hidden">
-        <div class="relative">
-            <!-- Imágen del Producto -->
-            <div class="w-full h-72 overflow-hidden">
-                <img src="{{ product.get_image_url }}" alt="{{ product.name }}" class="w-full h-full object-contain">
-            </div> 
-            <div class="absolute top-4 left-4 text-white bg-opacity-70 bg-black p-2 rounded-lg">
-                <h1 class="text-3xl font-bold">{{ product.name }}</h1> 
-            </div> 
-        </div> 
-        <div class="p-6">
-            <p class="text-lg text-gray-700 mb-4">{{ product.description|truncatewords:20 }}</p>
-            <p class="text-xl font-semibold text-green-600 mb-4">{{ product.price|floatformat:2 }}$</p>
-            <p class="text-gray-500 mb-2"><strong>Categoría:</strong> {{ product.category.name }}</p>
-            <p class="text-gray-500 mb-2"><strong>Marca:</strong> {{ product.brand.name }}</p>
-            <p class="text-gray-500 mb-6"><strong>Stock:</strong> {{ product.stock }}</p>
-            <p class="text-gray-500 mb-6"><strong>Fecha de Elaboración:</strong> {{ product.production_date|date:'d/m/Y' }}</p>
-            <p class="text-gray-500 mb-6"><strong>Fecha de Vencimiento:</strong> {{ product.expiration_date|date:'d/m/Y' }}</p>
-            <p class="text-gray-500 mb-6"><strong>Estado:</strong> {{ product.state|yesno:'Disponible,Agotado' }}</p>
-            <p class="text-gray-500 mb-6">
-                {% if product.barcode %}
-                    <svg id="barcode-{{ product.id }}" class="border border-green-600 rounded-lg"></svg>
-                {% else %}
-                    <span class="text-white-600 font-bold border border-green-600 rounded-lg px-2 py-1">Barcode no registrado</span>
-                {% endif %}
-            </p>
-            <!-- Buttons Section (only for superusers) -->
-            {% if user.is_superuser %}
-                <div class="flex justify-between items-center space-x-4">
-                    <!-- Edit Product -->
-                    <a href="{% url 'super:product_update' product.pk %}" class="bg-green-500 text-white px-6 py-2 rounded-lg hover:bg-green-600 transition-all">Editar Producto</a>
-                    <!-- Delete Product -->
-                    <a href="{% url 'super:product_delete' product.pk %}" class="bg-red-500 text-white px-6 py-2 rounded-lg hover:bg-red-600 transition-all">Eliminar Producto</a>
-                </div> 
-            {% endif %}
+<div class="container mx-auto py-8 px-6 max-w-5xl">
 
-            <!-- Back to List -->
-            <div class="mt-4">
-                <a href="{{back_url}}" class="bg-gray-300 text-black px-6 py-2 rounded-lg hover:bg-gray-400 transition-all">Volver a la Lista</a>
+    <!-- Breadcrumb -->
+    <div class="flex items-center gap-2 text-sm text-gray-400 mb-6">
+        <a href="{% url 'super:product_list' %}" class="hover:text-blue-600 transition-colors">Productos</a>
+        <i class='bx bx-chevron-right'></i>
+        <span class="text-gray-700 font-medium">{{ product.name }}</span>
+    </div>
+
+    <div class="bg-white rounded-2xl shadow-lg overflow-hidden">
+        <div class="grid grid-cols-1 md:grid-cols-2">
+
+            <!-- Columna izquierda: Imagen -->
+            <div class="relative bg-gray-50 flex items-center justify-center min-h-72 p-8 border-b md:border-b-0 md:border-r border-gray-100">
+                <img src="{{ product.get_image_url }}"
+                     alt="{{ product.name }}"
+                     class="max-h-72 w-full object-contain drop-shadow-md">
+
+                <!-- Badge estado -->
+                <div class="absolute top-4 right-4">
+                    {% if product.state %}
+                        <span class="bg-green-100 text-green-700 text-xs font-bold px-3 py-1.5 rounded-full border border-green-200">
+                            <i class='bx bx-check-circle'></i> Disponible
+                        </span>
+                    {% else %}
+                        <span class="bg-red-100 text-red-700 text-xs font-bold px-3 py-1.5 rounded-full border border-red-200">
+                            <i class='bx bx-x-circle'></i> Agotado
+                        </span>
+                    {% endif %}
+                </div>
+
+                <!-- Código de barras -->
+                <div class="absolute bottom-4 left-0 right-0 flex justify-center">
+                    {% if product.barcode %}
+                        <div class="bg-white rounded-xl px-4 py-2 shadow-sm border border-gray-100">
+                            <svg id="barcode-{{ product.id }}"></svg>
+                        </div>
+                    {% else %}
+                        <span class="bg-white text-gray-400 text-xs font-medium border border-gray-200 rounded-full px-3 py-1">
+                            <i class='bx bx-barcode'></i> Sin código de barras
+                        </span>
+                    {% endif %}
+                </div>
             </div>
-        </div> 
-    </div> 
-</div> 
-<script>
-    // Script para visualizar el código de barras 
-    document.addEventListener('DOMContentLoaded', function () {
-        const barcodeValue = "{{ product.barcode }}"; // El valor del código de barras 
 
+            <!-- Columna derecha: Info -->
+            <div class="p-8 flex flex-col">
+
+                <!-- Nombre y badges -->
+                <div class="mb-4">
+                    <div class="flex gap-2 mb-3 flex-wrap">
+                        {% if product.category %}
+                        <span class="text-xs bg-blue-50 text-blue-600 px-2.5 py-1 rounded-full font-medium border border-blue-100">
+                            <i class='bx bx-category'></i> {{ product.category.name }}
+                        </span>
+                        {% endif %}
+                        {% if product.brand %}
+                        <span class="text-xs bg-purple-50 text-purple-600 px-2.5 py-1 rounded-full font-medium border border-purple-100">
+                            <i class='bx bx-purchase-tag'></i> {{ product.brand.name }}
+                        </span>
+                        {% endif %}
+                    </div>
+                    <h1 class="text-3xl font-extrabold text-gray-800 mb-2">{{ product.name }}</h1>
+                    <p class="text-gray-500 text-sm leading-relaxed">{{ product.description }}</p>
+                </div>
+
+                <!-- Precio y stock -->
+                <div class="flex items-center gap-4 bg-gray-50 rounded-xl p-4 mb-6">
+                    <div class="flex-1 text-center border-r border-gray-200">
+                        <p class="text-xs text-gray-400 uppercase font-semibold mb-1">Precio</p>
+                        <p class="text-3xl font-extrabold text-green-600">${{ product.price|floatformat:2 }}</p>
+                    </div>
+                    <div class="flex-1 text-center">
+                        <p class="text-xs text-gray-400 uppercase font-semibold mb-1">Stock</p>
+                        <p class="text-3xl font-extrabold text-gray-700">{{ product.stock }} <span class="text-sm font-normal text-gray-400">uds.</span></p>
+                    </div>
+                </div>
+
+                <!-- Fechas -->
+                <div class="grid grid-cols-2 gap-3 mb-6">
+                    <div class="bg-blue-50 rounded-xl p-3 border border-blue-100">
+                        <p class="text-xs text-blue-400 uppercase font-semibold mb-1">
+                            <i class='bx bx-calendar'></i> Elaboración
+                        </p>
+                        <p class="text-sm font-bold text-blue-700">{{ product.production_date|date:'d/m/Y' }}</p>
+                    </div>
+                    <div class="bg-orange-50 rounded-xl p-3 border border-orange-100">
+                        <p class="text-xs text-orange-400 uppercase font-semibold mb-1">
+                            <i class='bx bx-calendar-x'></i> Vencimiento
+                        </p>
+                        <p class="text-sm font-bold text-orange-700">{{ product.expiration_date|date:'d/m/Y' }}</p>
+                    </div>
+                </div>
+
+                <!-- Botones -->
+                <div class="mt-auto flex flex-col gap-3">
+                    {% if user.is_superuser %}
+                    <div class="grid grid-cols-2 gap-3">
+                        <a href="{% url 'super:product_update' product.pk %}"
+                           class="flex items-center justify-center gap-2 bg-green-500 hover:bg-green-600 text-white px-5 py-2.5 rounded-xl font-semibold transition-all shadow-sm transform hover:-translate-y-0.5">
+                            <i class='bx bx-edit text-lg'></i> Editar
+                        </a>
+                        <a href="{% url 'super:product_delete' product.pk %}"
+                           class="flex items-center justify-center gap-2 bg-red-500 hover:bg-red-600 text-white px-5 py-2.5 rounded-xl font-semibold transition-all shadow-sm transform hover:-translate-y-0.5">
+                            <i class='bx bx-trash text-lg'></i> Eliminar
+                        </a>
+                    </div>
+                    {% endif %}
+                    <a href="{{ back_url }}"
+                       class="flex items-center justify-center gap-2 bg-gray-100 hover:bg-gray-200 text-gray-700 px-5 py-2.5 rounded-xl font-semibold transition-all">
+                        <i class='bx bx-arrow-back text-lg'></i> Volver
+                    </a>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const barcodeValue = "{{ product.barcode }}";
         if (barcodeValue) {
             JsBarcode("#barcode-{{ product.id }}", barcodeValue, {
-                format: "EAN13", // Formato del código de barras
-                lineColor: "#000", // Color de las líneas
-                width: 2,          // Anchura de las barras
-                height: 50,        // Altura del código de barras
-                displayValue: true // Mostrar el número debajo
-            }); 
-        } 
-    }); 
-    console.log("Barcode value:", barcodeValue);
-</script> 
+                format: "EAN13",
+                lineColor: "#000",
+                width: 2,
+                height: 50,
+                displayValue: true
+            });
+        }
+    });
+</script>
 {% endblock %}
-
-
-
-
