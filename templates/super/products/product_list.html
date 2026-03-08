@@ -1,59 +1,158 @@
 {% extends 'components/base.html' %}
 {% block title %}{{ title }}{% endblock %} 
 {% block content %}
-<div class="container mx-auto py-8 px-16">
-    <h1 class="text-3xl font-bold mb-6">Lista de {{ title }}</h1>
-    <div class="mb-6">
-        <a href="{{create_url}}" class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-green-700 transition-all">Agregar Nuevo Producto</a>
-    </div>
-    {% if products %}
-        <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6">
-           {% for product in page_obj %} 
-                <div class="bg-white shadow-lg rounded-lg overflow-hidden">
-                    <img src="{{ product.get_image_url }}" alt="{{ product.name }}" class="w-full h-48 object-cover">
-                    <div class="p-4">
-                        <h2 class="text-xl font-semibold">{{ product.name }}</h2>
-                        <p class="text-gray-500">{{ product.description|truncatewords:20 }}</p>
-                        <p class="text-green-600 font-bold">{{ product.price|floatformat:2 }}$</p>
-                        <p class="text-gray-600">Stock: {{ product.stock }}</p> 
-                        <p class="text-blue-600">
-                            {% if product.state %}
-                                <span class="text-white-600 font-bold border border-blue-600 text-green-600 rounded-lg px-2 py-1">Disponible</span>
-                            {% else %}
-                                <span class="text-white-600 font-bold border border-blue-600 text-red-600 rounded-lg px-2 py-1">Agotado</span>
-                            {% endif %}
-                        </p>
-                        <div class="flex justify-between mt-4">
-                            <a href="{% url 'super:product_detail' product.pk %}" class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-cyan-600">Ver Detalles</a> 
-                            <a href="{% url 'super:product_update' product.pk %}" class="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600">Editar</a> 
-                            <a href="{% url 'super:product_delete' product.pk %}" class="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600">Eliminar</a>
-                        </div> 
-                    </div> 
-                </div> 
-           {% endfor %}
+<div class="container mx-auto py-8 px-6">
+
+    <!-- Header -->
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
+        <div>
+            <h1 class="text-3xl font-bold text-gray-800">Lista de {{ title }}</h1>
+            <p class="text-gray-500 text-sm mt-1">Gestiona el catálogo de productos</p>
         </div>
+        <a href="{{ create_url }}" 
+           class="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl font-semibold shadow-md transition-all transform hover:-translate-y-0.5">
+            <i class='bx bx-plus-circle text-xl'></i> Agregar Producto
+        </a>
+    </div>
+
+    {% if products %}
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {% for product in page_obj %}
+            <div class="bg-white rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 overflow-hidden flex flex-col group">
+
+                <!-- Imagen -->
+                <div class="relative h-52 bg-gray-50 overflow-hidden">
+                    <img src="{{ product.get_image_url }}" 
+                         alt="{{ product.name }}" 
+                         class="w-full h-full object-contain p-3 group-hover:scale-105 transition-transform duration-300">
+                    <!-- Badge estado -->
+                    <div class="absolute top-3 right-3">
+                        {% if product.state %}
+                            <span class="bg-green-100 text-green-700 text-xs font-bold px-2.5 py-1 rounded-full border border-green-200">
+                                <i class='bx bx-check-circle'></i> Disponible
+                            </span>
+                        {% else %}
+                            <span class="bg-red-100 text-red-700 text-xs font-bold px-2.5 py-1 rounded-full border border-red-200">
+                                <i class='bx bx-x-circle'></i> Agotado
+                            </span>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Info -->
+                <div class="p-4 flex flex-col flex-1">
+                    <h2 class="text-lg font-bold text-gray-800 truncate mb-1">{{ product.name }}</h2>
+                    <p class="text-gray-500 text-sm line-clamp-2 mb-3">{{ product.description|truncatewords:12 }}</p>
+
+                    <div class="flex justify-between items-center mb-3">
+                        <span class="text-2xl font-extrabold text-green-600">${{ product.price|floatformat:2 }}</span>
+                        <span class="text-sm text-gray-500 bg-gray-100 px-2 py-1 rounded-lg font-medium">
+                            <i class='bx bx-box'></i> {{ product.stock }} uds.
+                        </span>
+                    </div>
+
+                    <!-- Botones de acción -->
+                    <div class="mt-auto pt-3 border-t border-gray-100 grid grid-cols-3 gap-2">
+                        <a href="{% url 'super:product_detail' product.pk %}" 
+                           class="flex flex-col items-center justify-center gap-1 bg-blue-50 hover:bg-blue-600 text-blue-600 hover:text-white py-2 rounded-xl font-semibold text-xs transition-all duration-200 group/btn">
+                            <i class='bx bx-show text-lg'></i>
+                            <span>Ver</span>
+                        </a>
+                        <a href="{% url 'super:product_update' product.pk %}" 
+                           class="flex flex-col items-center justify-center gap-1 bg-green-50 hover:bg-green-600 text-green-600 hover:text-white py-2 rounded-xl font-semibold text-xs transition-all duration-200">
+                            <i class='bx bx-edit text-lg'></i>
+                            <span>Editar</span>
+                        </a>
+                        <a href="{% url 'super:product_delete' product.pk %}" 
+                           class="flex flex-col items-center justify-center gap-1 bg-red-50 hover:bg-red-600 text-red-600 hover:text-white py-2 rounded-xl font-semibold text-xs transition-all duration-200">
+                            <i class='bx bx-trash text-lg'></i>
+                            <span>Eliminar</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- Paginación -->
+        {% if page_obj.paginator.num_pages > 1 %}
+        <div class="mt-10 flex justify-center items-center gap-2">
+
+            {% if page_obj.has_previous %}
+                <a href="?page=1" 
+                   class="flex items-center gap-1 px-3 py-2 bg-white border border-gray-300 text-gray-600 rounded-lg hover:bg-gray-50 hover:border-blue-400 transition-all text-sm font-medium shadow-sm">
+                    <i class='bx bx-chevrons-left'></i>
+                </a>
+                <a href="?page={{ page_obj.previous_page_number }}" 
+                   class="flex items-center gap-1 px-3 py-2 bg-white border border-gray-300 text-gray-600 rounded-lg hover:bg-gray-50 hover:border-blue-400 transition-all text-sm font-medium shadow-sm">
+                    <i class='bx bx-chevron-left'></i>
+                </a>
+            {% else %}
+                <span class="flex items-center px-3 py-2 bg-gray-100 border border-gray-200 text-gray-400 rounded-lg text-sm cursor-not-allowed">
+                    <i class='bx bx-chevrons-left'></i>
+                </span>
+                <span class="flex items-center px-3 py-2 bg-gray-100 border border-gray-200 text-gray-400 rounded-lg text-sm cursor-not-allowed">
+                    <i class='bx bx-chevron-left'></i>
+                </span>
+            {% endif %}
+
+            <!-- Páginas numeradas -->
+            {% for num in page_obj.paginator.page_range %}
+                {% if page_obj.number == num %}
+                    <span class="px-4 py-2 bg-blue-600 text-white rounded-lg font-bold text-sm shadow-md">
+                        {{ num }}
+                    </span>
+                {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                    <a href="?page={{ num }}" 
+                       class="px-4 py-2 bg-white border border-gray-300 text-gray-600 rounded-lg hover:bg-blue-50 hover:border-blue-400 hover:text-blue-600 transition-all text-sm font-medium shadow-sm">
+                        {{ num }}
+                    </a>
+                {% endif %}
+            {% endfor %}
+
+            {% if page_obj.has_next %}
+                <a href="?page={{ page_obj.next_page_number }}" 
+                   class="flex items-center px-3 py-2 bg-white border border-gray-300 text-gray-600 rounded-lg hover:bg-gray-50 hover:border-blue-400 transition-all text-sm font-medium shadow-sm">
+                    <i class='bx bx-chevron-right'></i>
+                </a>
+                <a href="?page={{ page_obj.paginator.num_pages }}" 
+                   class="flex items-center px-3 py-2 bg-white border border-gray-300 text-gray-600 rounded-lg hover:bg-gray-50 hover:border-blue-400 transition-all text-sm font-medium shadow-sm">
+                    <i class='bx bx-chevrons-right'></i>
+                </a>
+            {% else %}
+                <span class="flex items-center px-3 py-2 bg-gray-100 border border-gray-200 text-gray-400 rounded-lg text-sm cursor-not-allowed">
+                    <i class='bx bx-chevron-right'></i>
+                </span>
+                <span class="flex items-center px-3 py-2 bg-gray-100 border border-gray-200 text-gray-400 rounded-lg text-sm cursor-not-allowed">
+                    <i class='bx bx-chevrons-right'></i>
+                </span>
+            {% endif %}
+
+        </div>
+
+        <!-- Info de página -->
+        <p class="text-center text-sm text-gray-500 mt-3">
+            Página <span class="font-semibold text-gray-700">{{ page_obj.number }}</span> 
+            de <span class="font-semibold text-gray-700">{{ page_obj.paginator.num_pages }}</span>
+            &mdash; {{ page_obj.paginator.count }} producto{{ page_obj.paginator.count|pluralize }} en total
+        </p>
+        {% else %}
+        <p class="text-center text-sm text-gray-500 mt-6">
+            {{ page_obj.paginator.count }} producto{{ page_obj.paginator.count|pluralize }} en total
+        </p>
+        {% endif %}
+
     {% else %}
-        <p class="text-lg text-gray-500">No hay productos disponibles en esta categoría o búsqueda.</p>
+        <div class="text-center py-16 bg-white rounded-2xl shadow-sm">
+            <i class='bx bx-package text-7xl text-gray-300 mb-4'></i>
+            <h3 class="text-xl font-bold text-gray-600 mb-2">No hay productos registrados</h3>
+            <p class="text-gray-400 mb-6">Comienza agregando tu primer producto al catálogo.</p>
+            <a href="{{ create_url }}" 
+               class="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl font-semibold transition-all">
+                <i class='bx bx-plus-circle'></i> Agregar Producto
+            </a>
+        </div>
     {% endif %}
 
-    <!-- Pagination -->
-    <div class="mt-6">
-        {% if page_obj.has_previous %}
-            <a href="?page=1" class="px-4 py-2 bg-gray-300 text-black rounded-lg hover:bg-gray-400">Primera</a> 
-            <a href="?page={{ page_obj.previous_page_number }}" class="px-4 py-2 bg-gray-300 text-black rounded-lg hover:bg-gray-400">Anterior</a>
-        {% endif %}
-        <span class="mx-2 text-lg">Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}</span>
-        {% if page_obj.has_next %}
-            <a href="?page={{ page_obj.next_page_number }}" class="px-4 py-2 bg-gray-300 text-black rounded-lg hover:bg-gray-400">Siguiente</a>
-            <a href="?page={{ page_obj.paginator.num_pages }}" class="px-4 py-2 bg-gray-300 text-black rounded-lg hover:bg-gray-400">Última</a>
-        {% endif %}
-    </div> 
-</div> 
+</div>
 {% endblock %}
-
-
-
-
-
-
-
