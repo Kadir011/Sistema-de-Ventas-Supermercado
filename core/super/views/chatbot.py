@@ -10,24 +10,18 @@ from core.super.models import Product, Category, Brand, PaymentMethod
 
 
 def _build_store_context():
-    """
-    Genera un resumen del inventario actual para el system prompt del chatbot.
-    """
     try:
         categories = list(
             Category.objects.values_list("name", flat=True).order_by("name")
         )
-
         brands = list(
             Brand.objects.values_list("name", flat=True).order_by("name")
         )
-
         products_qs = (
             Product.objects.filter(state=True, stock__gt=0)
             .select_related("category", "brand")
             .order_by("name")
         )
-
         product_lines = []
         for p in products_qs:
             cat_name   = p.category.name if p.category else "Sin categoría"
@@ -43,25 +37,14 @@ def _build_store_context():
         inactive_payments = [p for p in all_payments if p not in active_payment_names]
 
         ctx_parts = []
-
         if categories:
-            ctx_parts.append(
-                "CATEGORÍAS DISPONIBLES EN LA TIENDA:\n  " + ", ".join(categories)
-            )
-
+            ctx_parts.append("CATEGORÍAS DISPONIBLES EN LA TIENDA:\n  " + ", ".join(categories))
         if brands:
-            ctx_parts.append(
-                "MARCAS DISPONIBLES EN LA TIENDA:\n  " + ", ".join(brands)
-            )
-
+            ctx_parts.append("MARCAS DISPONIBLES EN LA TIENDA:\n  " + ", ".join(brands))
         if product_lines:
-            ctx_parts.append(
-                "PRODUCTOS DISPONIBLES (con stock):\n" + "\n".join(product_lines)
-            )
+            ctx_parts.append("PRODUCTOS DISPONIBLES (con stock):\n" + "\n".join(product_lines))
         else:
-            ctx_parts.append(
-                "PRODUCTOS DISPONIBLES: No hay productos con stock en este momento."
-            )
+            ctx_parts.append("PRODUCTOS DISPONIBLES: No hay productos con stock en este momento.")
 
         payment_info = []
         if active_payments:
@@ -73,7 +56,6 @@ def _build_store_context():
                 + " (en stand-by, no aceptados)"
             )
         ctx_parts.append("MÉTODOS DE PAGO:\n  " + "\n  ".join(payment_info))
-
         return "\n\n".join(ctx_parts)
 
     except Exception as exc:
@@ -105,10 +87,8 @@ class ChatbotProxyView(View):
             if not user_message:
                 return JsonResponse({"error": "Mensaje vacío"}, status=400)
 
-            # ── Contexto dinámico de la tienda ───────────────────────────
             store_ctx = _build_store_context()
 
-            # ── Datos del usuario (invitado / cliente / admin) ───────────
             if request.user.is_authenticated:
                 user_name = request.user.first_name or request.user.username
                 if request.user.is_superuser or request.user.user_type == 'admin':
@@ -119,7 +99,6 @@ class ChatbotProxyView(View):
                 user_name = "Invitado"
                 user_role = "Visitante"
 
-            # ── System prompt ────────────────────────────────────────────
             system_prompt = f"""Eres el asistente virtual de 'My Supermarket', una tienda en línea en Guayaquil, Ecuador.
 Estás atendiendo a: {user_name} (Rol: {user_role}).
 
@@ -181,9 +160,7 @@ Estás atendiendo a: {user_name} (Rol: {user_role}).
    - No cambies de tema abruptamente a menos que el usuario lo solicite.
 """
 
-            # ── Construir historial para Gemini ──────────────────────────
             gemini_contents = []
-
             for turn in history:
                 role    = turn.get("role", "user")
                 content = turn.get("content", "")
@@ -192,29 +169,22 @@ Estás atendiendo a: {user_name} (Rol: {user_role}).
                 if role not in ("user", "model"):
                     continue
                 gemini_contents.append(
-                    types.Content(
-                        role=role,
-                        parts=[types.Part(text=content)],
-                    )
+                    types.Content(role=role, parts=[types.Part(text=content)])
                 )
 
             gemini_contents.append(
-                types.Content(
-                    role="user",
-                    parts=[types.Part(text=user_message)],
-                )
+                types.Content(role="user", parts=[types.Part(text=user_message)])
             )
 
-            # ── Llamada a Gemini ─────────────────────────────────────────
             client = genai.Client(api_key=settings.GEMINI_API_KEY)
 
             response = client.models.generate_content(
-                model="gemini-3-flash-preview",
+                model="gemini-3.1-pro-preview",           # ✅ modelo válido
                 contents=gemini_contents,
                 config=types.GenerateContentConfig(
                     system_instruction=system_prompt,
                     temperature=0.6,
-                    max_output_tokens=600,
+                    max_output_tokens=1500,          # ✅ respuestas completas
                 ),
             )
 
