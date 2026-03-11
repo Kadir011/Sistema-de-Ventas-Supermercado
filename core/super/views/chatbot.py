@@ -179,7 +179,7 @@ Estás atendiendo a: {user_name} (Rol: {user_role}).
             client = genai.Client(api_key=settings.GEMINI_API_KEY)
 
             response = client.models.generate_content(
-                model="gemini-3.1-pro-preview",           # ✅ modelo válido
+                model="gemini-3-flash-preview",           # ✅ modelo válido
                 contents=gemini_contents,
                 config=types.GenerateContentConfig(
                     system_instruction=system_prompt,
