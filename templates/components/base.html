@@ -297,6 +297,18 @@
     <!-- ═══════════════════════════════════════════
          SCRIPTS
     ═══════════════════════════════════════════ -->
+
+    <!-- Variables de usuario para el chatbot -->
+    <script>
+        {% if user.is_authenticated %}
+            const CHATBOT_USER_NAME = "{{ user.first_name|default:user.username }}";
+            const CHATBOT_USER_ROLE = "{% if user.is_admin_user %}admin{% else %}customer{% endif %}";
+        {% else %}
+            const CHATBOT_USER_NAME = "";
+            const CHATBOT_USER_ROLE = "guest";
+        {% endif %}
+    </script>
+
     <script src="{% static 'js/chatbot.js' %}"></script>
     <script src="{% static 'js/validations.js' %}"></script>
 
