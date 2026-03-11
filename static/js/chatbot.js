@@ -1,5 +1,5 @@
 document.addEventListener("DOMContentLoaded", () => {
-    console.log("Chatbot cargado — con memoria de conversación y datos en vivo.");
+    console.log("Chatbot cargado — universal (invitados, clientes y admins).");
 
     /* ── Elementos del DOM ───────────────────────────────────────── */
     const chatbotButton    = document.getElementById("chatbot-button");
@@ -9,10 +9,9 @@ document.addEventListener("DOMContentLoaded", () => {
     const chatInput        = document.getElementById("chat-input");
     const messageContainer = document.getElementById("message-container");
 
-    if (!chatbotButton) return;   // La página no tiene chatbot (ej. panel admin)
+    if (!chatbotButton || !chatbotModal) return;
 
-    /* ── Historial en memoria (se borra al recargar la página) ──── */
-    // Cada entrada: { role: "user" | "model",  content: "..." }
+    /* ── Historial en memoria ────────────────────────────────────── */
     let conversationHistory = [];
 
     /* ── Abrir / cerrar modal ────────────────────────────────────── */
@@ -20,7 +19,6 @@ document.addEventListener("DOMContentLoaded", () => {
         chatbotModal.classList.toggle("hidden");
         if (!chatbotModal.classList.contains("hidden")) {
             chatInput.focus();
-            // Saludo inicial solo la primera vez
             if (conversationHistory.length === 0) {
                 displayMessage(
                     "¡Hola! 👋 Soy tu asistente de My Supermarket. " +
@@ -49,21 +47,17 @@ document.addEventListener("DOMContentLoaded", () => {
         const userMessage = chatInput.value.trim();
         if (!userMessage) return;
 
-        // Mostrar mensaje del usuario en la UI
         displayMessage(userMessage, "user");
         chatInput.value = "";
         chatInput.disabled = true;
         sendMessage.disabled = true;
 
-        // Indicador "escribiendo…"
         const loadingEl = createLoadingIndicator();
         messageContainer.appendChild(loadingEl);
         scrollToBottom();
 
-        // Llamar al backend enviando historial completo
         const reply = await sendToBackend(userMessage);
 
-        // Quitar indicador y mostrar respuesta
         loadingEl.remove();
         displayMessage(reply, "bot");
 
@@ -75,17 +69,27 @@ document.addEventListener("DOMContentLoaded", () => {
     /* ── Llamada al backend ──────────────────────────────────────── */
     async function sendToBackend(userMessage) {
         try {
+            // Obtener CSRF token — puede no existir para invitados
+            const csrf = getCookie("csrftoken") || "";
+
+            const headers = { "Content-Type": "application/json" };
+            if (csrf) headers["X-CSRFToken"] = csrf;
+
             const response = await fetch("/chatbot/api/", {
                 method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    "X-CSRFToken": getCookie("csrftoken"),
-                },
+                headers: headers,
                 body: JSON.stringify({
                     message: userMessage,
-                    history: conversationHistory,   // ← historial completo
+                    history: conversationHistory,
                 }),
             });
+
+            // Si la respuesta no es JSON, capturarlo limpiamente
+            const contentType = response.headers.get("content-type") || "";
+            if (!contentType.includes("application/json")) {
+                console.error("[Chatbot] Respuesta no es JSON. Status:", response.status);
+                return "⚠️ El asistente no está disponible en este momento. Intenta más tarde.";
+            }
 
             const data = await response.json();
 
@@ -96,11 +100,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
             const botReply = data.reply || "No obtuve respuesta.";
 
-            // Guardar ambos turnos en el historial local
             conversationHistory.push({ role: "user",  content: userMessage });
             conversationHistory.push({ role: "model", content: botReply   });
 
-            // Evitar que el historial crezca infinitamente (mantener últimos 20 turnos)
+            // Mantener máximo 40 turnos
             if (conversationHistory.length > 40) {
                 conversationHistory = conversationHistory.slice(-40);
             }
@@ -133,7 +136,6 @@ document.addEventListener("DOMContentLoaded", () => {
                 "bg-white", "text-gray-800", "shadow-sm",
                 "border", "border-gray-100"
             );
-            // Convertir Markdown básico → HTML
             bubble.innerHTML = markdownToHtml(text);
         }
 
@@ -171,13 +173,11 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     function getCookie(name) {
-        let value = null;
-        if (document.cookie) {
-            document.cookie.split(";").forEach((c) => {
-                const [k, v] = c.trim().split("=");
-                if (k === name) value = decodeURIComponent(v);
-            });
+        if (!document.cookie) return null;
+        for (const c of document.cookie.split(";")) {
+            const [k, v] = c.trim().split("=");
+            if (k === name) return decodeURIComponent(v);
         }
-        return value;
+        return null;
     }
 });
