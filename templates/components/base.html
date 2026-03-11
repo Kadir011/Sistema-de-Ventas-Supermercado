@@ -224,9 +224,9 @@
     {% endif %}
 
     <!-- ═══════════════════════════════════════════
-         CHATBOT (solo clientes)
+         CHATBOT — visible para TODOS
+         (invitados, clientes y administradores)
     ═══════════════════════════════════════════ -->
-    {% if not user.is_authenticated or user.is_customer_user %}
     <div id="chatbot-button" class="fixed bottom-5 right-5 z-50 hover:scale-110 transition-transform duration-300">
         <img src="{% static 'img/chatbot.png' %}" alt="Chatbot" class="cursor-pointer w-14 h-14 drop-shadow-lg" />
     </div>
@@ -234,21 +234,26 @@
     <div id="chatbot-modal" class="hidden fixed inset-0 bg-gray-800 bg-opacity-70 flex items-center justify-center z-40 backdrop-blur-sm">
         <div class="bg-white rounded-lg shadow-2xl w-96 transform transition-all scale-100 animate-slide-up">
             <div class="p-4 bg-green-600 rounded-t-lg text-white flex justify-between items-center">
-                <h2 class="text-xl font-semibold">Asistente Virtual</h2>
-                <button id="close-chatbot" class="hover:text-gray-200 text-2xl">&times;</button>
+                <div class="flex items-center gap-2">
+                    <img src="{% static 'img/chatbot.png' %}" alt="Bot" class="w-7 h-7">
+                    <h2 class="text-xl font-semibold">Asistente Virtual</h2>
+                </div>
+                <button id="close-chatbot" class="hover:text-gray-200 text-2xl leading-none">&times;</button>
             </div>
             <div class="p-4">
                 <div id="message-container" class="border border-gray-200 rounded-lg h-72 overflow-y-auto p-3 mb-3 bg-gray-50 text-sm"></div>
                 <div class="flex gap-2">
-                    <input id="chat-input" class="flex-1 p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500" placeholder="Escribe tu mensaje...">
-                    <button id="send-message" class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition duration-150">
+                    <input id="chat-input"
+                           class="flex-1 p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                           placeholder="Escribe tu mensaje...">
+                    <button id="send-message"
+                            class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition duration-150">
                         <i class='bx bxs-send'></i>
                     </button>
                 </div>
             </div>
         </div>
     </div>
-    {% endif %}
 
     <!-- ═══════════════════════════════════════════
          CONTENIDO PRINCIPAL
@@ -257,7 +262,11 @@
         {% if messages %}
             <div class="mb-4">
                 {% for message in messages %}
-                <div class="p-4 mb-4 text-sm rounded-lg {% if message.tags == 'error' %}bg-red-100 text-red-700{% elif message.tags == 'success' %}bg-green-100 text-green-700{% else %}bg-blue-100 text-blue-700{% endif %}" role="alert">
+                <div class="p-4 mb-4 text-sm rounded-lg
+                    {% if message.tags == 'error' %}bg-red-100 text-red-700
+                    {% elif message.tags == 'success' %}bg-green-100 text-green-700
+                    {% else %}bg-blue-100 text-blue-700{% endif %}"
+                    role="alert">
                     <span class="font-medium">{{ message }}</span>
                 </div>
                 {% endfor %}
@@ -296,11 +305,8 @@
             // Botón burguer
             const btn  = document.getElementById('mobile-menu-btn');
             const menu = document.getElementById('mobile-menu');
-
             if (btn && menu) {
-                btn.addEventListener('click', () => {
-                    menu.classList.toggle('hidden');
-                });
+                btn.addEventListener('click', () => menu.classList.toggle('hidden'));
             }
 
             // Actualizar contador del carrito
