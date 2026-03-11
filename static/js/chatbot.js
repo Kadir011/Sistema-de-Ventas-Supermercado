@@ -11,21 +11,38 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (!chatbotButton || !chatbotModal) return;
 
-    /* ── Historial en memoria ────────────────────────────────────── */
+    /* ── Historial en memoria (persiste entre aperturas del modal) ── */
     let conversationHistory = [];
+    let welcomeShown = false;
+
+    /* ── Saludo personalizado según usuario ─────────────────────── */
+    function buildWelcomeMessage() {
+        const userName = (typeof CHATBOT_USER_NAME !== "undefined") ? CHATBOT_USER_NAME : "";
+        const userRole = (typeof CHATBOT_USER_ROLE !== "undefined") ? CHATBOT_USER_ROLE : "guest";
+
+        if (userRole === "guest") {
+            return "¡Hola, Invitado! 👋 Soy tu asistente de My Supermarket. " +
+                   "Puedo ayudarte con información de productos, precios y métodos de pago. " +
+                   "Regístrate para poder comprar. ¿En qué te puedo ayudar?";
+        } else if (userRole === "admin") {
+            return `¡Hola, ${userName}! 👋 Bienvenido al panel de My Supermarket. ` +
+                   "¿En qué te puedo ayudar hoy?";
+        } else {
+            return `¡Hola, ${userName}! 👋 Bienvenido a My Supermarket. ` +
+                   "Puedo ayudarte con productos, precios y tu carrito de compras. " +
+                   "¿En qué te puedo ayudar?";
+        }
+    }
 
     /* ── Abrir / cerrar modal ────────────────────────────────────── */
     chatbotButton.addEventListener("click", () => {
         chatbotModal.classList.toggle("hidden");
         if (!chatbotModal.classList.contains("hidden")) {
             chatInput.focus();
-            if (conversationHistory.length === 0) {
-                displayMessage(
-                    "¡Hola! 👋 Soy tu asistente de My Supermarket. " +
-                    "Puedo ayudarte con información de productos, precios y métodos de pago. " +
-                    "¿En qué te puedo ayudar hoy?",
-                    "bot"
-                );
+            // Solo muestra el saludo la primera vez; no se repite al reabrir
+            if (!welcomeShown) {
+                welcomeShown = true;
+                displayMessage(buildWelcomeMessage(), "bot");
             }
         }
     });
@@ -69,7 +86,6 @@ document.addEventListener("DOMContentLoaded", () => {
     /* ── Llamada al backend ──────────────────────────────────────── */
     async function sendToBackend(userMessage) {
         try {
-            // Obtener CSRF token — puede no existir para invitados
             const csrf = getCookie("csrftoken") || "";
 
             const headers = { "Content-Type": "application/json" };
@@ -84,7 +100,6 @@ document.addEventListener("DOMContentLoaded", () => {
                 }),
             });
 
-            // Si la respuesta no es JSON, capturarlo limpiamente
             const contentType = response.headers.get("content-type") || "";
             if (!contentType.includes("application/json")) {
                 console.error("[Chatbot] Respuesta no es JSON. Status:", response.status);
