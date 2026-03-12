@@ -1,6 +1,9 @@
 # My Supermarket - E-Commerce & POS System
 
-**Django 5.1.4** | **Python 3.10+** | **PostgreSQL** | **Tailwind CSS** | **Google Gemini AI**
+![Python](https://img.shields.io/badge/Python-3.10-blue?logo=python&logoColor=white)
+![Django](https://img.shields.io/badge/Django-5.1.4-green?logo=django&logoColor=white)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-Ready-blue?logo=postgresql&logoColor=white)
+![License](https://img.shields.io/badge/License-Proprietary-red)
 
 Sistema integral de comercio electrónico y gestión de ventas para supermercados, desarrollado con Django y potenciado por Inteligencia Artificial.
 
