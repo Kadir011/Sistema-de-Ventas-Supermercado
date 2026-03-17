@@ -5,6 +5,7 @@ from django.conf import settings
 from decimal import Decimal
 from config.utils import get_image
 from django.forms import model_to_dict
+import uuid
 
 class Brand(models.Model):
     id_brand = models.AutoField(primary_key=True, verbose_name="ID", blank=False, null=False, unique=True)
@@ -167,7 +168,7 @@ class Product(models.Model):
         return self.id_product
 
     def save(self, *args, **kwargs):
-        self.state = self.stock > 0  # Asegura que el estado se calcule antes de guardar
+        self.state = self.stock > 0
         super().save(*args, **kwargs)
 
     def get_image_url(self):
@@ -197,7 +198,6 @@ class Product(models.Model):
 
 class Sale(models.Model):
     id_sale = models.AutoField(primary_key=True, verbose_name="ID", blank=False, null=False, unique=True)
-    # NUEVO CAMPO: Para saber qué cuenta de usuario hizo la compra
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, verbose_name="Usuario que compró", null=True, blank=True)
     customer = models.ForeignKey(Customer, on_delete=models.CASCADE, verbose_name="Cliente", blank=True, null=True)
     seller = models.ForeignKey(Seller, on_delete=models.CASCADE, verbose_name="Vendedor", blank=True, null=True)
@@ -216,9 +216,21 @@ class Sale(models.Model):
     amount_received = models.DecimalField(max_digits=10, decimal_places=2, default=Decimal('0.00'), verbose_name="Monto Recibido", blank=True, null=True)
     change = models.DecimalField(max_digits=10, decimal_places=2, default=Decimal('0.00'), verbose_name="Cambio", blank=True, null=True)
     
-    # Campos para datos censurados de pago
-    card_number_masked = models.CharField(max_length=50, verbose_name="Número de Tarjeta Censurado", blank=True, null=True, help_text="Número de tarjeta censurado (Ej: 1234 XXXX XXXX 5678)")
-    transfer_account_masked = models.CharField(max_length=20, verbose_name="Número de Cuenta Censurado", blank=True, null=True, help_text="Número de cuenta censurado (Ej: XXX123)")
+    card_number_masked = models.CharField(max_length=50, verbose_name="Número de Tarjeta Censurado", blank=True, null=True)
+    transfer_account_masked = models.CharField(max_length=20, verbose_name="Número de Cuenta Censurado", blank=True, null=True)
+
+    # ── Idempotencia ──────────────────────────────────────────────────────────
+    # Clave única generada en el cliente antes de enviar el formulario.
+    # Si llega un segundo request con la misma clave, se devuelve la venta
+    # ya creada sin procesar nada de nuevo (evita ventas duplicadas y doble
+    # descuento de stock por doble submit / recarga / botón "atrás").
+    idempotency_key = models.UUIDField(
+        unique=True,
+        null=True,
+        blank=True,
+        verbose_name="Clave de idempotencia",
+        help_text="UUID generado por el cliente al abrir el checkout. Garantiza que un checkout doble no crea dos ventas."
+    )
 
     @property
     def id(self):
@@ -238,6 +250,7 @@ class Sale(models.Model):
             models.Index(fields=['sale_date']),
             models.Index(fields=['customer']),
             models.Index(fields=['seller']),
+            models.Index(fields=['idempotency_key']),
         ]
         constraints = [
             CheckConstraint(check=Q(subtotal__gte=0), name='sale_subtotal_non_negative'),
@@ -275,7 +288,6 @@ class SaleDetail(models.Model):
             CheckConstraint(check=Q(subtotal__gte=0), name='saledetail_subtotal_non_negative')
         ]
 
-# Models para clientes compradores
 
 class Cart(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, verbose_name="Usuario")
@@ -286,18 +298,18 @@ class Cart(models.Model):
         return f'Carrito de {self.user.username}'
     
     def get_total(self):
-        items = self.items.all()  # Ahora usa 'items' en lugar de 'cartitem_set'
+        items = self.items.all()
         total = sum(item.get_subtotal() for item in items)
         return total
     
     def get_subtotal(self):
-        return self.get_total() / Decimal('1.15')  # Sin IVA
+        return self.get_total() / Decimal('1.15')
     
     def get_iva(self):
         return self.get_total() - self.get_subtotal()
     
     def get_item_count(self):
-        return self.items.count()  # Ahora usa 'items' en lugar de 'cartitem_set'
+        return self.items.count()
     
     class Meta:
         verbose_name = "Carrito"
