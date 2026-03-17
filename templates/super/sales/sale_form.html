@@ -10,6 +10,10 @@
           data-initial-totals='{% if initial_totals %}{{ initial_totals|safe }}{% else %}{}{% endif %}'>
         {% csrf_token %}
 
+        {# ── Idempotencia: UUID generado en el GET, viaja con el payload JSON ── #}
+        {# sale.js lo lee desde este campo al hacer saveSale()                    #}
+        <input type="hidden" id="idempotency_key_field" value="{{ idempotency_key }}">
+
         <!-- Campos principales de la venta -->
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 bg-gray-50 p-4 rounded-lg">
             <div>
