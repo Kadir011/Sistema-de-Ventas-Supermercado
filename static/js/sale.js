@@ -5,7 +5,6 @@ let currentRow = 0;
 document.addEventListener('DOMContentLoaded', function() {
     console.log('Iniciando carga del formulario de ventas...');
     
-    // Obtener los datos iniciales
     const saleForm = document.getElementById('saleForm');
     let initialDetails = [];
     let initialTotals = {};
@@ -13,9 +12,6 @@ document.addEventListener('DOMContentLoaded', function() {
     try {
         const detailsAttr = saleForm.dataset.initialDetails;
         const totalsAttr = saleForm.dataset.initialTotals;
-        
-        console.log('Raw initialDetails:', detailsAttr);
-        console.log('Raw initialTotals:', totalsAttr);
         
         if (detailsAttr && detailsAttr !== '[]') {
             initialDetails = JSON.parse(detailsAttr);
@@ -27,36 +23,22 @@ document.addEventListener('DOMContentLoaded', function() {
         console.error('Error al parsear datos iniciales:', error);
     }
 
-    console.log('initialDetails parseados:', initialDetails);
-    console.log('initialTotals parseados:', initialTotals);
-
-    // Precargar datos iniciales en los campos del formulario
     if (initialDetails && initialDetails.length > 0) {
-        console.log('Cargando detalles iniciales...');
         initialDetails.forEach(detail => {
-            console.log('Añadiendo detalle:', detail);
             addDetailRowWithData(detail);
         });
-        
-        // Recalcular totales después de cargar los detalles
-        setTimeout(() => {
-            calculateTotals();
-        }, 100);
+        setTimeout(() => { calculateTotals(); }, 100);
     } else {
-        console.log('No hay detalles iniciales, añadiendo una fila vacía...');
         addDetailRow();
     }
 
-    // Precargar totales si existen
     if (initialTotals && Object.keys(initialTotals).length > 0) {
-        console.log('Precargando totales...');
         document.querySelector('input[name="subtotal"]').value = parseFloat(initialTotals.subtotal || 0).toFixed(2);
         document.querySelector('input[name="iva"]').value = parseFloat(initialTotals.iva || 0).toFixed(2);
         document.querySelector('input[name="discount"]').value = parseFloat(initialTotals.discount || 0).toFixed(2);
         document.querySelector('input[name="total"]').value = parseFloat(initialTotals.total || 0).toFixed(2);
     }
 
-    // Event listeners
     document.getElementById('add-product').addEventListener('click', addDetailRow);
     document.getElementById('saleForm').addEventListener('submit', function(e) {
         e.preventDefault();
@@ -66,9 +48,6 @@ document.addEventListener('DOMContentLoaded', function() {
     initProductModal();
 });
 
-/**
- * Agrega una nueva fila de detalle de venta
- */
 function addDetailRow() {
     const template = document.getElementById('detail-row-template');
     const tbody = document.getElementById('sale-details').querySelector('tbody');
@@ -95,12 +74,7 @@ function addDetailRow() {
     showProductModal(row.dataset.rowId);
 }
 
-/**
- * Agrega una fila con datos iniciales (para edición)
- */
 function addDetailRowWithData(detail) {
-    console.log('Ejecutando addDetailRowWithData con detalle:', detail);
-
     const template = document.getElementById('detail-row-template');
     const tbody = document.getElementById('sale-details').querySelector('tbody');
     const clone = document.importNode(template.content, true);
@@ -113,22 +87,19 @@ function addDetailRowWithData(detail) {
     const subtotalInput = row.querySelector('.subtotal-input');
     const deleteButton = row.querySelector('.delete-row');
 
-    // Crear opción con los datos del producto
     let option = document.createElement('option');
     option.value = detail.product;
     option.textContent = detail.name;
     option.dataset.price = detail.price;
-    option.dataset.stock = detail.stock + detail.quantity; // Stock disponible + cantidad ya usada
+    option.dataset.stock = detail.stock + detail.quantity;
     option.selected = true;
     productSelect.appendChild(option);
 
-    // Establecer valores
     quantityInput.value = detail.quantity;
     quantityInput.dataset.initialQuantity = detail.quantity;
     priceInput.value = parseFloat(detail.price).toFixed(2);
     subtotalInput.value = parseFloat(detail.subtotal).toFixed(2);
 
-    // Event listeners
     productSelect.addEventListener('change', () => updateRowPricesAndStock(row.dataset.rowId));
     quantityInput.addEventListener('input', () => updateRowPricesAndStock(row.dataset.rowId));
     deleteButton.addEventListener('click', function() {
@@ -140,13 +111,9 @@ function addDetailRowWithData(detail) {
         }
     });
 
-    console.log('Añadiendo fila al tbody:', row);
     tbody.appendChild(clone);
 }
 
-/**
- * Actualiza precios y subtotal de una fila
- */
 function updateRowPricesAndStock(rowId) {
     const row = document.querySelector(`.detail-row[data-row-id="${rowId}"]`);
     if (!row) return;
@@ -178,9 +145,6 @@ function updateRowPricesAndStock(rowId) {
     calculateTotals();
 }
 
-/**
- * Calcula los totales de la venta
- */
 function calculateTotals() {
     const subtotalInputs = document.querySelectorAll('.subtotal-input');
     const subtotalField = document.querySelector('input[name="subtotal"]');
@@ -190,8 +154,7 @@ function calculateTotals() {
 
     let subtotal = 0;
     subtotalInputs.forEach(input => {
-        const value = parseFloat(input.value) || 0;
-        subtotal += value;
+        subtotal += parseFloat(input.value) || 0;
     });
     
     const iva = subtotal * IVA_RATE;
@@ -203,9 +166,6 @@ function calculateTotals() {
     totalField.value = total.toFixed(2);
 }
 
-/**
- * Valida el formulario antes de enviarlo
- */
 function validateForm() {
     const customerSelect = document.querySelector('select[name="customer"]');
     if (!customerSelect.value) {
@@ -231,10 +191,7 @@ function validateForm() {
     const productSelects = document.querySelectorAll('.product-select');
     let hasProducts = false;
     for (const select of productSelects) {
-        if (select.value) {
-            hasProducts = true;
-            break;
-        }
+        if (select.value) { hasProducts = true; break; }
     }
 
     if (!hasProducts) {
@@ -245,10 +202,23 @@ function validateForm() {
     return true;
 }
 
-/**
- * Guarda la venta y sus detalles
- */
 function saveSale() {
+    // ── Idempotencia: leer la clave generada en el GET ────────────────────
+    // El campo hidden #idempotency_key_field fue renderizado por el servidor
+    // con un UUID único al abrir este formulario. Se envía con cada POST.
+    // Si el mismo request llega dos veces, el backend devuelve la venta
+    // existente sin crear duplicados.
+    const idempotencyKey = document.getElementById('idempotency_key_field')?.value || '';
+
+    // ── Protección en el cliente: deshabilitar el botón de guardar ────────
+    const submitBtn = document.querySelector('button[type="submit"]');
+    if (submitBtn) {
+        if (submitBtn.dataset.submitted) return;   // segundo clic bloqueado
+        submitBtn.dataset.submitted = 'true';
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = "<i class='bx bx-loader-alt bx-spin'></i> Guardando...";
+    }
+
     const saleData = {
         customer: document.querySelector('select[name="customer"]').value,
         seller: document.querySelector('select[name="seller"]').value,
@@ -258,6 +228,7 @@ function saveSale() {
         iva: document.querySelector('input[name="iva"]').value,
         discount: document.querySelector('input[name="discount"]').value,
         total: document.querySelector('input[name="total"]').value,
+        idempotency_key: idempotencyKey,   // ← incluido en el payload
         details: []
     };
 
@@ -278,22 +249,18 @@ function saveSale() {
         }
     });
 
-    console.log('Datos enviados:', JSON.stringify(saleData));
-
     const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
     fetch(window.location.href, {
         method: 'POST',
-        headers: { 
-            'Content-Type': 'application/json', 
-            'X-CSRFToken': csrfToken 
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': csrfToken
         },
         body: JSON.stringify(saleData)
     })
     .then(response => {
         if (!response.ok) {
-            return response.text().then(text => {
-                throw new Error(text || 'Error desconocido');
-            });
+            return response.text().then(text => { throw new Error(text || 'Error desconocido'); });
         }
         return response.json();
     })
@@ -301,35 +268,38 @@ function saveSale() {
         if (data.success) {
             window.location.href = data.redirect_url;
         } else {
+            // Re-habilitar el botón si el servidor rechaza la petición
+            if (submitBtn) {
+                submitBtn.disabled = false;
+                delete submitBtn.dataset.submitted;
+                submitBtn.innerHTML = "<i class='bx bx-save'></i> Guardar";
+            }
             alert(data.error || 'Error al guardar la venta');
         }
     })
     .catch(error => {
+        if (submitBtn) {
+            submitBtn.disabled = false;
+            delete submitBtn.dataset.submitted;
+            submitBtn.innerHTML = "<i class='bx bx-save'></i> Guardar";
+        }
         console.error('Error:', error);
         alert('Error al guardar la venta: ' + error.message);
     });
 }
 
-/**
- * Inicializa el modal de selección de productos
- */
 function initProductModal() {
     const modal = document.getElementById('productModal');
     const closeButton = document.getElementById('closeModal');
     const searchInput = document.getElementById('productSearch');
 
     closeButton.addEventListener('click', () => modal.classList.add('hidden'));
-    searchInput.addEventListener('input', function() {
-        filterProducts(this.value);
-    });
+    searchInput.addEventListener('input', function() { filterProducts(this.value); });
     window.addEventListener('click', event => {
         if (event.target === modal) modal.classList.add('hidden');
     });
 }
 
-/**
- * Muestra el modal de productos para seleccionar
- */
 function showProductModal(rowId) {
     const modal = document.getElementById('productModal');
     const productList = document.getElementById('productList');
@@ -344,7 +314,6 @@ function showProductModal(rowId) {
                 productList.innerHTML = '<tr><td colspan="4" class="py-2 text-center">No hay productos disponibles</td></tr>';
                 return;
             }
-            
             products.forEach(product => {
                 const row = document.createElement('tr');
                 row.innerHTML = `
@@ -373,9 +342,6 @@ function showProductModal(rowId) {
     modal.classList.remove('hidden');
 }
 
-/**
- * Filtra la lista de productos en el modal
- */
 function filterProducts(query) {
     const rows = document.querySelectorAll('#productList tr');
     const lowerQuery = query.toLowerCase();
@@ -387,21 +353,13 @@ function filterProducts(query) {
     });
 }
 
-/**
- * Selecciona un producto para una fila específica
- */
 function selectProduct(rowId, productId, productName, productPrice, productStock) {
     const row = document.querySelector(`.detail-row[data-row-id="${rowId}"]`);
     if (!row) return;
 
     const productSelect = row.querySelector('.product-select');
+    while (productSelect.options.length > 1) { productSelect.remove(1); }
     
-    // Limpiar opciones anteriores excepto la placeholder
-    while (productSelect.options.length > 1) {
-        productSelect.remove(1);
-    }
-    
-    // Agregar nueva opción
     let option = document.createElement('option');
     option.value = productId;
     option.textContent = productName;
