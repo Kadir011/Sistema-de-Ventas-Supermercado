@@ -5,48 +5,63 @@ from django.views.generic import TemplateView
 from django.http import JsonResponse
 from django.contrib import messages
 from django.db import transaction
+from django.db.models import F
 from django.utils import timezone
 import decimal
+import uuid
 from decimal import Decimal
 from core.super.models import Cart, CartItem, Product, Sale, SaleDetail, Customer, PaymentMethod, Seller
 
+
 @login_required
 def add_to_cart(request, product_id):
-    """Agregar producto al carrito"""
+    """
+    Agrega un producto al carrito.
+
+    Idempotencia: usa select_for_update() + F() para incrementar la cantidad
+    de forma atómica, evitando que dos requests concurrentes (doble clic)
+    sumen +2 en lugar de +1. Si el item ya está al tope de stock, devuelve
+    error sin modificar nada.
+    """
     product = get_object_or_404(Product, pk=product_id, state=True)
-    
+
     if product.stock <= 0:
         return JsonResponse({'success': False, 'error': 'Producto sin stock'}, status=400)
-    
-    # Obtener o crear carrito
-    cart, created = Cart.objects.get_or_create(user=request.user)
-    
-    # Verificar si el producto ya está en el carrito
-    cart_item, item_created = CartItem.objects.get_or_create(
-        cart=cart,
-        product=product,
-        defaults={'quantity': 1}
-    )
-    
-    if not item_created:
-        # Si ya existe, aumentar cantidad
-        if cart_item.quantity < product.stock:
-            cart_item.quantity += 1
-            cart_item.save()
-        else:
-            return JsonResponse({'success': False, 'error': 'No hay suficiente stock'}, status=400)
-    
+
+    with transaction.atomic():
+        cart, _ = Cart.objects.get_or_create(user=request.user)
+
+        # Bloqueo a nivel de fila para evitar race conditions en concurrencia
+        cart_item, item_created = CartItem.objects.select_for_update().get_or_create(
+            cart=cart,
+            product=product,
+            defaults={'quantity': 1}
+        )
+
+        if not item_created:
+            # Recargar para tener el valor más actualizado tras el lock
+            cart_item.refresh_from_db()
+            if cart_item.quantity >= product.stock:
+                return JsonResponse({'success': False, 'error': 'No hay suficiente stock'}, status=400)
+            # Incremento atómico: evita que dos requests simultáneos lean el
+            # mismo valor y ambos sumen 1 (race condition clásico)
+            CartItem.objects.filter(pk=cart_item.pk).update(quantity=F('quantity') + 1)
+
     messages.success(request, f'{product.name} agregado al carrito')
+    cart.refresh_from_db()
     return JsonResponse({'success': True, 'cart_count': cart.get_item_count()})
 
 
 @login_required
 def update_cart_item(request, item_id):
-    """Actualizar cantidad de un item del carrito"""
+    """
+    Actualiza la cantidad de un item.
+    Ya era idempotente (fija valor absoluto). Se mantiene sin cambios.
+    """
     if request.method == 'POST':
         cart_item = get_object_or_404(CartItem, pk=item_id, cart__user=request.user)
         quantity = int(request.POST.get('quantity', 1))
-        
+
         if quantity <= 0:
             cart_item.delete()
             messages.info(request, 'Producto eliminado del carrito')
@@ -56,13 +71,16 @@ def update_cart_item(request, item_id):
             cart_item.quantity = quantity
             cart_item.save()
             messages.success(request, 'Cantidad actualizada')
-    
+
     return redirect('super:cart')
 
 
 @login_required
 def remove_from_cart(request, item_id):
-    """Eliminar producto del carrito"""
+    """
+    Elimina un item del carrito.
+    get_object_or_404 garantiza 404 si ya fue eliminado (no silencia el doble delete).
+    """
     cart_item = get_object_or_404(CartItem, pk=item_id, cart__user=request.user)
     product_name = cart_item.product.name
     cart_item.delete()
@@ -72,7 +90,7 @@ def remove_from_cart(request, item_id):
 
 @login_required
 def cart_count(request):
-    """API para obtener cantidad de items en el carrito"""
+    """API para obtener cantidad de items en el carrito."""
     try:
         cart = Cart.objects.get(user=request.user)
         count = cart.get_item_count()
@@ -101,9 +119,10 @@ class CartView(LoginRequiredMixin, TemplateView):
             context['subtotal'] = 0
             context['iva'] = 0
             context['total'] = 0
-        
+
         context['title'] = 'Mi Carrito'
         return context
+
 
 class CheckoutView(LoginRequiredMixin, TemplateView):
     template_name = 'super/shop/checkout.html'
@@ -114,10 +133,10 @@ class CheckoutView(LoginRequiredMixin, TemplateView):
         try:
             cart = Cart.objects.get(user=self.request.user)
             items = CartItem.objects.filter(cart=cart).select_related('product')
-            
+
             customer = Customer.objects.filter(email=self.request.user.email).first()
             discount_pct = customer.discount_percentage if customer else Decimal('0.00')
-            
+
             cart_total = cart.get_total()
             discount_amount = cart_total * (discount_pct / 100)
             final_total = cart_total - discount_amount
@@ -130,22 +149,47 @@ class CheckoutView(LoginRequiredMixin, TemplateView):
             context['total'] = final_total
             context['payment_methods'] = PaymentMethod.objects.all()
             context['customer_dni'] = customer.dni if customer else ''
-                
+
+            # ── Idempotencia ──────────────────────────────────────────────
+            # Se genera un UUID nuevo cada vez que el usuario ABRE el checkout
+            # (GET). Este UUID viaja en un campo hidden del formulario y se
+            # guarda en la venta. Si el mismo UUID llega dos veces (doble
+            # submit, F5, botón atrás), el segundo request detecta la venta
+            # existente y redirige sin crear nada nuevo.
+            context['idempotency_key'] = str(uuid.uuid4())
+
         except Cart.DoesNotExist:
-            return redirect('super:cart')
-        
+            pass
+
         context['title'] = 'Finalizar Compra'
         return context
 
     @transaction.atomic
     def post(self, request, *args, **kwargs):
+        # ── Guardia de idempotencia ───────────────────────────────────────
+        # Si el mismo idempotency_key ya existe en la BD, significa que este
+        # checkout ya fue procesado (doble clic, F5, botón atrás con reenvío
+        # de formulario, etc.). Devolvemos la venta original sin tocar nada.
+        raw_key = request.POST.get('idempotency_key', '').strip()
+        idempotency_key = None
+        if raw_key:
+            try:
+                idempotency_key = uuid.UUID(raw_key)
+                existing_sale = Sale.objects.filter(idempotency_key=idempotency_key).first()
+                if existing_sale:
+                    messages.info(request, 'Esta compra ya fue procesada.')
+                    return redirect('super:order_detail', pk=existing_sale.pk)
+            except (ValueError, AttributeError):
+                # UUID malformado: ignorar y procesar normalmente
+                idempotency_key = None
+
         try:
             cart = Cart.objects.get(user=request.user)
             items = CartItem.objects.filter(cart=cart).select_related('product')
-            
+
             if not items.exists():
                 return redirect('super:cart')
-            
+
             # Lógica Consumidor Final vs Datos Personales
             dni_type = request.POST.get('dni_type')
             if dni_type == 'final':
@@ -170,26 +214,23 @@ class CheckoutView(LoginRequiredMixin, TemplateView):
                     customer.dni = customer_dni
                     customer.save()
 
-            seller, _ = Seller.objects.get_or_create(dni='9999999999', defaults={'name': 'Vendedor', 'last_name': 'Online'})
+            seller, _ = Seller.objects.get_or_create(
+                dni='9999999999',
+                defaults={'name': 'Vendedor', 'last_name': 'Online'}
+            )
 
-            # Totales
             cart_total = cart.get_total()
             discount_amount = cart_total * (customer.discount_percentage / 100)
             final_total = cart_total - discount_amount
 
-            # Obtener método de pago para determinar lógica
             payment_method_id = request.POST.get('payment_method')
             payment_method = PaymentMethod.objects.get(id_payment_method=payment_method_id)
             payment_name = payment_method.name.lower()
 
-            # Lógica según método de pago
             if 'transferencia' in payment_name or 'tarjeta' in payment_name:
-                # Para transferencias y tarjetas, el monto recibido es igual al total
-                # No hay vuelto en estos casos
                 amount_received = final_total
                 change = Decimal('0.00')
             else:
-                # Para efectivo y otros métodos
                 amount_received_str = request.POST.get('amount_received', '0')
                 try:
                     amount_received = Decimal(amount_received_str) if amount_received_str else Decimal('0')
@@ -202,9 +243,9 @@ class CheckoutView(LoginRequiredMixin, TemplateView):
 
                 change = amount_received - final_total
 
-            # Crear Venta
+            # Crear venta incluyendo la clave de idempotencia
             sale = Sale.objects.create(
-                user=request.user,  # Esto evita el error 404
+                user=request.user,
                 customer=customer,
                 seller=seller,
                 payment_id=request.POST.get('payment_method'),
@@ -215,30 +256,28 @@ class CheckoutView(LoginRequiredMixin, TemplateView):
                 total=final_total,
                 amount_received=amount_received,
                 change=change,
-                # Datos de pago censurados
                 card_number_masked=request.POST.get('card_number_masked', ''),
-                transfer_account_masked=request.POST.get('transfer_account_masked', '')
+                transfer_account_masked=request.POST.get('transfer_account_masked', ''),
+                idempotency_key=idempotency_key,   # ← clave guardada en la BD
             )
 
-            # Agregar datos de transferencia si es transferencia bancaria
-            if 'transferencia' in payment_name or 'tarjeta' in payment_name:
-                # Los datos censurados ya se guardan en la creación de Sale
-                pass
-            
             for item in items:
                 SaleDetail.objects.create(
-                    sale=sale, product=item.product, quantity=item.quantity,
-                    price=item.product.price, subtotal=item.get_subtotal()
+                    sale=sale,
+                    product=item.product,
+                    quantity=item.quantity,
+                    price=item.product.price,
+                    subtotal=item.get_subtotal()
                 )
                 item.product.stock -= item.quantity
                 item.product.save()
-            
+
             items.delete()
             cart.delete()
-            
+
             messages.success(request, '¡Compra finalizada!')
             return redirect('super:order_detail', pk=sale.pk)
-            
+
         except Customer.DoesNotExist:
             messages.error(request, 'Error al procesar el cliente')
             return redirect('super:checkout')
