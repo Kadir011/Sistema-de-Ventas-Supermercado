@@ -11,6 +11,12 @@
         <div class="lg:col-span-2">
             <form method="post" id="checkout-form" class="bg-white rounded-lg shadow-md p-6 space-y-6">
                 {% csrf_token %}
+
+                {# ── Idempotencia ─────────────────────────────────────────────────── #}
+                {# UUID generado en el GET. Si el mismo formulario se envía dos veces  #}
+                {# (doble clic, F5, botón "atrás"), el backend detecta la clave y       #}
+                {# redirige a la venta ya creada sin procesar nada nuevo.               #}
+                <input type="hidden" name="idempotency_key" value="{{ idempotency_key }}">
                 
                 <!-- TIPO DE FACTURA -->
                 <div class="bg-gray-50 p-4 rounded-lg border border-gray-200">
@@ -69,7 +75,6 @@
                         {% endfor %}
                     </select>
 
-                    <!-- Aviso método no vigente -->
                     <div id="payment_unavailable_notice"
                          class="hidden mt-3 flex items-start gap-2 bg-yellow-50 border border-yellow-400 text-yellow-800 px-4 py-3 rounded-lg">
                         <i class='bx bx-error text-xl mt-0.5 flex-shrink-0'></i>
@@ -85,9 +90,7 @@
                     </p>
                 </div>
 
-                <!-- ══════════════════════════════════════
-                     SECCIÓN TARJETA
-                     ══════════════════════════════════════ -->
+                <!-- SECCIÓN TARJETA -->
                 <div id="card_section" class="hidden border border-blue-100 rounded-xl p-5 space-y-5 bg-blue-50">
                     <h3 class="text-lg font-bold text-gray-800 flex items-center gap-2">
                         <i class='bx bx-credit-card text-blue-600'></i>
@@ -95,17 +98,14 @@
                         <span id="card_type_label" class="text-sm font-normal text-blue-500"></span>
                     </h3>
 
-                    <!-- Logos de redes -->
                     <div class="flex items-center gap-3 flex-wrap">
                         <span class="text-xs text-gray-500">Aceptamos:</span>
-
                         <div id="logo_visa" class="card-logo opacity-30 transition-all duration-300 cursor-default" title="Visa">
                             <svg width="50" height="32" viewBox="0 0 50 32" xmlns="http://www.w3.org/2000/svg">
                                 <rect width="50" height="32" rx="5" fill="#1A1F71"/>
                                 <text x="7" y="22" font-family="Arial" font-size="15" font-weight="bold" fill="white">VISA</text>
                             </svg>
                         </div>
-
                         <div id="logo_mastercard" class="card-logo opacity-30 transition-all duration-300 cursor-default" title="Mastercard">
                             <svg width="50" height="32" viewBox="0 0 50 32" xmlns="http://www.w3.org/2000/svg">
                                 <rect width="50" height="32" rx="5" fill="#252525"/>
@@ -114,14 +114,12 @@
                                 <path d="M25 7.5a10 10 0 0 1 0 17A10 10 0 0 1 25 7.5z" fill="#FF5F00"/>
                             </svg>
                         </div>
-
                         <div id="logo_amex" class="card-logo opacity-30 transition-all duration-300 cursor-default" title="American Express">
                             <svg width="50" height="32" viewBox="0 0 50 32" xmlns="http://www.w3.org/2000/svg">
                                 <rect width="50" height="32" rx="5" fill="#007BC1"/>
                                 <text x="4" y="21" font-family="Arial" font-size="10" font-weight="bold" fill="white">AMEX</text>
                             </svg>
                         </div>
-
                         <div id="logo_discover" class="card-logo opacity-30 transition-all duration-300 cursor-default" title="Discover">
                             <svg width="50" height="32" viewBox="0 0 50 32" xmlns="http://www.w3.org/2000/svg">
                                 <rect width="50" height="32" rx="5" fill="#F76F20"/>
@@ -129,20 +127,16 @@
                                 <circle cx="38" cy="16" r="9" fill="#F9D55E"/>
                             </svg>
                         </div>
-
-                        <span id="card_network_badge"
-                              class="hidden ml-auto text-xs font-bold px-3 py-1 rounded-full bg-blue-200 text-blue-800">
+                        <span id="card_network_badge" class="hidden ml-auto text-xs font-bold px-3 py-1 rounded-full bg-blue-200 text-blue-800">
                             <i class='bx bx-check-circle'></i>
                             <span id="card_network_name"></span>
                         </span>
                     </div>
 
-                    <!-- ── Tarjeta visual preview ── -->
                     <div id="card_preview"
                          class="relative w-full max-w-sm mx-auto h-44 rounded-2xl shadow-xl text-white p-5 flex flex-col justify-between overflow-hidden transition-all duration-500"
                          style="background: linear-gradient(135deg,#1a1f71 0%,#2563eb 100%)">
                         <div class="flex justify-between items-start">
-                            <!-- Chip EMV -->
                             <div class="w-10 h-7 bg-yellow-300 rounded-md flex items-center justify-center grid grid-cols-2 gap-0.5 p-1">
                                 <div class="w-full h-full bg-yellow-500 rounded-sm"></div>
                                 <div class="w-full h-full bg-yellow-500 rounded-sm"></div>
@@ -166,28 +160,21 @@
                         </div>
                     </div>
 
-                    <!-- ── Número de tarjeta ── -->
                     <div>
                         <label class="block text-gray-700 font-semibold mb-1 text-sm">Número de Tarjeta *</label>
                         <div class="relative">
                             <input type="text" id="card_number" name="card_number"
-                                   placeholder="0000 0000 0000 0000"
-                                   maxlength="19"
+                                   placeholder="0000 0000 0000 0000" maxlength="19"
                                    class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none font-mono text-lg tracking-widest transition-colors"
-                                   oninput="onCardNumberInput(this)"
-                                   autocomplete="cc-number">
+                                   oninput="onCardNumberInput(this)" autocomplete="cc-number">
                             <span id="luhn_icon" class="absolute right-3 top-1/2 -translate-y-1/2 text-2xl hidden"></span>
                         </div>
-                        <!-- Barra semáforo -->
                         <div class="mt-1 h-1.5 rounded-full bg-gray-200 overflow-hidden">
-                            <div id="card_progress"
-                                 class="h-full rounded-full transition-all duration-300 bg-gray-300"
-                                 style="width:0%"></div>
+                            <div id="card_progress" class="h-full rounded-full transition-all duration-300 bg-gray-300" style="width:0%"></div>
                         </div>
                         <p id="luhn_msg" class="text-xs mt-1 hidden"></p>
                     </div>
 
-                    <!-- ── Titular + Fecha ── -->
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
                             <label class="block text-gray-700 font-semibold mb-1 text-sm">Nombre del Titular *</label>
@@ -200,16 +187,13 @@
                         <div>
                             <label class="block text-gray-700 font-semibold mb-1 text-sm">Fecha de Vencimiento *</label>
                             <input type="text" id="card_expiry" name="card_expiry"
-                                   placeholder="MM/AA"
-                                   maxlength="5"
+                                   placeholder="MM/AA" maxlength="5"
                                    class="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-blue-400 font-mono"
-                                   oninput="onExpiryInput(this)"
-                                   autocomplete="cc-exp">
+                                   oninput="onExpiryInput(this)" autocomplete="cc-exp">
                             <p id="expiry_msg" class="text-xs mt-1 hidden text-red-600"></p>
                         </div>
                     </div>
 
-                    <!-- ── Banco + Voucher ── -->
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
                             <label class="block text-gray-700 font-semibold mb-1 text-sm">Banco Emisor *</label>
@@ -246,114 +230,82 @@
                         <div>
                             <label class="block text-gray-700 font-semibold mb-1 text-sm">N° de Autorización / Voucher *</label>
                             <input type="text" id="card_voucher" name="card_voucher"
-                                   placeholder="Ej: 123456"
-                                   maxlength="20"
+                                   placeholder="Ej: 123456" maxlength="20"
                                    class="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-blue-400 font-mono"
                                    oninput="this.value=this.value.replace(/[^0-9A-Za-z]/g,'').toUpperCase()">
                             <p class="text-xs text-gray-400 mt-1">Número impreso en el comprobante del datáfono.</p>
                         </div>
                     </div>
                 </div>
-                <!-- ══ FIN TARJETA ══ -->
 
-                <!-- ══════════════════════════════════════
-                     SECCIÓN TRANSFERENCIA BANCARIA
-                     ══════════════════════════════════════ -->
+                <!-- SECCIÓN TRANSFERENCIA -->
                 <div id="transfer_section" class="hidden border border-green-100 rounded-xl p-5 space-y-5 bg-green-50">
                     <h3 class="text-lg font-bold text-gray-800 flex items-center gap-2">
                         <i class='bx bx-transfer text-green-600'></i>
                         Datos para Transferencia Bancaria
                     </h3>
-
                     <p class="text-sm text-gray-600">
                         Seleccione el banco al que realizará la transferencia y el tipo de cuenta.
-                        El monto a transferir es el <strong>total de su compra</strong>.
                     </p>
-
-                    <!-- Selector de banco -->
                     <div>
                         <label class="block text-gray-700 font-semibold mb-2 text-sm">Banco Destino *</label>
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3" id="transfer_bank_cards">
-
-                            <!-- Banco de Guayaquil -->
                             <label class="cursor-pointer">
-                                <input type="radio" name="transfer_bank" value="guayaquil"
-                                       class="hidden peer" onchange="onTransferBankChange()">
+                                <input type="radio" name="transfer_bank" value="guayaquil" class="hidden peer" onchange="onTransferBankChange()">
                                 <div class="peer-checked:border-green-600 peer-checked:bg-green-100 border-2 border-gray-200 rounded-xl p-4 flex items-center gap-3 transition-all hover:border-green-400">
-                                    <div class="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0"
-                                         style="background:#003087">
+                                    <div class="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0" style="background:#003087">
                                         <span class="text-white font-black text-xs">BG</span>
                                     </div>
                                     <div>
                                         <p class="font-bold text-gray-800 text-sm">Banco de Guayaquil</p>
                                         <p class="text-xs text-gray-500">Ahorros · Corriente</p>
                                     </div>
-                                    <i class='bx bx-check-circle ml-auto text-green-600 text-xl hidden peer-checked:block'></i>
                                 </div>
                             </label>
-
-                            <!-- Banco Pichincha -->
                             <label class="cursor-pointer">
-                                <input type="radio" name="transfer_bank" value="pichincha"
-                                       class="hidden peer" onchange="onTransferBankChange()">
+                                <input type="radio" name="transfer_bank" value="pichincha" class="hidden peer" onchange="onTransferBankChange()">
                                 <div class="peer-checked:border-green-600 peer-checked:bg-green-100 border-2 border-gray-200 rounded-xl p-4 flex items-center gap-3 transition-all hover:border-green-400">
-                                    <div class="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0"
-                                         style="background:#E31837">
+                                    <div class="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0" style="background:#E31837">
                                         <span class="text-white font-black text-xs">BP</span>
                                     </div>
                                     <div>
                                         <p class="font-bold text-gray-800 text-sm">Banco Pichincha</p>
                                         <p class="text-xs text-gray-500">Ahorros · Corriente</p>
                                     </div>
-                                    <i class='bx bx-check-circle ml-auto text-green-600 text-xl hidden peer-checked:block'></i>
                                 </div>
                             </label>
                         </div>
                     </div>
-
-                    <!-- Selector de tipo de cuenta -->
                     <div id="transfer_account_type_section" class="hidden">
                         <label class="block text-gray-700 font-semibold mb-2 text-sm">Tipo de Cuenta *</label>
                         <div class="flex gap-3">
                             <label class="flex-1 cursor-pointer">
-                                <input type="radio" name="transfer_account_type" value="ahorros"
-                                       class="hidden peer" onchange="onTransferAccountTypeChange()">
+                                <input type="radio" name="transfer_account_type" value="ahorros" class="hidden peer" onchange="onTransferAccountTypeChange()">
                                 <div class="text-center py-3 rounded-lg border-2 border-gray-200 peer-checked:border-green-600 peer-checked:bg-green-100 peer-checked:text-green-700 transition-all text-sm font-semibold">
-                                    <i class='bx bx-piggy-bank block text-xl mb-1'></i>
-                                    Cuenta de Ahorros
+                                    <i class='bx bx-piggy-bank block text-xl mb-1'></i>Cuenta de Ahorros
                                 </div>
                             </label>
                             <label class="flex-1 cursor-pointer">
-                                <input type="radio" name="transfer_account_type" value="corriente"
-                                       class="hidden peer" onchange="onTransferAccountTypeChange()">
+                                <input type="radio" name="transfer_account_type" value="corriente" class="hidden peer" onchange="onTransferAccountTypeChange()">
                                 <div class="text-center py-3 rounded-lg border-2 border-gray-200 peer-checked:border-green-600 peer-checked:bg-green-100 peer-checked:text-green-700 transition-all text-sm font-semibold">
-                                    <i class='bx bx-briefcase block text-xl mb-1'></i>
-                                    Cuenta Corriente
+                                    <i class='bx bx-briefcase block text-xl mb-1'></i>Cuenta Corriente
                                 </div>
                             </label>
                         </div>
                     </div>
-
-                    <!-- Cuadro de datos de cuenta -->
                     <div id="transfer_account_info" class="hidden rounded-xl border-2 border-green-300 bg-white p-5 space-y-4">
                         <div class="flex items-center gap-2 mb-2">
                             <i class='bx bx-info-circle text-green-600 text-lg'></i>
                             <p class="text-sm font-bold text-green-800">Datos de la cuenta destino</p>
                         </div>
-                        
-                        <!-- Bank and Account Type Info (read-only) -->
                         <div class="grid grid-cols-2 gap-y-3 text-sm pb-4 border-b border-gray-200">
                             <span class="text-gray-500 font-medium">Banco:</span>
                             <span id="tinfo_bank" class="font-bold text-gray-800"></span>
-
                             <span class="text-gray-500 font-medium">Tipo de cuenta:</span>
                             <span id="tinfo_type" class="font-bold text-gray-800"></span>
-
                             <span class="text-gray-500 font-medium">Monto a transferir:</span>
                             <span id="tinfo_amount" class="font-black text-green-700 text-base"></span>
                         </div>
-
-                        <!-- Account Number (editable) -->
                         <div>
                             <label class="block text-gray-700 font-semibold mb-2 text-sm">N° de Cuenta *</label>
                             <input type="text" id="transfer_account_number_input" name="transfer_account_number_input"
@@ -362,28 +314,22 @@
                                    oninput="this.value=this.value.replace(/[^0-9]/g); updateTransferAccountNumber()">
                             <p class="text-xs text-gray-400 mt-1">Edite si es diferente al mostrado arriba</p>
                         </div>
-
                         <p class="text-xs text-orange-600 mt-2 flex items-start gap-1">
                             <i class='bx bx-error-circle mt-0.5 flex-shrink-0'></i>
                             Realice la transferencia por el monto exacto. Guarde el comprobante.
                         </p>
                     </div>
-
-                    <!-- Campos ocultos para el form -->
                     <input type="hidden" name="transfer_bank_name" id="transfer_bank_name">
                     <input type="hidden" name="transfer_account_number" id="transfer_account_number">
                     <input type="hidden" name="transfer_account_type_value" id="transfer_account_type_value">
-                    <!-- Campos ocultos para datos censurados -->
                     <input type="hidden" name="card_number_masked" id="card_number_masked">
                     <input type="hidden" name="transfer_account_masked" id="transfer_account_masked">
-                    <!-- Campos ocultos para cálculos de factura PDF -->
                     <input type="hidden" name="invoice_subtotal" value="{{ subtotal }}">
                     <input type="hidden" name="invoice_iva" value="{{ iva }}">
                     <input type="hidden" name="invoice_discount" value="{{ discount }}">
                     <input type="hidden" name="invoice_discount_pct" value="{{ discount_pct }}">
                     <input type="hidden" name="invoice_total" value="{{ total }}">
                 </div>
-                <!-- ══ FIN TRANSFERENCIA ══ -->
 
                 <!-- TOTAL + MONTO RECIBIDO -->
                 <div class="bg-green-50 p-6 rounded-lg border border-green-100">
@@ -424,6 +370,7 @@
                 </div>
                 
                 <div class="flex gap-4">
+                    {# submit_btn: deshabilitado vía JS al primer clic para evitar doble submit #}
                     <button type="submit" id="submit_btn"
                             class="w-full bg-green-600 text-white py-4 rounded-xl font-black hover:bg-green-700 transition-all text-xl shadow-xl transform hover:-translate-y-1">
                         <i class='bx bx-check-circle'></i> FINALIZAR COMPRA
@@ -464,4 +411,27 @@
 </div>
 
 <script src="{% static 'js/checkout.js' %}"></script>
+
+{# ── Protección de doble submit en el cliente ──────────────────────────────── #}
+{# Si el usuario hace doble clic o recarga antes de que el servidor responda,   #}
+{# el botón se deshabilita inmediatamente tras el primer submit.                #}
+{# El servidor también rechaza duplicados vía idempotency_key, pero esta capa   #}
+{# evita incluso enviar el segundo request.                                     #}
+<script>
+document.getElementById('checkout-form').addEventListener('submit', function(e) {
+    const btn = document.getElementById('submit_btn');
+
+    // Si ya fue enviado (doble clic), cancelar el segundo submit
+    if (btn.dataset.submitted) {
+        e.preventDefault();
+        return;
+    }
+
+    // Marcar como enviado y deshabilitar visualmente
+    btn.dataset.submitted = 'true';
+    btn.disabled = true;
+    btn.classList.add('opacity-60', 'cursor-not-allowed');
+    btn.innerHTML = "<i class='bx bx-loader-alt bx-spin'></i> Procesando...";
+});
+</script>
 {% endblock %}
