@@ -11,6 +11,9 @@ import decimal
 import uuid
 from decimal import Decimal
 from core.super.models import Cart, CartItem, Product, Sale, SaleDetail, Customer, PaymentMethod, Seller
+from core.super.services.checkout_service import CheckoutService
+from core.super.services.payment_processors import get_processor
+from core.super.services.idempotency_service import IdempotencyService
 
 
 @login_required
@@ -167,114 +170,57 @@ class CheckoutView(LoginRequiredMixin, TemplateView):
     @transaction.atomic
     def post(self, request, *args, **kwargs):
         # ── Guardia de idempotencia ───────────────────────────────────────
-        # Si el mismo idempotency_key ya existe en la BD, significa que este
-        # checkout ya fue procesado (doble clic, F5, botón atrás con reenvío
-        # de formulario, etc.). Devolvemos la venta original sin tocar nada.
+        idempotency_service = IdempotencyService()
         raw_key = request.POST.get('idempotency_key', '').strip()
-        idempotency_key = None
-        if raw_key:
-            try:
-                idempotency_key = uuid.UUID(raw_key)
-                existing_sale = Sale.objects.filter(idempotency_key=idempotency_key).first()
-                if existing_sale:
-                    messages.info(request, 'Esta compra ya fue procesada.')
-                    return redirect('super:order_detail', pk=existing_sale.pk)
-            except (ValueError, AttributeError):
-                # UUID malformado: ignorar y procesar normalmente
-                idempotency_key = None
+        idempotency_key = idempotency_service.parse_key(raw_key)
+
+        if idempotency_key:
+            existing_sale = idempotency_service.find_existing(idempotency_key)
+            if existing_sale:
+                messages.info(request, 'Esta compra ya fue procesada.')
+                return redirect('super:order_detail', pk=existing_sale.pk)
 
         try:
+            service = CheckoutService()  # Crear servicio de checkout (SRP)
             cart = Cart.objects.get(user=request.user)
             items = CartItem.objects.filter(cart=cart).select_related('product')
 
             if not items.exists():
                 return redirect('super:cart')
-
-            # Lógica Consumidor Final vs Datos Personales
-            dni_type = request.POST.get('dni_type')
-            if dni_type == 'final':
-                customer_dni = '9999999999'
-                customer, _ = Customer.objects.get_or_create(
-                    dni=customer_dni,
-                    defaults={'name': 'CONSUMIDOR', 'last_name': 'FINAL', 'address': 'S/N'}
-                )
-            else:
-                customer_dni = request.POST.get('dni')
-                customer, _ = Customer.objects.get_or_create(
-                    email=request.user.email,
-                    defaults={
-                        'name': request.user.first_name,
-                        'last_name': request.user.last_name,
-                        'dni': customer_dni,
-                        'phone': request.user.phone_number,
-                        'address': request.user.address
-                    }
-                )
-                if customer.dni != customer_dni:
-                    customer.dni = customer_dni
-                    customer.save()
-
-            seller, _ = Seller.objects.get_or_create(
-                dni='9999999999',
-                defaults={'name': 'Vendedor', 'last_name': 'Online'}
+            
+            customer = service.resolve_customer(
+                request.user,
+                request.POST.get('dni_type'),
+                request.POST.get('dni')
             )
-
-            cart_total = cart.get_total()
-            discount_amount = cart_total * (customer.discount_percentage / 100)
-            final_total = cart_total - discount_amount
-
+            
+            totals = service.calculate_totals(cart, customer)
+            
             payment_method_id = request.POST.get('payment_method')
             payment_method = PaymentMethod.objects.get(id_payment_method=payment_method_id)
-            payment_name = payment_method.name.lower()
 
-            if 'transferencia' in payment_name or 'tarjeta' in payment_name:
-                amount_received = final_total
-                change = Decimal('0.00')
-            else:
-                amount_received_str = request.POST.get('amount_received', '0')
-                try:
-                    amount_received = Decimal(amount_received_str) if amount_received_str else Decimal('0')
-                except (ValueError, decimal.ConversionSyntax):
-                    amount_received = Decimal('0')
+            processor = get_processor(payment_method.name)
+            amount_received, change = processor.calculate_received_and_change(totals['total'], request.POST)
 
-                if amount_received < final_total:
-                    messages.error(request, 'Monto recibido insuficiente')
-                    return redirect('super:checkout')
+            if amount_received < totals['total']:
+                messages.error(request, 'Monto recibido insuficiente')
+                return redirect('super:checkout')
 
-                change = amount_received - final_total
-
-            # Crear venta incluyendo la clave de idempotencia
-            sale = Sale.objects.create(
-                user=request.user,
-                customer=customer,
-                seller=seller,
-                payment_id=request.POST.get('payment_method'),
-                sale_date=timezone.now(),
-                subtotal=cart.get_subtotal(),
-                iva=cart.get_iva(),
-                discount=discount_amount,
-                total=final_total,
-                amount_received=amount_received,
-                change=change,
-                card_number_masked=request.POST.get('card_number_masked', ''),
-                transfer_account_masked=request.POST.get('transfer_account_masked', ''),
-                idempotency_key=idempotency_key,   # ← clave guardada en la BD
+            sale = service.create_sale(
+                request.user,
+                customer,
+                payment_method_id,
+                totals,
+                amount_received,
+                change,
+                idempotency_key,
+                card_number_masked=request.POST.get('card_number_masked'),
+                transfer_account_masked=request.POST.get('transfer_account_masked')
             )
-
-            for item in items:
-                SaleDetail.objects.create(
-                    sale=sale,
-                    product=item.product,
-                    quantity=item.quantity,
-                    price=item.product.price,
-                    subtotal=item.get_subtotal()
-                )
-                item.product.stock -= item.quantity
-                item.product.save()
-
-            items.delete()
+            
+            service.register_items(sale, items)
             cart.delete()
-
+            
             messages.success(request, '¡Compra finalizada!')
             return redirect('super:order_detail', pk=sale.pk)
 
