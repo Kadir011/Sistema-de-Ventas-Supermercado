@@ -7,106 +7,98 @@
     <title>{% block title %} {% endblock %}</title>
     <link rel="icon" type="image/x-icon" href="{% static 'favicon.ico' %}">
     <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
-    
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
             theme: {
                 extend: {
+                    fontFamily: { sans: ['Plus Jakarta Sans', 'sans-serif'] },
                     animation: {
-                        'fade-in': 'fadeIn 0.5s ease-out',
-                        'slide-up': 'slideUp 0.5s ease-out',
+                        'fade-in': 'fadeIn 0.4s ease-out',
+                        'slide-up': 'slideUp 0.4s ease-out',
                         'slide-in-right': 'slideInRight 0.3s ease-out',
+                        'slide-down': 'slideDown 0.3s ease-out',
                     },
                     keyframes: {
-                        fadeIn: {
-                            '0%': { opacity: '0' },
-                            '100%': { opacity: '1' },
-                        },
-                        slideUp: {
-                            '0%': { transform: 'translateY(20px)', opacity: '0' },
-                            '100%': { transform: 'translateY(0)', opacity: '1' },
-                        },
-                        slideInRight: {
-                            '0%': { transform: 'translateX(100%)' },
-                            '100%': { transform: 'translateX(0)' },
-                        }
+                        fadeIn:       { '0%': { opacity: '0' }, '100%': { opacity: '1' } },
+                        slideUp:      { '0%': { transform: 'translateY(16px)', opacity: '0' }, '100%': { transform: 'translateY(0)', opacity: '1' } },
+                        slideInRight: { '0%': { transform: 'translateX(100%)' }, '100%': { transform: 'translateX(0)' } },
+                        slideDown:    { '0%': { transform: 'translateY(-8px)', opacity: '0' }, '100%': { transform: 'translateY(0)', opacity: '1' } },
                     }
                 }
             }
         }
     </script>
     <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
+
+    <link rel="stylesheet" href="{% static 'css/base.css' %}">
 </head>
-<body class="bg-gray-100 font-sans leading-normal tracking-normal flex flex-col min-h-screen">
+<body class="bg-gray-100 leading-normal tracking-normal flex flex-col min-h-screen">
 
     <!-- ═══════════════════════════════════════════
          NAVBAR ADMINISTRADOR
     ═══════════════════════════════════════════ -->
     {% if user.is_authenticated and user.is_admin_user %}
-    <nav class="bg-gradient-to-r from-red-600 to-red-700 shadow-lg sticky top-0 z-50">
-        <div class="container mx-auto px-4">
-            <div class="flex justify-between items-center py-4">
-                <a href="{% url 'super:menu' %}" class="text-white text-2xl font-bold flex items-center gap-2 hover:scale-105 transition-transform duration-200">
-                    <i class='bx bxs-dashboard'></i> Panel Admin
+    <nav class="nav-admin sticky top-0 z-50" style="background: linear-gradient(135deg, #7f1d1d 0%, #991b1b 60%, #b91c1c 100%); box-shadow: 0 2px 20px rgba(0,0,0,0.25);">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6">
+            <div class="flex items-center justify-between h-16">
+
+                <!-- Logo -->
+                <a href="{% url 'super:menu' %}" class="flex items-center gap-2.5 group flex-shrink-0">
+                    <div class="w-8 h-8 rounded-lg flex items-center justify-center" style="background: rgba(255,255,255,0.15);">
+                        <i class='bx bxs-dashboard text-white text-lg'></i>
+                    </div>
+                    <span class="text-white font-bold text-base tracking-tight group-hover:opacity-90 transition-opacity">
+                        Panel <span style="color: #fca5a5;">Admin</span>
+                    </span>
                 </a>
 
-                <button id="mobile-menu-btn" class="md:hidden text-white focus:outline-none">
-                    <i class='bx bx-menu text-3xl'></i>
+                <!-- Hamburger (mobile) -->
+                <button id="mobile-menu-btn" class="md:hidden flex items-center justify-center w-9 h-9 rounded-lg text-white transition-all" style="background: rgba(255,255,255,0.1);">
+                    <i class='bx bx-menu text-2xl' id="hamburger-icon"></i>
                 </button>
 
-                <!-- Menú DESKTOP -->
-                <div class="hidden md:flex items-center space-x-6">
-                    <a href="{% url 'super:menu' %}" class="text-white hover:text-yellow-300 font-semibold transition-colors">
-                        <i class='bx bx-grid-alt'></i> Menú
-                    </a>
-                    <a href="{% url 'super:customer_list' %}" class="text-white hover:text-yellow-300 font-semibold transition-colors">
-                        <i class='bx bx-user'></i> Clientes
-                    </a>
-                    <a href="{% url 'super:product_list' %}" class="text-white hover:text-yellow-300 font-semibold transition-colors">
-                        <i class='bx bx-package'></i> Productos
-                    </a>
-                    <a href="{% url 'super:sale_list' %}" class="text-white hover:text-yellow-300 font-semibold transition-colors">
-                        <i class='bx bx-money'></i> Ventas
-                    </a>
-                    <a href="{% url 'super:scan_barcode' %}" class="text-white hover:text-yellow-300 font-semibold transition-colors">
-                        <i class='bx bx-barcode-reader'></i> Escáner
-                    </a>
-                    <div class="flex items-center gap-3">
-                        <span class="text-white text-sm">
-                            <i class='bx bxs-user-circle'></i> {{ user.get_full_name }} ({{ user.username }})
-                        </span>
-                        <a href="{% url 'security:logout' %}" class="bg-white text-red-700 hover:bg-red-100 px-4 py-2 rounded-full font-bold transition-all shadow-md transform hover:-translate-y-1">
-                            <i class='bx bx-log-out'></i> Salir
-                        </a>
+                <!-- Links DESKTOP -->
+                <div class="hidden md:flex items-center gap-1">
+                    <a href="{% url 'super:menu' %}" class="nav-link"><i class='bx bx-grid-alt'></i>Menú</a>
+                    <a href="{% url 'super:customer_list' %}" class="nav-link"><i class='bx bx-group'></i>Clientes</a>
+                    <a href="{% url 'super:seller_list' %}" class="nav-link"><i class='bx bx-badge-check'></i>Vendedores</a>
+                    <a href="{% url 'super:product_list' %}" class="nav-link"><i class='bx bx-package'></i>Productos</a>
+                    <a href="{% url 'super:sale_list' %}" class="nav-link"><i class='bx bx-receipt'></i>Ventas</a>
+                    <a href="{% url 'super:scan_barcode' %}" class="nav-link"><i class='bx bx-barcode-reader'></i>Escáner</a>
+
+                    <div class="nav-divider mx-3"></div>
+
+                    <div class="user-pill">
+                        <div class="user-avatar">{{ user.first_name|first|upper }}{{ user.last_name|first|upper }}</div>
+                        <span>{{ user.get_full_name }}</span>
                     </div>
+
+                    <a href="{% url 'security:logout' %}" class="btn-logout ml-2">
+                        <i class='bx bx-log-out'></i> Salir
+                    </a>
                 </div>
             </div>
         </div>
 
-        <!-- Menú MÓVIL Admin -->
-        <div id="mobile-menu" class="hidden md:hidden bg-red-800 px-4 pb-4">
-            <a href="{% url 'super:menu' %}" class="block text-white py-2 border-b border-red-700 font-semibold">
-                <i class='bx bx-grid-alt'></i> Menú
-            </a>
-            <a href="{% url 'super:customer_list' %}" class="block text-white py-2 border-b border-red-700 font-semibold">
-                <i class='bx bx-user'></i> Clientes
-            </a>
-            <a href="{% url 'super:product_list' %}" class="block text-white py-2 border-b border-red-700 font-semibold">
-                <i class='bx bx-package'></i> Productos
-            </a>
-            <a href="{% url 'super:sale_list' %}" class="block text-white py-2 border-b border-red-700 font-semibold">
-                <i class='bx bx-money'></i> Ventas
-            </a>
-            <a href="{% url 'super:scan_barcode' %}" class="block text-white py-2 border-b border-red-700 font-semibold">
-                <i class='bx bx-barcode-reader'></i> Escáner
-            </a>
-            <span class="block text-red-300 py-2 text-sm">
-                <i class='bx bxs-user-circle'></i> {{ user.get_full_name }} ({{ user.username }})
-            </span>
-            <a href="{% url 'security:logout' %}" class="block text-white py-2 font-semibold">
-                <i class='bx bx-log-out'></i> Salir
-            </a>
+        <!-- Mobile menu -->
+        <div id="mobile-menu" class="hidden md:hidden px-4 pb-4 animate-slide-down">
+            <div class="rounded-xl overflow-hidden mt-1" style="background: rgba(0,0,0,0.2);">
+                <a href="{% url 'super:menu' %}" class="mobile-link"><i class='bx bx-grid-alt'></i>Menú</a>
+                <a href="{% url 'super:customer_list' %}" class="mobile-link"><i class='bx bx-group'></i>Clientes</a>
+                <a href="{% url 'super:seller_list' %}" class="mobile-link"><i class='bx bx-badge-check'></i>Vendedores</a>
+                <a href="{% url 'super:product_list' %}" class="mobile-link"><i class='bx bx-package'></i>Productos</a>
+                <a href="{% url 'super:sale_list' %}" class="mobile-link"><i class='bx bx-receipt'></i>Ventas</a>
+                <a href="{% url 'super:scan_barcode' %}" class="mobile-link"><i class='bx bx-barcode-reader'></i>Escáner</a>
+                <div style="border-top: 1px solid rgba(255,255,255,0.1); margin: 6px 0;"></div>
+                <div class="px-4 py-2 text-xs font-semibold" style="color: rgba(255,255,255,0.5); text-transform: uppercase; letter-spacing: 0.08em;">
+                    {{ user.get_full_name }} &bull; {{ user.username }}
+                </div>
+                <a href="{% url 'security:logout' %}" class="mobile-link" style="color: #fca5a5;">
+                    <i class='bx bx-log-out'></i>Cerrar sesión
+                </a>
+            </div>
         </div>
     </nav>
 
@@ -114,143 +106,137 @@
          NAVBAR CLIENTE / VISITANTE
     ═══════════════════════════════════════════ -->
     {% else %}
-    <nav class="bg-gradient-to-r from-green-600 to-green-700 shadow-lg sticky top-0 z-50">
-        <div class="container mx-auto px-4">
-            <div class="flex justify-between items-center py-4">
-                <a href="{% url 'super:home' %}" class="text-white text-2xl font-bold flex items-center gap-2 hover:scale-105 transition-transform duration-200">
-                    <i class='bx bxs-cart-alt'></i> MySupermarket
+    <nav class="nav-customer sticky top-0 z-50" style="background: linear-gradient(135deg, #14532d 0%, #166534 50%, #15803d 100%); box-shadow: 0 2px 20px rgba(0,0,0,0.2);">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6">
+            <div class="flex items-center justify-between h-16">
+
+                <!-- Logo -->
+                <a href="{% url 'super:home' %}" class="flex items-center gap-2.5 group flex-shrink-0">
+                    <div class="w-8 h-8 rounded-lg flex items-center justify-center" style="background: rgba(255,255,255,0.15);">
+                        <i class='bx bxs-cart-alt text-white text-lg'></i>
+                    </div>
+                    <span class="text-white font-bold text-base tracking-tight group-hover:opacity-90 transition-opacity">
+                        My<span style="color: #bbf7d0;">Supermarket</span>
+                    </span>
                 </a>
 
-                <button id="mobile-menu-btn" class="md:hidden text-white focus:outline-none">
-                    <i class='bx bx-menu text-3xl'></i>
+                <!-- Hamburger (mobile) -->
+                <button id="mobile-menu-btn" class="md:hidden flex items-center justify-center w-9 h-9 rounded-lg text-white transition-all" style="background: rgba(255,255,255,0.1);">
+                    <i class='bx bx-menu text-2xl' id="hamburger-icon"></i>
                 </button>
 
-                <!-- Menú DESKTOP -->
-                <div class="hidden md:flex items-center space-x-6">
-                    <a href="{% url 'super:home' %}" class="text-white hover:text-yellow-300 font-semibold transition-colors">
-                        <i class='bx bx-home'></i> Inicio
-                    </a>
+                <!-- Links DESKTOP -->
+                <div class="hidden md:flex items-center gap-1">
+                    <a href="{% url 'super:home' %}" class="nav-link"><i class='bx bx-home'></i>Inicio</a>
 
                     {% if user.is_authenticated %}
-                        <a href="{% url 'super:shop' %}" class="text-white hover:text-yellow-300 font-semibold transition-colors">
-                            <i class='bx bx-store'></i> Tienda
+                        <a href="{% url 'super:shop' %}" class="nav-link"><i class='bx bx-store'></i>Tienda</a>
+
+                        <a href="{% url 'super:cart' %}" class="nav-link relative">
+                            <i class='bx bx-shopping-bag'></i>Carrito
+                            <span id="cart-count" class="cart-badge">{{ cart_count|default:0 }}</span>
                         </a>
-                        <a href="{% url 'super:cart' %}" class="text-white hover:text-yellow-300 font-semibold transition-colors relative">
-                            <i class='bx bx-cart text-xl'></i> Carrito
-                            <span id="cart-count" class="absolute -top-2 -right-2 bg-yellow-400 text-green-800 text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
-                                {{ cart_count|default:0 }}
-                            </span>
-                        </a>
-                        <a href="{% url 'super:my_orders' %}" class="text-white hover:text-yellow-300 font-semibold transition-colors">
-                            <i class='bx bx-receipt'></i> Mis Compras
-                        </a>
-                        <a href="{% url 'super:scan_barcode' %}" class="text-white hover:text-yellow-300 font-semibold transition-colors">
-                            <i class='bx bx-barcode-reader'></i> Escáner
-                        </a>
+
+                        <a href="{% url 'super:my_orders' %}" class="nav-link"><i class='bx bx-receipt'></i>Mis Compras</a>
+                        <a href="{% url 'super:scan_barcode' %}" class="nav-link"><i class='bx bx-barcode-reader'></i>Escáner</a>
                     {% else %}
-                        <a href="{% url 'super:catalog' %}" class="text-white hover:text-yellow-300 font-semibold transition-colors">
-                            <i class='bx bx-store'></i> Catálogo
-                        </a>
+                        <a href="{% url 'super:catalog' %}" class="nav-link"><i class='bx bx-store'></i>Catálogo</a>
                     {% endif %}
 
-                    <a href="{% url 'super:about' %}" class="text-white hover:text-yellow-300 font-semibold transition-colors">
-                        <i class='bx bx-info-circle'></i> Nosotros
-                    </a>
-                    <a href="{% url 'super:contact' %}" class="text-white hover:text-yellow-300 font-semibold transition-colors">
-                        <i class='bx bx-envelope'></i> Contacto
-                    </a>
+                    <a href="{% url 'super:about' %}" class="nav-link"><i class='bx bx-info-circle'></i>Nosotros</a>
+                    <a href="{% url 'super:contact' %}" class="nav-link"><i class='bx bx-envelope'></i>Contacto</a>
+
+                    <div class="nav-divider mx-3"></div>
 
                     {% if user.is_authenticated %}
-                        <div class="flex items-center gap-3">
-                            <span class="text-white text-sm">
-                                <i class='bx bxs-user-circle'></i> {{ user.get_full_name }}
-                            </span>
-                            <a href="{% url 'security:logout' %}" class="bg-white text-green-700 hover:bg-green-100 px-4 py-2 rounded-full font-bold transition-all shadow-md transform hover:-translate-y-1">
-                                <i class='bx bx-log-out'></i> Salir
-                            </a>
+                        <div class="user-pill">
+                            <div class="user-avatar">{{ user.first_name|first|upper }}{{ user.last_name|first|upper }}</div>
+                            <span>{{ user.first_name }}</span>
                         </div>
+                        <a href="{% url 'security:logout' %}" class="btn-logout ml-2">
+                            <i class='bx bx-log-out'></i> Salir
+                        </a>
                     {% else %}
-                        <a href="{% url 'security:login' %}" class="bg-white text-green-700 hover:bg-green-100 px-4 py-2 rounded-full font-bold transition-all shadow-md transform hover:-translate-y-1">
+                        <a href="{% url 'security:login' %}" class="btn-logout">
                             <i class='bx bx-log-in'></i> Ingresar
+                        </a>
+                        <a href="{% url 'security:register' %}" class="ml-1 inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full text-sm font-bold transition-all" style="background: rgba(255,255,255,0.9); color: #166534;">
+                            <i class='bx bx-user-plus'></i> Registro
                         </a>
                     {% endif %}
                 </div>
             </div>
         </div>
 
-        <!-- Menú MÓVIL Cliente -->
-        <div id="mobile-menu" class="hidden md:hidden bg-green-800 px-4 pb-4">
-            <a href="{% url 'super:home' %}" class="block text-white py-2 border-b border-green-700 font-semibold">
-                <i class='bx bx-home'></i> Inicio
-            </a>
-            {% if user.is_authenticated %}
-                <a href="{% url 'super:shop' %}" class="block text-white py-2 border-b border-green-700 font-semibold">
-                    <i class='bx bx-store'></i> Tienda
-                </a>
-                <a href="{% url 'super:cart' %}" class="block text-white py-2 border-b border-green-700 font-semibold">
-                    <i class='bx bx-cart'></i> Carrito ({{ cart_count|default:0 }})
-                </a>
-                <a href="{% url 'super:my_orders' %}" class="block text-white py-2 border-b border-green-700 font-semibold">
-                    <i class='bx bx-receipt'></i> Mis Compras
-                </a>
-                <a href="{% url 'super:scan_barcode' %}" class="block text-white py-2 border-b border-green-700 font-semibold">
-                    <i class='bx bx-barcode-reader'></i> Escáner
-                </a>
-            {% else %}
-                <a href="{% url 'super:catalog' %}" class="block text-white py-2 border-b border-green-700 font-semibold">
-                    <i class='bx bx-store'></i> Catálogo
-                </a>
-            {% endif %}
-            <a href="{% url 'super:about' %}" class="block text-white py-2 border-b border-green-700 font-semibold">
-                <i class='bx bx-info-circle'></i> Nosotros
-            </a>
-            <a href="{% url 'super:contact' %}" class="block text-white py-2 border-b border-green-700 font-semibold">
-                <i class='bx bx-envelope'></i> Contacto
-            </a>
-            {% if user.is_authenticated %}
-                <span class="block text-green-300 py-2 text-sm">
-                    <i class='bx bxs-user-circle'></i> {{ user.get_full_name }}
-                </span>
-                <a href="{% url 'security:logout' %}" class="block text-white py-2 font-semibold">
-                    <i class='bx bx-log-out'></i> Salir
-                </a>
-            {% else %}
-                <a href="{% url 'security:login' %}" class="block text-white py-2 font-semibold">
-                    <i class='bx bx-log-in'></i> Ingresar
-                </a>
-            {% endif %}
+        <!-- Mobile menu -->
+        <div id="mobile-menu" class="hidden md:hidden px-4 pb-4 animate-slide-down">
+            <div class="rounded-xl overflow-hidden mt-1" style="background: rgba(0,0,0,0.15);">
+                <a href="{% url 'super:home' %}" class="mobile-link"><i class='bx bx-home'></i>Inicio</a>
+                {% if user.is_authenticated %}
+                    <a href="{% url 'super:shop' %}" class="mobile-link"><i class='bx bx-store'></i>Tienda</a>
+                    <a href="{% url 'super:cart' %}" class="mobile-link">
+                        <i class='bx bx-shopping-bag'></i>Carrito
+                        <span class="ml-auto text-xs font-bold px-2 py-0.5 rounded-full" style="background: #fbbf24; color: #14532d;">{{ cart_count|default:0 }}</span>
+                    </a>
+                    <a href="{% url 'super:my_orders' %}" class="mobile-link"><i class='bx bx-receipt'></i>Mis Compras</a>
+                    <a href="{% url 'super:scan_barcode' %}" class="mobile-link"><i class='bx bx-barcode-reader'></i>Escáner</a>
+                {% else %}
+                    <a href="{% url 'super:catalog' %}" class="mobile-link"><i class='bx bx-store'></i>Catálogo</a>
+                {% endif %}
+                <a href="{% url 'super:about' %}" class="mobile-link"><i class='bx bx-info-circle'></i>Nosotros</a>
+                <a href="{% url 'super:contact' %}" class="mobile-link"><i class='bx bx-envelope'></i>Contacto</a>
+                <div style="border-top: 1px solid rgba(255,255,255,0.1); margin: 6px 0;"></div>
+                {% if user.is_authenticated %}
+                    <div class="px-4 py-2 text-xs font-semibold" style="color: rgba(255,255,255,0.5); text-transform: uppercase; letter-spacing: 0.08em;">
+                        {{ user.get_full_name }}
+                    </div>
+                    <a href="{% url 'security:logout' %}" class="mobile-link" style="color: #bbf7d0;">
+                        <i class='bx bx-log-out'></i>Cerrar sesión
+                    </a>
+                {% else %}
+                    <a href="{% url 'security:login' %}" class="mobile-link"><i class='bx bx-log-in'></i>Ingresar</a>
+                    <a href="{% url 'security:register' %}" class="mobile-link"><i class='bx bx-user-plus'></i>Registrarse</a>
+                {% endif %}
+            </div>
         </div>
     </nav>
     {% endif %}
 
     <!-- ═══════════════════════════════════════════
-         CHATBOT — visible para TODOS
-         (invitados, clientes y administradores)
+         CHATBOT
     ═══════════════════════════════════════════ -->
-    <div id="chatbot-button" class="fixed bottom-5 right-5 z-50 hover:scale-110 transition-transform duration-300">
-        <img src="{% static 'img/chatbot.png' %}" alt="Chatbot" class="cursor-pointer w-14 h-14 drop-shadow-lg" />
+    <div id="chatbot-button" class="fixed bottom-6 right-6 z-50 group cursor-pointer" style="filter: drop-shadow(0 4px 16px rgba(0,0,0,0.25));">
+        <div class="relative w-14 h-14 rounded-2xl overflow-hidden transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3">
+            <img src="{% static 'img/chatbot.png' %}" alt="Chatbot" class="w-full h-full object-cover" />
+        </div>
+        <div class="absolute -top-1 -right-1 w-3.5 h-3.5 rounded-full border-2 border-white" style="background: #22c55e;"></div>
     </div>
 
-    <div id="chatbot-modal" class="hidden fixed inset-0 bg-gray-800 bg-opacity-70 flex items-center justify-center z-40 backdrop-blur-sm">
-        <div class="bg-white rounded-lg shadow-2xl w-96 transform transition-all scale-100 animate-slide-up">
-            <div class="p-4 bg-green-600 rounded-t-lg text-white flex justify-between items-center">
-                <div class="flex items-center gap-2">
-                    <img src="{% static 'img/chatbot.png' %}" alt="Bot" class="w-7 h-7">
-                    <h2 class="text-xl font-semibold">Asistente Virtual</h2>
+    <div id="chatbot-modal" class="hidden fixed inset-0 bg-black/60 flex items-end sm:items-center justify-center sm:justify-end z-40 sm:p-6 backdrop-blur-sm">
+        <div class="bg-white rounded-t-2xl sm:rounded-2xl shadow-2xl w-full sm:w-96 max-h-[90vh] flex flex-col overflow-hidden animate-slide-up" style="border: 1px solid rgba(0,0,0,0.08);">
+            <!-- Header -->
+            <div class="flex items-center gap-3 px-4 py-3.5 flex-shrink-0" style="background: linear-gradient(135deg, #14532d, #166534);">
+                <div class="w-8 h-8 rounded-xl overflow-hidden flex-shrink-0">
+                    <img src="{% static 'img/chatbot.png' %}" alt="Bot" class="w-full h-full object-cover">
                 </div>
-                <button id="close-chatbot" class="hover:text-gray-200 text-2xl leading-none">&times;</button>
+                <div class="flex-1">
+                    <p class="text-white font-bold text-sm leading-tight">Asistente Virtual</p>
+                    <p class="text-green-300 text-xs">En línea</p>
+                </div>
+                <button id="close-chatbot" class="w-7 h-7 rounded-lg flex items-center justify-center text-white/70 hover:text-white hover:bg-white/10 transition-all text-lg leading-none">&times;</button>
             </div>
-            <div class="p-4">
-                <div id="message-container" class="border border-gray-200 rounded-lg h-72 overflow-y-auto p-3 mb-3 bg-gray-50 text-sm"></div>
-                <div class="flex gap-2">
-                    <input id="chat-input"
-                           class="flex-1 p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
-                           placeholder="Escribe tu mensaje...">
-                    <button id="send-message"
-                            class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition duration-150">
-                        <i class='bx bxs-send'></i>
-                    </button>
-                </div>
+            <!-- Messages -->
+            <div id="message-container" class="flex-1 overflow-y-auto p-4 space-y-3 bg-gray-50 min-h-0" style="max-height: 320px;"></div>
+            <!-- Input -->
+            <div class="px-3 py-3 border-t border-gray-100 flex gap-2 flex-shrink-0 bg-white">
+                <input id="chat-input"
+                       class="flex-1 px-3 py-2.5 rounded-xl text-sm border border-gray-200 bg-gray-50 focus:outline-none focus:border-green-400 focus:bg-white transition-all"
+                       placeholder="Escribe tu mensaje...">
+                <button id="send-message"
+                        class="w-9 h-9 rounded-xl flex items-center justify-center text-white transition-all flex-shrink-0 hover:scale-105"
+                        style="background: linear-gradient(135deg, #16a34a, #15803d);">
+                    <i class='bx bxs-send text-base'></i>
+                </button>
             </div>
         </div>
     </div>
@@ -258,38 +244,43 @@
     <!-- ═══════════════════════════════════════════
          CONTENIDO PRINCIPAL
     ═══════════════════════════════════════════ -->
-    <main class="container mx-auto flex-1 px-4 py-6 animate-fade-in">
-        {% if messages %}
-            <div class="mb-4">
-                {% for message in messages %}
-                <div class="p-4 mb-4 text-sm rounded-lg
-                    {% if message.tags == 'error' %}bg-red-100 text-red-700
-                    {% elif message.tags == 'success' %}bg-green-100 text-green-700
-                    {% else %}bg-blue-100 text-blue-700{% endif %}"
-                    role="alert">
-                    <span class="font-medium">{{ message }}</span>
+    <main class="flex-1 px-4 py-6 animate-fade-in" style="max-width: 100%;">
+        <div class="max-w-7xl mx-auto">
+            {% if messages %}
+                <div class="mb-5 space-y-2">
+                    {% for message in messages %}
+                    <div class="flex items-start gap-3 px-4 py-3 rounded-xl text-sm font-medium animate-slide-down
+                        {% if message.tags == 'error' %}bg-red-50 text-red-700 border border-red-200
+                        {% elif message.tags == 'success' %}bg-green-50 text-green-700 border border-green-200
+                        {% else %}bg-blue-50 text-blue-700 border border-blue-200{% endif %}"
+                        role="alert">
+                        <i class='bx {% if message.tags == "error" %}bx-x-circle{% elif message.tags == "success" %}bx-check-circle{% else %}bx-info-circle{% endif %} text-lg flex-shrink-0 mt-0.5'></i>
+                        {{ message }}
+                    </div>
+                    {% endfor %}
                 </div>
-                {% endfor %}
-            </div>
-        {% endif %}
+            {% endif %}
 
-        {% block content %}
-        {% endblock %}
+            {% block content %}
+            {% endblock %}
+        </div>
     </main>
 
     <!-- ═══════════════════════════════════════════
          FOOTER
     ═══════════════════════════════════════════ -->
-    <footer class="bg-gray-800 text-white py-8 mt-auto">
-        <div class="container mx-auto px-4 flex flex-col md:flex-row justify-between items-center gap-4">
-            <div class="text-center md:text-left">
-                <p class="font-bold text-lg">MySupermarket</p>
-                <p class="text-gray-400 text-sm">&copy; 2026 Todos los derechos reservados.</p>
-            </div>
-            <div class="flex gap-6">
-                <a href="#" class="hover:text-green-500 transition-colors transform hover:scale-125"><i class="bx bxl-facebook text-2xl"></i></a>
-                <a href="#" class="hover:text-green-500 transition-colors transform hover:scale-125"><i class="bx bxl-twitter text-2xl"></i></a>
-                <a href="#" class="hover:text-green-500 transition-colors transform hover:scale-125"><i class="bx bxl-instagram text-2xl"></i></a>
+    <footer class="mt-auto" style="background: #1a1a2e; border-top: 1px solid rgba(255,255,255,0.05);">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 py-8">
+            <div class="flex flex-col sm:flex-row justify-between items-center gap-4">
+                <div>
+                    <p class="font-bold text-base" style="color: #e2e8f0;">MySupermarket</p>
+                    <p class="text-sm mt-0.5" style="color: #64748b;">&copy; 2026 Todos los derechos reservados.</p>
+                </div>
+                <div class="flex gap-4">
+                    <a href="#" class="w-9 h-9 rounded-xl flex items-center justify-center transition-all hover:scale-110" style="background: rgba(255,255,255,0.06); color: #94a3b8;"><i class="bx bxl-facebook text-xl"></i></a>
+                    <a href="#" class="w-9 h-9 rounded-xl flex items-center justify-center transition-all hover:scale-110" style="background: rgba(255,255,255,0.06); color: #94a3b8;"><i class="bx bxl-twitter text-xl"></i></a>
+                    <a href="#" class="w-9 h-9 rounded-xl flex items-center justify-center transition-all hover:scale-110" style="background: rgba(255,255,255,0.06); color: #94a3b8;"><i class="bx bxl-instagram text-xl"></i></a>
+                </div>
             </div>
         </div>
     </footer>
@@ -297,8 +288,6 @@
     <!-- ═══════════════════════════════════════════
          SCRIPTS
     ═══════════════════════════════════════════ -->
-
-    <!-- Variables de usuario para el chatbot -->
     <script>
         {% if user.is_authenticated %}
             const CHATBOT_USER_NAME = "{{ user.first_name|default:user.username }}";
@@ -314,27 +303,33 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function () {
-            // Botón burguer
+            // Hamburger toggle
             const btn  = document.getElementById('mobile-menu-btn');
             const menu = document.getElementById('mobile-menu');
+            const icon = document.getElementById('hamburger-icon');
+
             if (btn && menu) {
-                btn.addEventListener('click', () => menu.classList.toggle('hidden'));
+                btn.addEventListener('click', () => {
+                    const isOpen = !menu.classList.contains('hidden');
+                    menu.classList.toggle('hidden', isOpen);
+                    if (icon) {
+                        icon.className = isOpen ? 'bx bx-menu text-2xl' : 'bx bx-x text-2xl';
+                    }
+                });
             }
 
-            // Actualizar contador del carrito
+            // Cart count
             updateCartCount();
         });
 
         function updateCartCount() {
             fetch('/cart/count/')
-                .then(response => response.json())
+                .then(r => r.json())
                 .then(data => {
-                    const countElement = document.getElementById('cart-count');
-                    if (countElement) {
-                        countElement.textContent = data.count || 0;
-                    }
+                    const el = document.getElementById('cart-count');
+                    if (el) el.textContent = data.count || 0;
                 })
-                .catch(error => console.error('Error:', error));
+                .catch(() => {});
         }
     </script>
 </body>
