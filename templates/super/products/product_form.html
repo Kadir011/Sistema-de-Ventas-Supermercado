@@ -1,169 +1,189 @@
 {% extends 'components/base.html' %}
 {% load static %}
-{% block title %}{% if producto.pk %}{{ title }}{% else %}{{ title }}{% endif %}{% endblock %}
+{% block title %}{{ title }}{% endblock %}
 {% block content %}
-<div class="container mx-auto py-8 px-16">
-    <h1 class="text-3xl font-bold mb-6">{% if product.pk %}{{ grabar }}{% else %}{{ grabar }}{% endif %}</h1>
-    <form method="post" enctype="multipart/form-data" class="space-y-6">
-        {% csrf_token %}
 
-        <div class="mb-6">
-            <label for="id_name" class="block text-gray-700 font-semibold mb-2">Nombre del Producto</label> 
-            <input type="text" name="name" id="id_name" value="{{ form.instance.name|default:'' }}" 
-            class="mt-1 block w-full px-4 py-2 border rounded-lg focus:ring-green-500 focus:border-green-500" 
-            placeholder="Ingrese el nombre del producto">
-            {% if form.name.errors %} 
-               <div class="text-red-500 text-sm mt-2">
-                    {% for error in form.name.errors %}
-                        <p>{{ error }}</p>
-                    {% endfor %}
-               </div> 
-            {% endif %}
-        </div> 
+<link rel="stylesheet" href="{% static 'css/product_form.css' %}">
 
-        <div class="mb-6">
-            <label for="id_category" class="block text-lg font-medium">Categoría</label> 
-            <select name="category" id="id_category" class="mt-1 block w-full px-4 py-2 border rounded-lg focus:ring-green-500 focus:border-green-500">
-                <option value="">Seleccionar Categoría</option>
-                {% for category in form.category.field.queryset %}
-                    <option value="{{ category.pk }}" {% if form.instance.category == category %}selected{% endif %}>{{ category.name }}</option>
-                {% endfor %}
-            </select>
-            {% if form.category.errors %}
-                <div class="text-red-500 text-sm mt-2">
-                    {% for error in form.category.errors %}
-                        <p>{{ error }}</p>
-                    {% endfor %}
-                </div>
-            {% endif %}
-        </div> 
+<div class="max-w-3xl mx-auto py-6">
+    <div class="flex items-center gap-2 text-sm mb-5" style="color: #9ca3af;">
+        <a href="{% url 'super:product_list' %}" class="hover:text-purple-600 transition-colors font-medium">Productos</a>
+        <i class='bx bx-chevron-right'></i>
+        <span style="color: #374151; font-weight: 600;">{{ title }}</span>
+    </div>
 
-        <div class="mb-6">
-            <label for="id_brand" class="block text-lg font-medium">Marca</label> 
-            <select name="brand" id="id_brand" class="mt-1 block w-full px-4 py-2 border rounded-lg focus:ring-green-500 focus:border-green-500">
-                <option value="">Seleccionar Marca</option>
-                {% for brand in form.brand.field.queryset %}
-                    <option value="{{ brand.pk }}" {% if form.instance.brand == brand %}selected{% endif %}>{{ brand.name }}</option>
-                {% endfor %}
-            </select>
-            {% if form.brand.errors %}
-                <div class="text-red-500 text-sm mt-2">
-                    {% for error in form.brand.errors %}
-                        <p>{{ error }}</p>
-                    {% endfor %}
-                </div>
-            {% endif %}
+    <div class="form-card">
+        <div class="form-header">
+            <div class="form-header-icon">
+                <i class='bx {% if form.instance.pk %}bx-edit{% else %}bx-package{% endif %} text-white text-xl'></i>
+            </div>
+            <div>
+                <h1 class="text-xl font-bold" style="color: #111827;">{{ grabar }}</h1>
+                <p class="text-sm mt-0.5" style="color: #6b7280;">
+                    {% if form.instance.pk %}Modifica los datos del producto{% else %}Agrega un nuevo producto al catálogo{% endif %}
+                </p>
+            </div>
         </div>
 
-        <div class="mb-6">
-            <label for="id_description" class="block text-lg font-medium">Descripción</label>
-            <textarea name="description" id="id_description" rows="5" class="mt-1 block w-full px-4 py-2 border rounded-lg focus:ring-green-500 focus:border-green-500">{{ form.instance.descripcion|default:'' }}</textarea>
-            {% if form.description.errors %}
-                <div class="text-red-500 text-sm mt-2">
-                    {% for error in form.description.errors %}
-                        <p>{{ error }}</p>
-                    {% endfor %}
+        <div class="form-body">
+            <form method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+
+                <!-- Nombre -->
+                <div class="field-group mb-5">
+                    <label class="field-label"><i class='bx bx-tag'></i>Nombre del producto</label>
+                    <input type="text" name="name" value="{{ form.instance.name|default:'' }}"
+                           class="field-input {% if form.name.errors %}error{% endif %}"
+                           placeholder="Ej: Coca-Cola 1.5L" required>
+                    {% if form.name.errors %}<span class="field-error"><i class='bx bx-error-circle'></i>{{ form.name.errors.0 }}</span>{% endif %}
                 </div>
-            {% endif %}
-        </div>
 
-        <div class="mb-6">
-            <label for="id_price" class="block text-lg font-medium">Precio</label>
-            <input type="number" name="price" id="id_price" value="{{ form.instance.price|default:'' }}" 
-            class="mt-1 block w-full px-4 py-2 border rounded-lg focus:ring-green-500 focus:border-green-500" 
-            placeholder="Ingrese el precio del producto" step="0.01" required>
-            {% if form.price.errors %}
-                <div class="text-red-500 text-sm mt-2">
-                    {% for error in form.price.errors %}
-                        <p>{{ error }}</p>
-                    {% endfor %}
+                <!-- Categoría y Marca -->
+                <div class="grid-2 mb-5">
+                    <div class="field-group">
+                        <label class="field-label"><i class='bx bx-category'></i>Categoría</label>
+                        <select name="category" class="field-input" style="cursor: pointer;">
+                            <option value="">Seleccionar categoría</option>
+                            {% for category in form.category.field.queryset %}
+                                <option value="{{ category.pk }}" {% if form.instance.category == category %}selected{% endif %}>{{ category.name }}</option>
+                            {% endfor %}
+                        </select>
+                        {% if form.category.errors %}<span class="field-error"><i class='bx bx-error-circle'></i>{{ form.category.errors.0 }}</span>{% endif %}
+                    </div>
+                    <div class="field-group">
+                        <label class="field-label"><i class='bx bx-purchase-tag'></i>Marca</label>
+                        <select name="brand" class="field-input" style="cursor: pointer;">
+                            <option value="">Seleccionar marca</option>
+                            {% for brand in form.brand.field.queryset %}
+                                <option value="{{ brand.pk }}" {% if form.instance.brand == brand %}selected{% endif %}>{{ brand.name }}</option>
+                            {% endfor %}
+                        </select>
+                        {% if form.brand.errors %}<span class="field-error"><i class='bx bx-error-circle'></i>{{ form.brand.errors.0 }}</span>{% endif %}
+                    </div>
                 </div>
-            {% endif %}
-        </div>
 
-        <div class="mb-6"> 
-            <label for="id_stock" class="block text-lg font-medium">Stock</label>
-            <input type="number" name="stock" id="id_stock" value="{{ form.instance.stock|default:'' }}" min="0" 
-            class="mt-1 block w-full px-4 py-2 border rounded-lg focus:ring-green-500 focus:border-green-500" placeholder="Ingrese el stock del producto" step="1" required>
-            {% if form.stock.errors %}
-                <div class="text-red-500 text-sm mt-2">
-                    {% for error in form.stock.errors %} 
-                        <p>{{ error }}</p>
-                    {% endfor %}
-                </div> 
-            {% endif %} 
-        </div>
-
-        <div class="mb-6">
-            <label for="id_image" class="block text-lg font-medium">Imagen del Producto</label>
-            {% if form.instance.image %}
-                <div class="mb-4">
-                    <img src="{{ form.instance.image.url }}" alt="Imagen del Producto" class="w-32 h-32 object-cover rounded-lg">
+                <!-- Descripción -->
+                <div class="field-group mb-5">
+                    <label class="field-label"><i class='bx bx-text'></i>Descripción</label>
+                    <textarea name="description" class="field-input" placeholder="Describe el producto...">{{ form.instance.description|default:'' }}</textarea>
                 </div>
-            {% endif %}
-            <input type="file" name="image" id="id_image" class="mt-1 block w-full px-4 py-2 border rounded-lg">
-            {% if form.image.errors %}
-                <div class="text-red-500 text-sm mt-2">
-                    {% for error in form.image.errors %}
-                        <p>{{ error }}</p>
-                    {% endfor %}
+
+                <!-- Precio, Stock -->
+                <div class="section-divider"><span>Precio e inventario</span></div>
+
+                <div class="grid-2 mb-5">
+                    <div class="field-group">
+                        <label class="field-label"><i class='bx bx-dollar'></i>Precio (USD)</label>
+                        <input type="number" name="price" value="{{ form.instance.price|default:'' }}"
+                               class="field-input {% if form.price.errors %}error{% endif %}"
+                               placeholder="0.00" step="0.01" min="0.01" required>
+                        {% if form.price.errors %}<span class="field-error"><i class='bx bx-error-circle'></i>{{ form.price.errors.0 }}</span>{% endif %}
+                    </div>
+                    <div class="field-group">
+                        <label class="field-label"><i class='bx bx-box'></i>Stock</label>
+                        <input type="number" name="stock" id="id_stock" value="{{ form.instance.stock|default:'0' }}"
+                               class="field-input {% if form.stock.errors %}error{% endif %}"
+                               placeholder="0" step="1" min="0" required>
+                        {% if form.stock.errors %}<span class="field-error"><i class='bx bx-error-circle'></i>{{ form.stock.errors.0 }}</span>{% endif %}
+                    </div>
                 </div>
-            {% endif %}
-        </div>
 
-        <div class="mb-6">
-            <label for="id_production_date" class="block text-lg font-medium">Fecha de Elaboración</label>
-            <input type="date" name="production_date" id="id_production_date" value="{{ form.instance.production_date|default:'' }}" 
-            class="mt-1 block w-full px-4 py-2 border rounded-lg focus:ring-green-500 focus:border-green-500" placeholder="Ingrese la fecha de elaboración del producto" required>
-            {% if form.production_date.errors %}
-                <div class="text-red-500 text-sm mt-2">
-                    {% for error in form.production_date.errors %}
-                        <p>{{ error }}</p>
-                    {% endfor %}
+                <!-- Estado (calculado desde stock) -->
+                <div class="field-group mb-5">
+                    <label class="field-label"><i class='bx bx-toggle-right'></i>Estado del producto</label>
+                    <div class="flex items-center gap-3 py-2">
+                        <input type="hidden" name="state" id="id_state" value="{{ form.instance.state|default:'' }}">
+                        <span id="state-badge" class="state-badge {% if form.instance.stock and form.instance.stock > 0 %}state-available{% else %}state-unavailable{% endif %}">
+                            <i class='bx {% if form.instance.stock and form.instance.stock > 0 %}bx-check-circle{% else %}bx-x-circle{% endif %}'></i>
+                            <span id="state-text">{% if form.instance.stock and form.instance.stock > 0 %}Disponible{% else %}Agotado{% endif %}</span>
+                        </span>
+                        <span class="field-hint">Se actualiza automáticamente según el stock</span>
+                    </div>
                 </div>
-            {% endif %}
-        </div>
 
-        <div class="mb-6">
-            <label for="id_expiration_date" class="block text-lg font-medium">Fecha de Vencimiento</label>
-            <input type="date" name="expiration_date" id="id_expiration_date" value="{{ form.instance.expiration_date|default:'' }}" 
-            class="mt-1 block w-full px-4 py-2 border rounded-lg focus:ring-green-500 focus:border-green-500" placeholder="Ingrese la fecha de vencimiento del producto" readonly>
-            {% if form.expiration_date.errors %}
-                <div class="text-red-500 text-sm mt-2">
-                    {% for error in form.expiration_date.errors %}
-                        <p>{{ error }}</p>
-                    {% endfor %}
+                <!-- Imagen -->
+                <div class="section-divider"><span>Imagen y código</span></div>
+
+                <div class="grid-2 mb-5">
+                    <div class="field-group">
+                        <label class="field-label"><i class='bx bx-image'></i>Imagen del producto</label>
+                        <div class="image-upload-zone">
+                            {% if form.instance.image %}
+                            <div class="flex items-center gap-3 mb-3">
+                                <img src="{{ form.instance.image.url }}" alt="Imagen actual" class="image-preview">
+                                <span class="field-hint">Imagen actual. Sube una nueva para reemplazarla.</span>
+                            </div>
+                            {% endif %}
+                            <input type="file" name="image" id="id_image" accept="image/*"
+                                   class="w-full text-sm text-gray-500 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-purple-50 file:text-purple-700 hover:file:bg-purple-100">
+                        </div>
+                    </div>
+                    <div class="field-group">
+                        <label class="field-label"><i class='bx bx-barcode'></i>Código de barras EAN-13</label>
+                        <input type="text" name="barcode" id="id_barcode" value="{{ form.instance.barcode|default:'' }}"
+                               class="field-input only-numbers {% if form.barcode.errors %}error{% endif %}"
+                               placeholder="13 dígitos" maxlength="13" pattern="[0-9]{13}" autocomplete="off">
+                        {% if form.barcode.errors %}
+                            <span class="field-error"><i class='bx bx-error-circle'></i>{{ form.barcode.errors.0 }}</span>
+                        {% else %}
+                            <span class="field-hint">Exactamente 13 dígitos, verificación EAN-13</span>
+                        {% endif %}
+                    </div>
                 </div>
-            {% endif %} 
-        </div>
 
-        <div class="mb-6">
-            <label for="id_state" class="block text-lg font-medium">Estado del Producto</label>
-            <input type="text" name="state" id="id_state" value="{{ form.instance.state|yesno:'Agotado,Disponible' }}" readonly>
-        </div> 
+                <!-- Fechas -->
+                <div class="section-divider"><span>Fechas</span></div>
 
-        <div class="mb-6">
-            <label for="id_barcode" class="block text-lg font-medium">Código de Barras</label>
-            <input type="text" name="barcode" id="id_barcode" value="{{ form.instance.barcode|default:'' }}" 
-            class="mt-1 block w-full px-4 py-2 border rounded-lg focus:ring-green-500 focus:border-green-500 only-numbers" 
-            placeholder="Ingrese el código de barras del producto (13 dígitos)" 
-            maxlength="13" pattern="[0-9]{13}" autocomplete="off">
-            {% if form.barcode.errors %}
-                <div class="text-red-500 text-sm mt-2">
-                    {% for error in form.barcode.errors %}
-                        <p>{{ error }}</p>
-                    {% endfor %}
+                <div class="grid-2">
+                    <div class="field-group">
+                        <label class="field-label"><i class='bx bx-calendar-check'></i>Fecha de elaboración</label>
+                        <input type="date" name="production_date" id="id_production_date"
+                               value="{{ form.instance.production_date|default:'' }}"
+                               class="field-input" required>
+                    </div>
+                    <div class="field-group">
+                        <label class="field-label"><i class='bx bx-calendar-x'></i>Fecha de vencimiento</label>
+                        <input type="date" name="expiration_date" id="id_expiration_date"
+                               value="{{ form.instance.expiration_date|default:'' }}"
+                               class="field-input" readonly style="cursor: not-allowed;">
+                        <span class="field-hint">Se calcula automáticamente (+30 días)</span>
+                    </div>
                 </div>
-            {% endif %}
-        </div>
 
-        <div class="flex justify-between items-center">
-            <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-red-700 transition-all">Guardar Producto</button>
-            <a href={{back_url}} class="bg-gray-500 text-white px-6 py-2 rounded-lg hover:bg-gray-600 transition-all">Cancelar</a>
+                <!-- Botones -->
+                <div class="flex items-center justify-between mt-8 pt-6" style="border-top: 1px solid #f3f4f6;">
+                    <a href="{{ back_url }}" class="btn-cancel">
+                        <i class='bx bx-arrow-back'></i> Cancelar
+                    </a>
+                    <button type="submit" class="btn-save">
+                        <i class='bx bx-save'></i> {{ grabar }}
+                    </button>
+                </div>
+            </form>
         </div>
-    </form> 
+    </div>
 </div>
+
 <script src="{% static 'js/expiration_date.js' %}"></script>
-<script src="{% static 'js/state_stock.js' %}"></script>
 <script src="{% static 'js/barcode_validation.js' %}"></script>
+<script>
+// State badge actualizado con el stock
+document.addEventListener('DOMContentLoaded', () => {
+    const stockInput = document.getElementById('id_stock');
+    const stateBadge = document.getElementById('state-badge');
+    const stateText  = document.getElementById('state-text');
+    const stateInput = document.getElementById('id_state');
+
+    function updateState() {
+        const val = parseInt(stockInput.value) || 0;
+        const available = val > 0;
+        stateBadge.className = 'state-badge ' + (available ? 'state-available' : 'state-unavailable');
+        stateText.textContent = available ? 'Disponible' : 'Agotado';
+        stateBadge.querySelector('i').className = 'bx ' + (available ? 'bx-check-circle' : 'bx-x-circle');
+        stateInput.value = available ? 'Disponible' : 'Agotado';
+    }
+    updateState();
+    stockInput.addEventListener('input', updateState);
+});
+</script>
 {% endblock %}
