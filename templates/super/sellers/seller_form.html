@@ -1,119 +1,117 @@
 {% extends 'components/base.html' %}
-{% block title %}{% if form.instance.pk %}{{title}}{% else %}{{title}}{% endif %}{% endblock %}
+{% load static %}
+{% block title %}{{ title }}{% endblock %}
 {% block content %}
-<div class="container mx-auto py-8 px-16">
-    <h1 class="text-3xl font-bold mb-6">{% if form.instance.pk %}{{title}}{% else %}{{title}}{% endif %}</h1> 
-    <form method="post" class="space-y-6">
-        {% csrf_token %} 
-        <div class="mb-4">
-            <label for="{{ form.name.id_for_label }}" class="block text-lg font-medium">Nombre del Vendedor</label> 
-            <input type="text" name="name" id="{{ form.name.id_for_label }}" value="{{ form.instance.name|default:'' }}" placeholder="Ingresa el nombre del vendedor" class="mt-1 block w-full px-4 py-2 border rounded-lg focus:ring-green-500 focus:border-green-500" required>
-            {% if form.name.errors %}
-                <div class="text-red-500 text-sm mt-2">
-                    {% for error in form.name.errors %}
-                        <p>{{ error }}</p>
-                    {% endfor %}
-                </div>
-            {% endif %}
-        </div> 
-        <div class="mb-4">
-            <label for="{{ form.last_name.id_for_label }}" class="block text-lg font-medium">Apellido del Vendedor</label> 
-            <input type="text" name="last_name" id="{{ form.last_name.id_for_label }}" value="{{ form.instance.last_name|default:'' }}" placeholder="Ingresa el apellido del vendedor" class="mt-1 block w-full px-4 py-2 border rounded-lg focus:ring-green-500 focus:border-green-500" required>
-            {% if form.last_name.errors %}
-                <div class="text-red-500 text-sm mt-2">
-                    {% for error in form.last_name.errors %}
-                        <p>{{ error }}</p>
-                    {% endfor %}
-                </div>
-            {% endif %}
-        </div> 
-        
-        <div class="mb-4">
-            <label for="{{ form.dni.id_for_label }}" class="block text-lg font-medium">Cédula del Vendedor</label> 
-            <input type="text" name="dni" id="{{ form.dni.id_for_label }}" value="{{ form.instance.dni|default:'' }}" 
-            placeholder="Ingresa la cédula del vendedor (10 dígitos)" 
-            class="mt-1 block w-full px-4 py-2 border rounded-lg focus:ring-green-500 focus:border-green-500 only-numbers" 
-            maxlength="10" pattern="[0-9]{10}" required autocomplete="off">
-            {% if form.dni.errors %}
-                <div class="text-red-500 text-sm mt-2">
-                    {% for error in form.dni.errors %}
-                        <p>{{ error }}</p>
-                    {% endfor %}
-                </div>
-            {% endif %}
+
+<link rel="stylesheet" href="{% static 'css/seller_form.css' %}">
+
+<div class="max-w-2xl mx-auto py-6">
+    <div class="flex items-center gap-2 text-sm mb-5" style="color: #9ca3af;">
+        <a href="{% url 'super:seller_list' %}" class="hover:text-blue-600 transition-colors font-medium">Vendedores</a>
+        <i class='bx bx-chevron-right'></i>
+        <span style="color: #374151; font-weight: 600;">{{ title }}</span>
+    </div>
+
+    <div class="form-card">
+        <div class="form-header">
+            <div class="form-header-icon">
+                <i class='bx {% if form.instance.pk %}bx-edit{% else %}bx-user-plus{% endif %} text-white text-xl'></i>
+            </div>
+            <div>
+                <h1 class="text-xl font-bold" style="color: #111827;">{{ title }}</h1>
+                <p class="text-sm mt-0.5" style="color: #6b7280;">
+                    {% if form.instance.pk %}Modifica los datos del vendedor{% else %}Registra un nuevo vendedor en el sistema{% endif %}
+                </p>
+            </div>
         </div>
 
-        <div class="mb-4">
-            <label for="{{ form.email.id_for_label }}" class="block text-lg font-medium">Email del Vendedor</label> 
-            <input type="email" name="email" id="{{ form.email.id_for_label }}" value="{{ form.instance.email|default:'' }}" placeholder="Ingresa el email del vendedor" class="mt-1 block w-full px-4 py-2 border rounded-lg focus:ring-green-500 focus:border-green-500" required>
-            {% if form.email.errors %}
-                <div class="text-red-500 text-sm mt-2">
-                    {% for error in form.email.errors %}
-                        <p>{{ error }}</p>
-                    {% endfor %}
-                </div>
-            {% endif %}
-        </div>
-        <div class="mb-4">
-            <label for="{{ form.address.id_for_label }}" class="block text-lg font-medium">Dirección del Vendedor</label> 
-            <input type="text" name="address" id="{{ form.address.id_for_label }}" value="{{ form.instance.address|default:'' }}" placeholder="Ingresa la dirección del vendedor" class="mt-1 block w-full px-4 py-2 border rounded-lg focus:ring-green-500 focus:border-green-500">
-            {% if form.address.errors %}
-                <div class="text-red-500 text-sm mt-2">
-                    {% for error in form.address.errors %}
-                        <p>{{ error }}</p>
-                    {% endfor %}
-                </div>
-            {% endif %}
-        </div>
-        
-        <div class="mb-4">
-            <label for="{{ form.phone.id_for_label }}" class="block text-lg font-medium">Teléfono del Vendedor</label> 
-            <input type="text" name="phone" id="{{ form.phone.id_for_label }}" value="{{ form.instance.phone|default:'' }}" 
-            placeholder="Ingresa el teléfono del vendedor (10 dígitos)" 
-            class="mt-1 block w-full px-4 py-2 border rounded-lg focus:ring-green-500 focus:border-green-500 only-numbers" 
-            maxlength="10" pattern="[0-9]{10}" required autocomplete="off">
-            {% if form.phone.errors %}
-                <div class="text-red-500 text-sm mt-2">
-                    {% for error in form.phone.errors %}
-                        <p>{{ error }}</p>
-                    {% endfor %}
-                </div>
-            {% endif %}
-        </div>
-        
-        <div class="mb-4">
-            <label for="{{ form.birth_date.id_for_label }}" class="block text-lg font-medium">Fecha de Nacimiento del Vendedor</label> 
-            <input type="date" name="birth_date" id="{{ form.birth_date.id_for_label }}" value="{{ form.instance.birth_date|default:'' }}" placeholder="Ingresa la fecha de nacimiento del vendedor" class="mt-1 block w-full px-4 py-2 border rounded-lg focus:ring-green-500 focus:border-green-500">
-            {% if form.birth_date.errors %}
-                <div class="text-red-500 text-sm mt-2">
-                    {% for error in form.birth_date.errors %}
-                        <p>{{ error }}</p>
-                    {% endfor %}
-                </div>
-            {% endif %}
-        </div>
-        <div class="mb-4">
-            <label for="{{ form.gender.id_for_label }}" class="block text-lg font-medium">Genero</label> 
-            <select name="gender" id="{{ form.gender.id_for_label }}" class="mt-1 block w-full px-4 py-2 border rounded-lg focus:ring-green-500 focus:border-green-500">
-                <option value="">Seleccionar Genero</option>
-                <option value="1" {% if form.instance.gender == 1 %}selected{% endif %}>Masculino</option>
-                <option value="2" {% if form.instance.gender == 2 %}selected{% endif %}>Femenino</option>
-            </select>
-            {% if form.gender.errors %}
-                <div class="text-red-500 text-sm mt-2">
-                    {% for error in form.gender.errors %}
-                        <p>{{ error }}</p>
-                    {% endfor %}
-                </div>
-            {% endif %}
-        </div>
+        <div class="form-body">
+            <form method="post">
+                {% csrf_token %}
 
-        <div class="flex justify-between">
-            <button type="submit" class="bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700 transition-all">Guardar</button>
-            <a href={{back_url}} class="bg-gray-300 text-black px-6 py-2 rounded-lg hover:bg-gray-400 transition-all">
-                Cancelar
-            </a>
-        </div> 
-    </form> 
-</div> 
+                <div class="grid-2 mb-5">
+                    <div class="field-group">
+                        <label class="field-label"><i class='bx bx-user'></i>Nombre</label>
+                        <input type="text" name="name" value="{{ form.instance.name|default:'' }}"
+                               class="field-input {% if form.name.errors %}error{% endif %}"
+                               placeholder="Nombre del vendedor" required>
+                        {% if form.name.errors %}<span class="field-error"><i class='bx bx-error-circle'></i>{{ form.name.errors.0 }}</span>{% endif %}
+                    </div>
+                    <div class="field-group">
+                        <label class="field-label"><i class='bx bx-user'></i>Apellido</label>
+                        <input type="text" name="last_name" value="{{ form.instance.last_name|default:'' }}"
+                               class="field-input {% if form.last_name.errors %}error{% endif %}"
+                               placeholder="Apellido del vendedor" required>
+                        {% if form.last_name.errors %}<span class="field-error"><i class='bx bx-error-circle'></i>{{ form.last_name.errors.0 }}</span>{% endif %}
+                    </div>
+                </div>
+
+                <div class="section-divider"><span>Identificación y contacto</span></div>
+
+                <div class="grid-2 mb-5">
+                    <div class="field-group">
+                        <label class="field-label"><i class='bx bx-id-card'></i>Cédula</label>
+                        <input type="text" name="dni" value="{{ form.instance.dni|default:'' }}"
+                               class="field-input only-numbers {% if form.dni.errors %}error{% endif %}"
+                               placeholder="10 dígitos" maxlength="10" pattern="[0-9]{10}" required autocomplete="off">
+                        {% if form.dni.errors %}
+                            <span class="field-error"><i class='bx bx-error-circle'></i>{{ form.dni.errors.0 }}</span>
+                        {% else %}
+                            <span class="field-hint">Exactamente 10 dígitos numéricos</span>
+                        {% endif %}
+                    </div>
+                    <div class="field-group">
+                        <label class="field-label"><i class='bx bx-phone'></i>Teléfono</label>
+                        <input type="text" name="phone" value="{{ form.instance.phone|default:'' }}"
+                               class="field-input only-numbers {% if form.phone.errors %}error{% endif %}"
+                               placeholder="10 dígitos" maxlength="10" pattern="[0-9]{10}" autocomplete="off">
+                        {% if form.phone.errors %}<span class="field-error"><i class='bx bx-error-circle'></i>{{ form.phone.errors.0 }}</span>{% endif %}
+                    </div>
+                </div>
+
+                <div class="field-group mb-5">
+                    <label class="field-label"><i class='bx bx-envelope'></i>Correo electrónico</label>
+                    <input type="email" name="email" value="{{ form.instance.email|default:'' }}"
+                           class="field-input {% if form.email.errors %}error{% endif %}"
+                           placeholder="correo@ejemplo.com" required>
+                    {% if form.email.errors %}<span class="field-error"><i class='bx bx-error-circle'></i>{{ form.email.errors.0 }}</span>{% endif %}
+                </div>
+
+                <div class="field-group mb-5">
+                    <label class="field-label"><i class='bx bx-map-pin'></i>Dirección</label>
+                    <input type="text" name="address" value="{{ form.instance.address|default:'' }}"
+                           class="field-input" placeholder="Dirección del vendedor">
+                </div>
+
+                <div class="section-divider"><span>Datos personales</span></div>
+
+                <div class="grid-2">
+                    <div class="field-group">
+                        <label class="field-label"><i class='bx bx-calendar'></i>Fecha de nacimiento</label>
+                        <input type="date" name="birth_date" value="{{ form.instance.birth_date|default:'' }}"
+                               class="field-input">
+                    </div>
+                    <div class="field-group">
+                        <label class="field-label"><i class='bx bx-male-female'></i>Género</label>
+                        <select name="gender" class="field-input" style="cursor: pointer;">
+                            <option value="">Seleccionar género</option>
+                            <option value="1" {% if form.instance.gender == 1 %}selected{% endif %}>Masculino</option>
+                            <option value="2" {% if form.instance.gender == 2 %}selected{% endif %}>Femenino</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="flex items-center justify-between mt-8 pt-6" style="border-top: 1px solid #f3f4f6;">
+                    <a href="{{ back_url }}" class="btn-cancel">
+                        <i class='bx bx-arrow-back'></i> Cancelar
+                    </a>
+                    <button type="submit" class="btn-save">
+                        <i class='bx {% if form.instance.pk %}bx-save{% else %}bx-badge-check{% endif %}'></i>
+                        {{ grabar }}
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
 {% endblock %}
