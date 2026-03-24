@@ -12,6 +12,7 @@ from django.db.models import Q
 from decimal import Decimal
 from core.super.models import Sale, SaleDetail, Product
 from core.super.form.sale import SaleForm
+from core.super.services.idempotency_service import IdempotencyService
 from django.http import HttpResponse
 from django.template.loader import get_template
 from django.shortcuts import render
@@ -75,23 +76,18 @@ class SaleCreateView(CreateView):
             data = json.loads(request.body)
 
             # ── Guardia de idempotencia ───────────────────────────────────
-            # El frontend envía el idempotency_key generado en el GET.
-            # Si ya existe una venta con esa clave, devolvemos su URL sin
-            # crear nada nuevo (doble clic en "Guardar", F5, etc.).
+            idempotency_service = IdempotencyService()
             raw_key = data.get('idempotency_key', '').strip()
-            idempotency_key = None
-            if raw_key:
-                try:
-                    idempotency_key = uuid.UUID(raw_key)
-                    existing = Sale.objects.filter(idempotency_key=idempotency_key).first()
-                    if existing:
-                        return JsonResponse({
-                            'success': True,
-                            'redirect_url': str(self.success_url),
-                            'idempotent': True,
-                        })
-                except (ValueError, AttributeError):
-                    idempotency_key = None
+            idempotency_key = idempotency_service.parse_key(raw_key)
+
+            if idempotency_key:
+                existing = idempotency_service.find_existing(idempotency_key)
+                if existing:
+                    return JsonResponse({
+                        'success': True,
+                        'redirect_url': str(self.success_url),
+                        'idempotent': True,
+                    })
 
             sale = Sale(
                 customer_id=data.get('customer'),
