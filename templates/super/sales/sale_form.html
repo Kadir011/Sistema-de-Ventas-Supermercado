@@ -2,168 +2,214 @@
 {% load static %}
 {% block title %}{% if form.instance.pk %}Editar Venta{% else %}Registrar Venta{% endif %}{% endblock %}
 {% block content %}
-<div class="container mx-auto py-8 px-16">
-    <h1 class="text-3xl font-bold mb-6">{% if form.instance.pk %}Editar Venta #{{ form.instance.pk }}{% else %}Registrar Venta{% endif %}</h1>
 
-    <form method="post" id="saleForm" class="space-y-6" 
-          data-initial-details='{% if initial_details %}{{ initial_details|safe }}{% else %}[]{% endif %}' 
-          data-initial-totals='{% if initial_totals %}{{ initial_totals|safe }}{% else %}{}{% endif %}'>
-        {% csrf_token %}
+<link rel="stylesheet" href="{% static 'css/sale_form.css' %}">
 
-        {# ── Idempotencia: UUID generado en el GET, viaja con el payload JSON ── #}
-        {# sale.js lo lee desde este campo al hacer saveSale()                    #}
-        <input type="hidden" id="idempotency_key_field" value="{{ idempotency_key }}">
+<div class="max-w-5xl mx-auto py-6">
+    <!-- Breadcrumb -->
+    <div class="flex items-center gap-2 text-sm mb-5" style="color: #9ca3af;">
+        <a href="{% url 'super:sale_list' %}" class="hover:text-sky-600 transition-colors font-medium">Ventas</a>
+        <i class='bx bx-chevron-right'></i>
+        <span style="color: #374151; font-weight: 600;">{% if form.instance.pk %}Editar Venta #{{ form.instance.pk }}{% else %}Registrar Venta{% endif %}</span>
+    </div>
 
-        <!-- Campos principales de la venta -->
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 bg-gray-50 p-4 rounded-lg">
-            <div>
-                <label class="block text-sm font-medium text-gray-700">Cliente *</label>
-                <select name="customer" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500" required>
-                    <option value="">Seleccione un cliente</option>
-                    {% for customer in form.customer.field.queryset %}
-                        <option value="{{ customer.pk }}" {% if form.instance.customer_id == customer.pk %}selected{% endif %}>
-                            {{ customer.get_full_name }}
-                        </option>
-                    {% endfor %}
-                </select>
+    <div class="form-card">
+        <!-- Header -->
+        <div class="form-header">
+            <div class="form-header-icon">
+                <i class='bx {% if form.instance.pk %}bx-edit{% else %}bx-receipt{% endif %} text-white text-xl'></i>
             </div>
             <div>
-                <label class="block text-sm font-medium text-gray-700">Vendedor *</label>
-                <select name="seller" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500" required>
-                    <option value="">Seleccione un vendedor</option>
-                    {% for seller in form.seller.field.queryset %}
-                        <option value="{{ seller.pk }}" {% if form.instance.seller_id == seller.pk %}selected{% endif %}>
-                            {{ seller.get_full_name }}
-                        </option>
-                    {% endfor %}
-                </select>
-            </div>
-            <div>
-                <label class="block text-sm font-medium text-gray-700">Forma de Pago *</label>
-                <select name="payment" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500" required>
-                    <option value="">Seleccione forma de pago</option>
-                    {% for payment in form.payment.field.queryset %}
-                        <option value="{{ payment.pk }}" {% if form.instance.payment_id == payment.pk %}selected{% endif %}>
-                            {{ payment.name }}
-                        </option>
-                    {% endfor %}
-                </select>
-            </div>
-            <div>
-                <label class="block text-sm font-medium text-gray-700">Fecha *</label>
-                <input type="date" name="sale_date" 
-                       value="{% if form.instance.pk %}{{ form.instance.sale_date|date:'Y-m-d' }}{% else %}{{ form.sale_date.value|date:'Y-m-d' }}{% endif %}"
-                       class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500" required>
+                <h1 class="text-xl font-bold" style="color: #111827;">{% if form.instance.pk %}Editar Venta #{{ form.instance.pk }}{% else %}Registrar Venta{% endif %}</h1>
+                <p class="text-sm mt-0.5" style="color: #6b7280;">{% if form.instance.pk %}Modifica los datos de la venta{% else %}Crea una nueva transacción de venta{% endif %}</p>
             </div>
         </div>
 
-        <!-- Detalle de la venta -->
-        <div class="bg-gray-50 p-4 rounded-lg">
-            <h2 class="text-xl font-semibold mb-4">Detalle de Venta</h2>
-            <div class="overflow-x-auto">
-                <table id="sale-details" class="min-w-full bg-white">
-                    <thead>
-                        <tr>
-                            <th class="py-2 px-4 border-b text-left">Producto</th>
-                            <th class="py-2 px-4 border-b text-left">Cantidad</th>
-                            <th class="py-2 px-4 border-b text-left">Precio</th>
-                            <th class="py-2 px-4 border-b text-left">Subtotal</th>
-                            <th class="py-2 px-4 border-b text-center">Acciones</th>
-                        </tr>
-                    </thead>
-                    <tbody></tbody>
-                </table>
-            </div>
-            <button type="button" id="add-product" class="mt-4 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
-                <i class='bx bx-plus'></i> Agregar Producto
-            </button>
-        </div>
+        <!-- Form (sin cambios funcionales) -->
+        <form method="post" id="saleForm"
+              data-initial-details='{% if initial_details %}{{ initial_details|safe }}{% else %}[]{% endif %}'
+              data-initial-totals='{% if initial_totals %}{{ initial_totals|safe }}{% else %}{}{% endif %}'>
+            {% csrf_token %}
+            <input type="hidden" id="idempotency_key_field" value="{{ idempotency_key }}">
 
-        <!-- Template oculto para las filas -->
-        <template id="detail-row-template">
-            <tr class="detail-row">
-                <td class="py-2 px-4 border-b">
-                    <select class="product-select w-full rounded-md border-gray-300">
-                        <option value="">Seleccione un producto</option>
-                    </select>
-                </td>
-                <td class="py-2 px-4 border-b">
-                    <input type="number" class="quantity-input w-full rounded-md border-gray-300" min="1" value="1">
-                </td>
-                <td class="py-2 px-4 border-b">
-                    <input type="text" class="price-input w-full rounded-md border-gray-300 bg-gray-100" readonly>
-                </td>
-                <td class="py-2 px-4 border-b">
-                    <input type="text" class="subtotal-input w-full rounded-md border-gray-300 bg-gray-100" readonly>
-                </td>
-                <td class="py-2 px-4 border-b text-center">
-                    <button type="button" class="delete-row bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600">
-                        <i class='bx bx-trash'></i>
-                    </button>
-                </td>
-            </tr>
-        </template>
-
-        <!-- Modal de productos -->
-        <div id="productModal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50">
-            <div class="bg-white p-6 rounded-lg w-3/4 max-h-[80vh] overflow-y-auto shadow-xl">
-                <div class="flex justify-between items-center mb-4">
-                    <h3 class="text-lg font-semibold">Seleccionar Producto</h3>
-                    <button type="button" id="closeModal" class="text-gray-500 hover:text-gray-700">
-                        <i class='bx bx-x text-2xl'></i>
-                    </button>
+            <!-- Sección: Información de venta -->
+            <div class="form-section">
+                <div class="section-title"><i class='bx bx-info-circle'></i>Información de la venta</div>
+                <div class="grid-2">
+                    <div class="field-group">
+                        <label class="field-label">Cliente *</label>
+                        <select name="customer" class="field-input" required style="cursor: pointer;">
+                            <option value="">Seleccione un cliente</option>
+                            {% for customer in form.customer.field.queryset %}
+                                <option value="{{ customer.pk }}" {% if form.instance.customer_id == customer.pk %}selected{% endif %}>
+                                    {{ customer.get_full_name }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="field-group">
+                        <label class="field-label">Vendedor *</label>
+                        <select name="seller" class="field-input" required style="cursor: pointer;">
+                            <option value="">Seleccione un vendedor</option>
+                            {% for seller in form.seller.field.queryset %}
+                                <option value="{{ seller.pk }}" {% if form.instance.seller_id == seller.pk %}selected{% endif %}>
+                                    {{ seller.get_full_name }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="field-group">
+                        <label class="field-label">Forma de Pago *</label>
+                        <select name="payment" class="field-input" required style="cursor: pointer;">
+                            <option value="">Seleccione forma de pago</option>
+                            {% for payment in form.payment.field.queryset %}
+                                <option value="{{ payment.pk }}" {% if form.instance.payment_id == payment.pk %}selected{% endif %}>
+                                    {{ payment.name }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="field-group">
+                        <label class="field-label">Fecha *</label>
+                        <input type="date" name="sale_date" class="field-input"
+                               value="{% if form.instance.pk %}{{ form.instance.sale_date|date:'Y-m-d' }}{% else %}{{ form.sale_date.value|date:'Y-m-d' }}{% endif %}"
+                               required>
+                    </div>
                 </div>
-                <input type="text" id="productSearch" class="w-full p-2 mb-4 border rounded" placeholder="Buscar producto...">
-                <div class="overflow-x-auto">
-                    <table class="min-w-full bg-white">
+            </div>
+
+            <!-- Sección: Detalle de productos -->
+            <div class="form-section">
+                <div class="section-title"><i class='bx bx-package'></i>Productos de la venta</div>
+
+                <div class="overflow-x-auto rounded-xl" style="border: 1px solid #e2e8f0;">
+                    <table class="detail-table" id="sale-details">
                         <thead>
                             <tr>
-                                <th class="py-2 px-4 border-b text-left">Nombre</th>
-                                <th class="py-2 px-4 border-b text-left">Precio</th>
-                                <th class="py-2 px-4 border-b text-left">Stock</th>
-                                <th class="py-2 px-4 border-b text-center">Acción</th>
+                                <th style="width: 40%;">Producto</th>
+                                <th style="width: 15%;">Cantidad</th>
+                                <th style="width: 15%;">Precio unit.</th>
+                                <th style="width: 15%;">Subtotal</th>
+                                <th style="width: 15%; text-align: center;">Acción</th>
                             </tr>
                         </thead>
-                        <tbody id="productList"></tbody>
+                        <tbody></tbody>
                     </table>
                 </div>
-            </div>
-        </div>
 
-        <!-- Totales -->
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 bg-gray-50 p-4 rounded-lg">
-            <div>
-                <label class="block text-sm font-medium text-gray-700">Subtotal</label>
-                <input type="number" name="subtotal" value="0.00" step="0.01" readonly 
-                       class="mt-1 block w-full rounded-md border-gray-300 bg-gray-100">
+                <div class="mt-3">
+                    <button type="button" id="add-product" class="btn-add-product">
+                        <i class='bx bx-plus-circle text-base'></i> Agregar producto
+                    </button>
+                </div>
             </div>
-            <div>
-                <label class="block text-sm font-medium text-gray-700">IVA (15%)</label>
-                <input type="number" name="iva" value="0.00" step="0.01" readonly 
-                       class="mt-1 block w-full rounded-md border-gray-300 bg-gray-100">
-            </div>
-            <div>
-                <label class="block text-sm font-medium text-gray-700">Descuento</label>
-                <input type="number" name="discount" value="0.00" step="0.01" min="0" 
-                       class="mt-1 block w-full rounded-md border-gray-300">
-            </div>
-            <div>
-                <label class="block text-sm font-medium text-gray-700 font-bold">Total</label>
-                <input type="number" name="total" value="0.00" step="0.01" readonly 
-                       class="mt-1 block w-full rounded-md border-gray-300 bg-gray-100 font-bold text-lg">
-            </div>
-        </div>
 
-        <!-- Botones de acción -->
-        <div class="flex justify-end space-x-4">
-            <a href="{{ back_url }}" class="bg-gray-500 text-white px-6 py-2 rounded hover:bg-gray-600">
-                <i class='bx bx-x'></i> Cancelar
-            </a>
-            <button type="submit" class="bg-green-500 text-white px-6 py-2 rounded hover:bg-green-600">
-                <i class='bx bx-save'></i> {{ grabar }}
-            </button>
-        </div>
-    </form>
+            <!-- Sección: Totales -->
+            <div class="form-section">
+                <div class="section-title"><i class='bx bx-calculator'></i>Resumen económico</div>
+                <div class="flex flex-col md:flex-row gap-6">
+                    <!-- Descuento editable -->
+                    <div class="flex-1">
+                        <div class="field-group">
+                            <label class="field-label">Descuento (USD)</label>
+                            <input type="number" name="discount" value="0.00" step="0.01" min="0"
+                                   class="field-input" placeholder="0.00">
+                        </div>
+                    </div>
+                    <!-- Totales calculados -->
+                    <div class="flex-1 space-y-0" style="border-left: 1px solid #f1f5f9; padding-left: 24px;">
+                        <div class="total-row">
+                            <span style="color: #6b7280; font-weight: 500;">Subtotal</span>
+                            <div class="flex items-center gap-2">
+                                <span style="color: #6b7280; font-size: 0.8rem;">$</span>
+                                <input type="number" name="subtotal" value="0.00" step="0.01" readonly
+                                       class="field-input" style="width: 110px; text-align: right; font-weight: 700;">
+                            </div>
+                        </div>
+                        <div class="total-row">
+                            <span style="color: #6b7280; font-weight: 500;">IVA (15%)</span>
+                            <div class="flex items-center gap-2">
+                                <span style="color: #6b7280; font-size: 0.8rem;">$</span>
+                                <input type="number" name="iva" value="0.00" step="0.01" readonly
+                                       class="field-input" style="width: 110px; text-align: right; font-weight: 700;">
+                            </div>
+                        </div>
+                        <div class="total-row grand">
+                            <span>TOTAL</span>
+                            <div class="flex items-center gap-2">
+                                <span style="font-size: 0.9rem;">$</span>
+                                <input type="number" name="total" value="0.00" step="0.01" readonly
+                                       class="field-input" style="width: 120px; text-align: right; font-size: 1.1rem; font-weight: 800; color: #0ea5e9; border-color: #bae6fd; background: #f0f9ff;">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Botones -->
+            <div class="flex items-center justify-between px-7 py-5" style="border-top: 1px solid #f3f4f6;">
+                <a href="{{ back_url }}" class="btn-cancel">
+                    <i class='bx bx-x'></i> Cancelar
+                </a>
+                <button type="submit" class="btn-save">
+                    <i class='bx bx-save'></i> {{ grabar }}
+                </button>
+            </div>
+        </form>
+    </div>
 </div>
+
+<!-- Template oculto para filas de detalle (sin cambios funcionales) -->
+<template id="detail-row-template">
+    <tr class="detail-row">
+        <td>
+            <select class="product-select field-input" style="font-size: 0.85rem;">
+                <option value="">Seleccione un producto</option>
+            </select>
+        </td>
+        <td>
+            <input type="number" class="quantity-input field-input" min="1" value="1" style="width: 80px;">
+        </td>
+        <td>
+            <input type="text" class="price-input field-input" readonly style="width: 90px;">
+        </td>
+        <td>
+            <input type="text" class="subtotal-input field-input" readonly style="width: 90px;">
+        </td>
+        <td style="text-align: center;">
+            <button type="button" class="delete-row btn-delete-row">
+                <i class='bx bx-trash'></i>
+            </button>
+        </td>
+    </tr>
+</template>
+
+<!-- Modal de productos (sin cambios funcionales, diseño mejorado) -->
+<div id="productModal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4" style="background: rgba(0,0,0,0.5); backdrop-filter: blur(4px);">
+    <div class="modal-inner">
+        <div class="modal-header">
+            <span><i class='bx bx-package mr-2' style="color: #0ea5e9;"></i>Seleccionar producto</span>
+            <button type="button" id="closeModal" class="close-btn"><i class='bx bx-x'></i></button>
+        </div>
+        <div class="px-4 py-3 border-b" style="border-color: #f1f5f9; flex-shrink: 0;">
+            <input type="text" id="productSearch"
+                   class="field-input" placeholder="Buscar por nombre...">
+        </div>
+        <div class="modal-body p-2">
+            <table class="product-table" style="width: 100%; border-collapse: collapse;">
+                <thead>
+                    <tr class="product-table">
+                        <th style="padding: 10px 12px; font-size: 0.72rem; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.06em; text-align: left; border-bottom: 1px solid #e2e8f0; background: #f8fafc;">Producto</th>
+                        <th style="padding: 10px 12px; font-size: 0.72rem; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.06em; text-align: left; border-bottom: 1px solid #e2e8f0; background: #f8fafc;">Precio</th>
+                        <th style="padding: 10px 12px; font-size: 0.72rem; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.06em; text-align: left; border-bottom: 1px solid #e2e8f0; background: #f8fafc;">Stock</th>
+                        <th style="padding: 10px 12px; font-size: 0.72rem; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.06em; text-align: center; border-bottom: 1px solid #e2e8f0; background: #f8fafc;">Acción</th>
+                    </tr>
+                </thead>
+                <tbody id="productList"></tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
 <script src="{% static 'js/sale.js' %}"></script>
 {% endblock %}
