@@ -3,19 +3,15 @@
 <!-- Header con diseño del sistema -->
 <table width="100%" cellpadding="0" cellspacing="0" border="0">
 <tr>
-<td align="center" style="background-color: #14532d; border-radius: 12px; padding: 40px 32px; border: 3px solid #166534;">
+<td align="center" style="background: linear-gradient(135deg, #7f1d1d 0%, #991b1b 60%, #b91c1c 100%); border-radius: 16px; padding: 40px 32px;">
 
-<img src="https://img.shields.io/badge/-%F0%9F%9B%92%20MY%20SUPERMARKET-14532d?style=for-the-badge&labelColor=bbf7d0&color=166534&logoColor=white" alt="My Supermarket" height="48"/>
-
-<br/><br/>
-
-<span style="color: #ffffff; font-size: 24px; font-weight: 700;">**`MySupermarket`**</span>
-<span style="color: #bbf7d0; font-size: 24px; font-weight: 700;">—</span>
-<span style="color: #ffffff; font-size: 18px;">Sistema integral de E-Commerce y Punto de Venta para supermercados</span>
+<img src="https://img.shields.io/badge/-%F0%9F%9B%92%20MY%20SUPERMARKET-7f1d1d?style=for-the-badge&labelColor=991b1b&color=b91c1c&logoColor=white" alt="My Supermarket" height="48"/>
 
 <br/><br/>
 
-<span style="color: #86efac; font-size: 14px;">*Desarrollado con Django · Potenciado por IA · Protegido con idempotencia*</span>
+**`MySupermarket`** — Sistema integral de E-Commerce y Punto de Venta para supermercados
+
+*Desarrollado con Django · Potenciado por IA · Protegido con idempotencia*
 
 </td>
 </tr>
