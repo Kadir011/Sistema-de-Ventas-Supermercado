@@ -6,59 +6,8 @@ from django.utils.translation import gettext_lazy as _
 from django.shortcuts import redirect, render
 from django.views.generic.edit import FormView
 from django.contrib.auth.forms import AuthenticationForm
-from core.security.models import User
-from core.super.models import Customer
 from django.db import IntegrityError
-from django import forms
-
-class CustomerRegistrationForm(forms.ModelForm):
-    # Agregamos campo DNI explícitamente
-    dni = forms.CharField(label='Cédula', max_length=10, min_length=10, 
-                         widget=forms.TextInput(attrs={'class': 'form-control only-numbers', 'placeholder': 'Cédula'}))
-    password1 = forms.CharField(label='Contraseña', widget=forms.PasswordInput)
-    password2 = forms.CharField(label='Confirmar Contraseña', widget=forms.PasswordInput)
-    
-    class Meta:
-        model = User
-        fields = ['username', 'email', 'first_name', 'last_name', 'phone_number', 'address', 'date_of_birth', 'gender']
-    
-    def clean_password2(self):
-        password1 = self.cleaned_data.get('password1')
-        password2 = self.cleaned_data.get('password2')
-        if password1 and password2 and password1 != password2:
-            raise forms.ValidationError('Las contraseñas no coinciden')
-        return password2
-    
-    def clean_dni(self):
-        dni = self.cleaned_data.get('dni')
-        if Customer.objects.filter(dni=dni).exists():
-            raise forms.ValidationError('Ya existe un cliente registrado con esta cédula.')
-        return dni
-    
-    def save(self, commit=True):
-        user = super().save(commit=False)
-        user.set_password(self.cleaned_data['password1'])
-        user.user_type = 'customer'  # Siempre es cliente
-        
-        if commit:
-            user.save()
-            # CREAR CLIENTE AUTOMÁTICAMENTE EN EL CRUD
-            try:
-                Customer.objects.create(
-                    name=user.first_name,
-                    last_name=user.last_name,
-                    dni=self.cleaned_data['dni'], # Usamos el DNI del formulario
-                    email=user.email,
-                    address=user.address,
-                    phone=user.phone_number,
-                    birth_date=user.date_of_birth,
-                    gender=1 if user.gender == 'M' else 2 # Mapeo de género (ajustar según tu modelo)
-                )
-            except Exception as e:
-                # Logear error si es necesario, pero permitimos el registro del usuario
-                print(f"Error creando cliente automático: {e}")
-                
-        return user
+from core.security.forms.auth import CustomerRegistrationForm
 
 class UserRegisterView(FormView):
     template_name = 'security/auth/signup.html'
