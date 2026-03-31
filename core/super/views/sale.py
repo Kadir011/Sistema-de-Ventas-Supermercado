@@ -8,7 +8,7 @@ from django.views import View
 from django.views.generic import ListView, CreateView, UpdateView, DeleteView, DetailView
 from django.http import JsonResponse
 from django.db import transaction
-from django.db.models import Q
+from django.db.models import Q, F
 from decimal import Decimal
 from core.super.models import Sale, SaleDetail, Product
 from core.super.form.sale import SaleForm
@@ -103,11 +103,22 @@ class SaleCreateView(CreateView):
             sale.save()
 
             for detail in data.get('details', []):
-                product = get_object_or_404(Product, pk=detail.get('product'))
+                # ── Concurrencia: bloqueo a nivel de fila ─────────────────
+                # select_for_update() bloquea el registro del producto
+                # hasta que termine esta transacción. Si dos requests
+                # intentan descontar stock del mismo producto al mismo
+                # tiempo, el segundo espera al primero — evitando que
+                # ambos lean el mismo valor y sobreescriban el resultado.
+                product = Product.objects.select_for_update().get(
+                    pk=detail.get('product')
+                )
                 quantity = int(detail.get('quantity', 1))
 
                 if product.stock < quantity:
-                    raise ValueError(f"Stock insuficiente para el producto {product.name}")
+                    raise ValueError(
+                        f"Stock insuficiente para '{product.name}'. "
+                        f"Disponible: {product.stock}, solicitado: {quantity}"
+                    )
 
                 SaleDetail.objects.create(
                     sale=sale,
@@ -116,9 +127,12 @@ class SaleCreateView(CreateView):
                     price=Decimal(detail.get('price', '0')),
                     subtotal=Decimal(detail.get('subtotal', '0'))
                 )
-
-                product.stock -= quantity
-                product.save()
+                
+                # Descuento atómico: usa F() para que la operación
+                # ocurra en la BD, no en Python → inmune a race conditions.
+                Product.objects.filter(pk=product.pk).update(
+                    stock=F('stock') - quantity
+                )
 
             return JsonResponse({'success': True, 'redirect_url': str(self.success_url)})
 
@@ -190,42 +204,63 @@ class SaleUpdateView(UpdateView):
             old_details = SaleDetail.objects.filter(sale=sale)
             old_details_dict = {str(detail.product.id_product): detail for detail in old_details}
             new_details_dict = {str(detail.get('product')): detail for detail in data.get('details', [])}
-
+            
+            # Bloque 1: productos eliminados (restaurar stock)
             for product_id, old_detail in old_details_dict.items():
                 if product_id not in new_details_dict:
-                    product = old_detail.product
-                    product.stock += old_detail.quantity
-                    product.save()
-                    old_detail.delete()
+                    # select_for_update: bloquear antes de restaurar
+                    product = Product.objects.select_for_update().get(
+                        pk=old_detail.product.pk
+                    )
+                    Product.objects.filter(pk=product.pk).update(
+                        stock=F('stock') + old_detail.quantity
+                    )
+                    old_detail.delete()  # ← eliminar antes de restaurar
                 else:
                     new_quantity = int(new_details_dict[product_id].get('quantity', 1))
                     if new_quantity != old_detail.quantity:
-                        product = old_detail.product
+                        product = Product.objects.select_for_update().get(
+                            pk=old_detail.product.pk
+                        )
                         stock_difference = old_detail.quantity - new_quantity
-                        product.stock += stock_difference
-                        if product.stock < 0:
-                            raise ValueError(f"Stock insuficiente para el producto {product.name}")
-                        product.save()
+                        # Verificar que el nuevo stock no quedaría negativo
+                        current_stock = Product.objects.get(pk=product.pk).stock
+                        if current_stock + stock_difference < 0:
+                            raise ValueError(
+                                f"Stock insuficiente para '{product.name}'"
+                            )
+                        Product.objects.filter(pk=product.pk).update(
+                            stock=F('stock') + stock_difference
+                        )
                         old_detail.quantity = new_quantity
-                        old_detail.price = Decimal(new_details_dict[product_id].get('price', '0'))
-                        old_detail.subtotal = Decimal(new_details_dict[product_id].get('subtotal', '0'))
+                        old_detail.price = Decimal(
+                            new_details_dict[product_id].get('price', '0')
+                        )
+                        old_detail.subtotal = Decimal(
+                            new_details_dict[product_id].get('subtotal', '0')
+                        )
                         old_detail.save()
-
+                        
+            # Bloque 2: productos nuevos en edición            
             for product_id, new_detail in new_details_dict.items():
                 if product_id not in old_details_dict:
-                    product = get_object_or_404(Product, pk=int(product_id))
+                    product = Product.objects.select_for_update().get(
+                        pk=int(product_id)
+                    )
                     quantity = int(new_detail.get('quantity', 1))
                     if product.stock < quantity:
-                        raise ValueError(f"Stock insuficiente para el producto {product.name}")
+                        raise ValueError(
+                            f"Stock insuficiente para '{product.name}'. "
+                            f"Disponible: {product.stock}"
+                        )
                     SaleDetail.objects.create(
-                        sale=sale,
-                        product=product,
-                        quantity=quantity,
+                        sale=sale, product=product, quantity=quantity,
                         price=Decimal(new_detail.get('price', '0')),
-                        subtotal=Decimal(new_detail.get('subtotal', '0'))
+                        subtotal=Decimal(new_detail.get('subtotal', '0')),
                     )
-                    product.stock -= quantity
-                    product.save()
+                    Product.objects.filter(pk=product.pk).update(
+                        stock=F('stock') - quantity
+                    )
 
             return JsonResponse({'success': True, 'redirect_url': str(self.success_url)})
 
