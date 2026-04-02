@@ -1,6 +1,5 @@
 <div align="center">
 
-<!-- Header con diseño del sistema -->
 <table width="100%" cellpadding="0" cellspacing="0" border="0">
 <tr>
 <td align="center" style="background: linear-gradient(135deg, #7f1d1d 0%, #991b1b 60%, #b91c1c 100%); border-radius: 16px; padding: 40px 32px;">
@@ -9,9 +8,9 @@
 
 <br/><br/>
 
-**`MySupermarket`** — Sistema integral de E-Commerce y Punto de Venta para supermercados
+**`MySupermarket`** — Plataforma full‑stack de E-Commerce y Punto de Venta para supermercados
 
-*Desarrollado con Django · Potenciado por IA · Protegido con idempotencia*
+*Django · PostgreSQL · Google Gemini AI · Arquitectura SOLID · Patrones de Diseño*
 
 </td>
 </tr>
@@ -19,233 +18,258 @@
 
 <br/>
 
-<img src="https://img.shields.io/badge/Python-3.10+-3776AB?style=flat-square&logo=python&logoColor=white"/>
-<img src="https://img.shields.io/badge/Django-5.1.4-092E20?style=flat-square&logo=django&logoColor=white"/>
-<img src="https://img.shields.io/badge/PostgreSQL-15+-336791?style=flat-square&logo=postgresql&logoColor=white"/>
-<img src="https://img.shields.io/badge/Tailwind_CSS-3.x-06B6D4?style=flat-square&logo=tailwindcss&logoColor=white"/>
-<img src="https://img.shields.io/badge/Gemini_AI-Flash-4285F4?style=flat-square&logo=google&logoColor=white"/>
-<img src="https://img.shields.io/badge/License-MIT-22c55e?style=flat-square"/>
+[![Python](https://img.shields.io/badge/Python-3.10+-3776AB?style=flat-square&logo=python&logoColor=white&labelColor=0d1117)](https://python.org/)
+[![Django](https://img.shields.io/badge/Django-5.1.4-092E20?style=flat-square&logo=django&logoColor=white&labelColor=0d1117)](https://djangoproject.com/)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-15+-336791?style=flat-square&logo=postgresql&logoColor=white&labelColor=0d1117)](https://postgresql.org/)
+[![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-3.x-06B6D4?style=flat-square&logo=tailwindcss&logoColor=white&labelColor=0d1117)](https://tailwindcss.com/)
+[![Gemini AI](https://img.shields.io/badge/Gemini_AI-Flash-4285F4?style=flat-square&logo=google&logoColor=white&labelColor=0d1117)](https://ai.google.dev/)
+[![License](https://img.shields.io/badge/License-MIT-22c55e?style=flat-square&labelColor=0d1117)](.)
+
+<br/>
+
+![SOLID](https://img.shields.io/badge/Architecture-SOLID-6366f1?style=flat-square&labelColor=0d1117)
+![Strategy](https://img.shields.io/badge/Pattern-Strategy-f59e0b?style=flat-square&labelColor=0d1117)
+![Singleton](https://img.shields.io/badge/Pattern-Singleton-ec4899?style=flat-square&labelColor=0d1117)
+![Builder](https://img.shields.io/badge/Pattern-Builder%2FDirector-10b981?style=flat-square&labelColor=0d1117)
+![Idempotency](https://img.shields.io/badge/Feature-Idempotency-0ea5e9?style=flat-square&labelColor=0d1117)
+
+<br/>
+
+> **Vende · Gestiona · Escala** — Sistema integral con POS, tienda online e IA conversacional
+>
+> *Capa de servicios desacoplada con principios **SOLID** e idempotencia end-to-end — v1.1.0*
 
 </div>
 
 ---
 
-## Índice
+## Tabla de Contenidos
 
-- [Índice](#índice)
+- [Tabla de Contenidos](#tabla-de-contenidos)
 - [Acerca del Proyecto](#acerca-del-proyecto)
-- [Características](#características)
-  - [🛒 Experiencia de Cliente](#-experiencia-de-cliente)
-  - [🤖 Inteligencia Artificial](#-inteligencia-artificial)
-  - [⚙️ Panel Administrativo](#️-panel-administrativo)
-- [Arquitectura Técnica](#arquitectura-técnica)
-- [Principios SOLID y Patrones de Diseño](#principios-solid-y-patrones-de-diseño)
-  - [Principios SOLID aplicados](#principios-solid-aplicados)
-  - [Patrones de diseño implementados](#patrones-de-diseño-implementados)
+- [Stack Tecnológico](#stack-tecnológico)
+  - [Backend](#backend)
+  - [Frontend](#frontend)
+- [Arquitectura](#arquitectura)
+- [Principios SOLID aplicados](#principios-solid-aplicados)
+- [Patrones de Diseño](#patrones-de-diseño)
 - [Seguridad e Idempotencia](#seguridad-e-idempotencia)
-  - [Autenticación y Autorización](#autenticación-y-autorización)
-  - [Idempotencia en Operaciones Críticas](#idempotencia-en-operaciones-críticas)
-    - [Flujo del patrón de idempotencia (Checkout)](#flujo-del-patrón-de-idempotencia-checkout)
-  - [Integridad de Datos en BD](#integridad-de-datos-en-bd)
+  - [Mecanismos de protección](#mecanismos-de-protección)
+  - [Flujo de idempotencia (Checkout)](#flujo-de-idempotencia-checkout)
+  - [Operaciones protegidas](#operaciones-protegidas)
+- [Módulos del Sistema](#módulos-del-sistema)
+  - [🛒 Tienda Online (Cliente)](#-tienda-online-cliente)
+  - [🤖 Chatbot con IA](#-chatbot-con-ia)
+  - [⚙️ Panel Administrativo](#️-panel-administrativo)
+  - [📷 Escáner EAN-13](#-escáner-ean-13)
 - [Modelos de Datos](#modelos-de-datos)
 - [Instalación](#instalación)
   - [Requisitos previos](#requisitos-previos)
+  - [Instalación rápida (Linux/Mac)](#instalación-rápida-linuxmac)
   - [Instalación manual](#instalación-manual)
-  - [Instalación automática (Linux/Mac)](#instalación-automática-linuxmac)
 - [Variables de Entorno](#variables-de-entorno)
 - [Estructura del Proyecto](#estructura-del-proyecto)
-- [Estado del Proyecto](#estado-del-proyecto)
-  - [Changelog v1.1.0](#changelog-v110)
+- [Changelog](#changelog)
+  - [v1.1.0 — Arquitectura SOLID + Idempotencia](#v110--arquitectura-solid--idempotencia)
+  - [v1.0.0 — Versión inicial funcional](#v100--versión-inicial-funcional)
 - [Desarrollador](#desarrollador)
-- [Licencia](#licencia)
 
 ---
 
 ## Acerca del Proyecto
 
-**My Supermarket** es una plataforma empresarial de doble propósito que combina un robusto sistema de punto de venta (POS) con una experiencia de e-commerce moderna. Diseñado para supermercados medianos, ofrece tanto una interfaz de cliente para compras en línea como un panel administrativo completo para la gestión interna.
+**MySupermarket** es una plataforma empresarial de doble propósito que combina un robusto **sistema de punto de venta (POS)** con una experiencia de **e-commerce moderna**. Diseñada para supermercados medianos, unifica inventario, ventas físicas y compras online en un único sistema centralizado, eliminando procesos manuales fragmentados.
 
-El diferenciador principal radica en la integración de tecnologías de IA, un sistema de escaneo de códigos de barras en tiempo real, y una arquitectura que garantiza la **integridad transaccional** mediante patrones de idempotencia, principios SOLID y patrones de diseño como Strategy y Singleton.
+El diferenciador principal radica en su **arquitectura desacoplada con SOLID**, un sistema de **idempotencia end-to-end** que elimina ventas duplicadas incluso ante doble clic o fallo de red, e integración de **IA conversacional** con acceso al inventario en tiempo real.
 
 ---
 
-## Características
+## Stack Tecnológico
 
-<div align="center">
-
-<table width="100%">
+<table>
 <tr>
-<td width="33%" valign="top">
+<td width="50%" valign="top">
 
-### 🛒 Experiencia de Cliente
-- Catálogo dinámico con filtros por categoría, marca y búsqueda en tiempo real
-- Carrito inteligente con actualización dinámica de cantidades
-- Cálculo automático de IVA (15%) y descuentos personalizados
-- Checkout flexible: Consumidor Final o datos personales para factura legal
-- Historial de compras con descarga de facturas PDF
-- Escáner de códigos de barras EAN-13 vía cámara
+### Backend
 
-</td>
-<td width="33%" valign="top">
-
-### 🤖 Inteligencia Artificial
-- Chatbot conversacional basado en Google Gemini Flash
-- Contexto dinámico: accede al inventario, precios y políticas en tiempo real
-- Respuestas diferenciadas por rol (visitante, cliente, administrador)
-- Los administradores reciben datos de ventas en tiempo real durante la conversación
-- Historial de conversación persistente en sesión
+| Tecnología | Versión | Propósito |
+|---|---|---|
+| ![Python](https://img.shields.io/badge/-Python-3776AB?logo=python&logoColor=white&style=flat-square) Python | `3.10+` | Lenguaje base |
+| ![Django](https://img.shields.io/badge/-Django-092E20?logo=django&logoColor=white&style=flat-square) Django | `5.1.4` | Web framework |
+| ![PostgreSQL](https://img.shields.io/badge/-PostgreSQL-336791?logo=postgresql&logoColor=white&style=flat-square) PostgreSQL | `15+` | Base de datos relacional |
+| ![Gemini](https://img.shields.io/badge/-Gemini_AI-4285F4?logo=google&logoColor=white&style=flat-square) Google GenAI | `1.57.0` | Chatbot conversacional |
+| ![xhtml2pdf](https://img.shields.io/badge/-xhtml2pdf-ef4444?style=flat-square) xhtml2pdf | `0.2.17` | Generación de facturas PDF |
 
 </td>
-<td width="33%" valign="top">
+<td width="50%" valign="top">
 
-### ⚙️ Panel Administrativo
-- CRUD completo de productos, categorías, marcas con validaciones
-- Administración de clientes y vendedores
-- Registro histórico de ventas con búsqueda y filtros
-- Generación automática de facturas PDF con datos censurados (PCI)
-- Dashboard con notificaciones de ventas recientes
-- Formulario de contacto con integración SMTP Gmail
+### Frontend
+
+| Tecnología | Versión | Propósito |
+|---|---|---|
+| ![Tailwind](https://img.shields.io/badge/-Tailwind-06B6D4?logo=tailwindcss&logoColor=white&style=flat-square) Tailwind CSS | `3.x` | Utility-first CSS |
+| ![JS](https://img.shields.io/badge/-JavaScript-F7DF1E?logo=javascript&logoColor=black&style=flat-square) JavaScript | `ES6+` | Lógica del cliente |
+| ![Quagga](https://img.shields.io/badge/-QuaggaJS-6366f1?style=flat-square) QuaggaJS | `0.12.1` | Escáner EAN-13 |
+| ![JsBarcode](https://img.shields.io/badge/-JsBarcode-374151?style=flat-square) JsBarcode | `3.11.5` | Visualización de códigos |
+| ![Boxicons](https://img.shields.io/badge/-Boxicons-f97316?style=flat-square) Boxicons | `2.1.4` | Iconografía |
 
 </td>
 </tr>
 </table>
 
-</div>
+---
+
+## Arquitectura
+
+```
+┌──────────────────────────────────────────────────────────────────┐
+│                      CLIENTE / BROWSER                           │
+│   Tailwind CSS 3.x · JavaScript ES6+ · QuaggaJS (EAN-13)        │
+└───────────────────────────┬──────────────────────────────────────┘
+                            │ HTTP/HTTPS
+┌───────────────────────────▼──────────────────────────────────────┐
+│                    DJANGO 5.1.4 (Backend)                        │
+│                                                                  │
+│  ┌─────────────┐  ┌──────────────┐  ┌──────────────────────┐    │
+│  │    Views    │  │ Middlewares  │  │    URL Routing       │    │
+│  │  (thin)     │  │ CSRF · Auth  │  │   10+ módulos        │    │
+│  └──────┬──────┘  └──────────────┘  └──────────────────────┘    │
+│         │ delega                                                  │
+│  ┌──────▼──────────────────────────────────────┐                 │
+│  │              Capa de Servicios (SOLID)       │                 │
+│  │                                             │                 │
+│  │  CheckoutService    ← SRP                   │                 │
+│  │  PaymentProcessor   ← OCP + Strategy        │                 │
+│  │  IdempotencyService ← Singleton             │                 │
+│  │  ChatContextDirector← Builder + Director    │                 │
+│  │  GeminiAIClient     ← DIP (AIClient)        │                 │
+│  └──────┬──────────────────────────────────────┘                 │
+│         │                                                        │
+│  ┌──────▼──────┐  ┌──────────────────────────────────────────┐  │
+│  │   Models    │  │  Idempotency: UUID + UNIQUE constraint   │  │
+│  │ (ORM + BD)  │  │  Concurrencia: select_for_update + F()  │  │
+│  └─────────────┘  └──────────────────────────────────────────┘  │
+└───────────────────────────┬──────────────────────────────────────┘
+                            │  ORM / Parameterized Queries
+┌───────────────────────────▼──────────────────────────────────────┐
+│                        POSTGRESQL 15+                            │
+│  ATOMIC_REQUESTS=True · CHECK constraints · UNIQUE idempotency  │
+└──────────────────────────────────────────────────────────────────┘
+                            │
+┌───────────────────────────▼──────────────────────────────────────┐
+│                    GOOGLE GEMINI API                              │
+│         gemini-flash · Contexto dinámico por rol                 │
+└──────────────────────────────────────────────────────────────────┘
+```
 
 ---
 
-## Arquitectura Técnica
+## Principios SOLID aplicados
 
-```
-┌─────────────────────────────────────────────────────────┐
-│                     CLIENTE / BROWSER                    │
-│  Tailwind CSS 3.x · JavaScript ES6+ · Quagga (Scanner)  │
-└────────────────────────┬────────────────────────────────┘
-                         │ HTTP/HTTPS
-┌────────────────────────▼────────────────────────────────┐
-│                   DJANGO 5.1.4 (Backend)                 │
-│                                                          │
-│  ┌─────────────┐  ┌──────────────┐  ┌────────────────┐  │
-│  │ core.super  │  │core.security │  │    config/     │  │
-│  │  (negocio)  │  │    (auth)    │  │   (settings)   │  │
-│  └─────────────┘  └──────────────┘  └────────────────┘  │
-│                                                          │
-│  ┌──────────────────────────────────────────────────┐    │
-│  │              Middleware Stack                     │    │
-│  │  CSRF · Auth · Session · CRUM · Clickjacking     │    │
-│  └──────────────────────────────────────────────────┘    │
-└──────────┬───────────────────────────┬──────────────────┘
-           │                           │
-┌──────────▼──────────┐    ┌───────────▼──────────────────┐
-│   PostgreSQL 15+     │    │    Google Gemini API          │
-│                      │    │  (gemini-flash-preview)       │
-│  ATOMIC_REQUESTS=True│    └──────────────────────────────┘
-│  Constraints CHECK   │
-│  UUID idempotency    │
-└─────────────────────-┘
-```
-
-<div align="center">
-
-| Capa | Tecnología |
-|:-----|:----------|
-| **Backend** | Python 3.10+ / Django 5.1.4 |
-| **Base de Datos** | PostgreSQL 15+ con `ATOMIC_REQUESTS=True` |
-| **Frontend** | Tailwind CSS 3.x, JavaScript ES6+, Boxicons |
-| **IA / Chatbot** | Google GenAI SDK (Gemini Flash) |
-| **PDF** | xhtml2pdf + ReportLab |
-| **Scanner** | QuaggaJS (EAN-13, detección por votos) |
-| **Seguridad** | python-dotenv, CSRF, UUID idempotency keys |
-
-</div>
+| Principio | Dónde se aplica |
+|---|---|
+| **S** — Single Responsibility | `CheckoutService`, `StoreContextBuilder`, `SalesContextBuilder` y `ChatContextDirector` tienen una única responsabilidad cada uno. Las vistas son thin controllers que delegan a servicios. |
+| **O** — Open/Closed | `PaymentProcessor` es extensible sin modificar el checkout: agregar un nuevo método de pago solo requiere una nueva clase y registrarla en `PAYMENT_PROCESSORS`. |
+| **L** — Liskov Substitution | `CashPaymentProcessor`, `CardPaymentProcessor` y `TransferPaymentProcessor` implementan `PaymentProcessor` y son intercambiables donde se espere la abstracción. |
+| **I** — Interface Segregation | `AIClient` expone solo `generate()`. Las clases concretas no se ven forzadas a implementar métodos que no usan. |
+| **D** — Dependency Inversion | `ChatbotProxyView` depende de la abstracción `AIClient`, no de `GeminiAIClient` directamente. Sustituir el proveedor de IA no requiere tocar la vista. |
 
 ---
 
-## Principios SOLID y Patrones de Diseño
+## Patrones de Diseño
 
-El proyecto aplica de forma explícita principios SOLID y patrones de diseño en la capa de servicios.
-
-### Principios SOLID aplicados
-
-<div align="center">
-
-| Principio | Aplicación |
-|:----------|:-----------|
-| **SRP** — Single Responsibility | `CheckoutService`, `StoreContextBuilder`, `SalesContextBuilder` y `ChatContextDirector` tienen una única responsabilidad cada uno |
-| **OCP** — Open/Closed | `PaymentProcessor` es extensible sin modificar el checkout: agregar un nuevo método solo requiere una nueva clase y registrarla en `PAYMENT_PROCESSORS` |
-| **DIP** — Dependency Inversion | `ChatbotProxyView` depende de la abstracción `AIClient`, no de `GeminiAIClient` directamente, permitiendo sustituir el proveedor de IA |
-
-</div>
-
-### Patrones de diseño implementados
-
-<div align="center">
-
-| Patrón | Clase / Archivo | Descripción |
-|:-------|:----------------|:------------|
-| **Strategy** | `PaymentProcessor` → `CashPaymentProcessor`, `CardPaymentProcessor`, `TransferPaymentProcessor` | Cada método de pago encapsula su lógica de cálculo de monto recibido y cambio de forma intercambiable |
-| **Singleton** | `IdempotencyService` | Una única instancia compartida gestiona la verificación y resolución de claves de idempotencia en toda la aplicación |
-| **Builder / Director** | `ChatContextDirector` + `StoreContextBuilder` + `SalesContextBuilder` | Construye el contexto del chatbot ensamblando partes según el rol del usuario |
-
-</div>
+| Patrón | Implementación | Beneficio |
+|---|---|---|
+| 🎯 **Strategy** | `PaymentProcessor` → `CashPaymentProcessor`, `CardPaymentProcessor`, `TransferPaymentProcessor` | Cada método de pago encapsula su lógica de cálculo de monto y cambio de forma intercambiable sin condiciones en el checkout. |
+| 🔒 **Singleton** | `IdempotencyService` | Una única instancia compartida gestiona la verificación y resolución de claves UUID en toda la aplicación, sin estado duplicado. |
+| 🏗️ **Builder / Director** | `ChatContextDirector` + `StoreContextBuilder` + `SalesContextBuilder` | Ensambla el contexto del chatbot por partes según el rol del usuario, sin que la vista conozca los detalles de construcción. |
 
 ---
 
 ## Seguridad e Idempotencia
 
-El proyecto implementa múltiples capas de seguridad y protección contra operaciones duplicadas.
+El sistema implementa **idempotencia end-to-end**: la misma operación puede ejecutarse múltiples veces produciendo siempre el mismo resultado, sin efectos secundarios duplicados.
 
-### Autenticación y Autorización
+### Mecanismos de protección
 
-- **Separación estricta de roles**: clientes y administradores usan flujos de login independientes con validación cruzada
-- **Protección CSRF**: activa en todas las peticiones, incluyendo AJAX con `X-CSRFToken`
-- **Variables de entorno**: toda configuración sensible externalizada con `python-dotenv`
-- **Datos de pago censurados**: tarjetas y cuentas se almacenan parcialmente enmascaradas (PCI-compatible)
+| Mecanismo | Descripción |
+|---|---|
+| 🔑 **Sesión Django** | Autenticación con separación estricta de roles: clientes y administradores usan flujos de login independientes con validación cruzada. |
+| 🛡️ **CSRF** | Activo en todas las peticiones POST, incluyendo AJAX con `X-CSRFToken`. |
+| 🔐 **Bcrypt** | Hash de contraseñas con 10 rondas de salt a través del sistema de auth de Django. |
+| 💳 **Validación Luhn** | Verificación matemática del número de tarjeta en tiempo real con feedback visual progresivo. |
+| 🃏 **Enmascaramiento PCI** | Tarjetas y cuentas se almacenan parcialmente enmascaradas (`1234 XXXX XXXX 5678`) — nunca en texto plano. |
+| 🔁 **UUID Idempotency Key** | Generado en el GET del checkout, viaja en campo hidden y se almacena con constraint `UNIQUE` en la BD. |
+| ⚛️ **Transacciones atómicas** | `ATOMIC_REQUESTS=True` + `@transaction.atomic` en operaciones críticas. |
+| 🔒 **select_for_update() + F()** | Bloqueo a nivel de fila e incremento atómico en el carrito para eliminar race conditions. |
+| 💉 **SQL Injection** | ORM de Django con queries parametrizadas. Sin concatenación de strings SQL. |
 
-### Idempotencia en Operaciones Críticas
+### Flujo de idempotencia (Checkout)
 
-<div align="center">
+```
+GET /checkout/  →  Genera UUID  →  uuid en campo hidden del formulario
+       │
+       ▼
+POST submit  →  ¿Existe Sale con ese UUID?
+       │                    │
+       │              SÍ ──►  redirect a venta existente (sin procesar)
+       │              NO ──►  crear venta + guardar UUID + descontar stock
+       │
+       ▼
+Botón deshabilitado en JS al primer clic (defensa en profundidad)
+```
+
+### Operaciones protegidas
 
 | Operación | Riesgo sin protección | Mecanismo aplicado |
-|:----------|:----------------------|:-------------------|
-| **Checkout / Crear venta (cliente)** | Doble clic, F5 o botón "atrás" generaban dos ventas y descontaban stock dos veces | `idempotency_key` UUID generado en el GET del checkout, almacenado con constraint `UNIQUE` en la BD. El segundo submit detecta la clave existente y redirige a la venta ya creada sin procesar nada nuevo. El botón "Finalizar Compra" se deshabilita en el cliente al primer click |
-| **Crear venta (panel admin)** | Doble clic en "Guardar" creaba ventas duplicadas en el panel administrativo | El UUID generado al abrir el formulario viaja en el payload JSON. El backend verifica existencia antes de insertar. El botón se deshabilita en JS al primer envío y se rehabilita solo si el servidor devuelve error |
-| **Agregar al carrito** | Dos clicks rápidos podían sumar +2 en lugar de +1 (race condition) | `select_for_update()` a nivel de fila + `F('quantity') + 1` para incremento atómico |
-| **Eliminar venta (restaurar stock)** | Fallo a mitad dejaba stock inconsistente | `@transaction.atomic` envuelve la restauración de stock y la eliminación de la venta |
-| **Registro de usuarios** | — | Constraint `UNIQUE` en `username` y `email` con `IntegrityError` correctamente capturado |
+|---|---|---|
+| **Checkout cliente** | Doble clic genera dos ventas y descuenta stock dos veces | UUID en campo hidden + constraint UNIQUE en BD + botón deshabilitado en JS |
+| **Crear venta (admin)** | Doble clic en "Guardar" crea ventas duplicadas | UUID en payload JSON + verificación en backend + botón deshabilitado en JS |
+| **Agregar al carrito** | Dos clics rápidos suman +2 en lugar de +1 | `select_for_update()` + `F('quantity') + 1` (atómico en BD) |
+| **Eliminar venta** | Fallo a mitad deja stock inconsistente | `@transaction.atomic` envuelve restauración + eliminación |
 
-</div>
+---
 
-#### Flujo del patrón de idempotencia (Checkout)
+## Módulos del Sistema
 
-```
-Cliente abre /checkout/  →  GET genera UUID  →  uuid almacenado en campo hidden
-        │
-        ▼
-Usuario hace submit  →  POST envía uuid  →  ¿Existe Sale con ese uuid?
-        │                                          │
-        │                                    SÍ ──►  redirect a venta existente
-        │                                          │  (sin procesar nada)
-        │                                    NO ──►  crear venta + guardar uuid
-        │
-        ▼
-Botón deshabilitado en JS  →  segundo click bloqueado en el cliente
-(defensa en profundidad: cliente + servidor)
-```
+<table>
+<tr>
+<td width="33%" valign="top">
 
-### Integridad de Datos en BD
+### 🛒 Tienda Online (Cliente)
+- Catálogo con filtros por categoría, marca y búsqueda
+- Carrito con actualización dinámica y validación de stock
+- Checkout con selección de tipo de factura (Consumidor Final / Datos personales)
+- Historial de compras con descarga de facturas PDF
 
-```sql
--- Constraints CHECK activos en PostgreSQL
-product_stock_non_negative   CHECK (stock >= 0)
-product_price_non_negative   CHECK (price > 0)
-sale_subtotal_non_negative   CHECK (subtotal >= 0)
-sale_total_non_negative      CHECK (total >= 0)
-saledetail_quantity_non_neg  CHECK (quantity >= 1)
+</td>
+<td width="33%" valign="top">
 
--- Unique constraint de idempotencia
-super_sale.idempotency_key   UNIQUE (null permitido para ventas legacy)
-```
+### 🤖 Chatbot con IA
+- Integración con Google Gemini Flash
+- Contexto dinámico con inventario, precios y políticas en tiempo real
+- Respuestas diferenciadas por rol (visitante, cliente, administrador)
+- Admins reciben datos de ventas en tiempo real durante la conversación
+
+</td>
+<td width="33%" valign="top">
+
+### ⚙️ Panel Administrativo
+- CRUD completo de productos, categorías, marcas, clientes y vendedores
+- Registro histórico de ventas con búsqueda y filtros
+- Generación automática de facturas PDF con datos censurados (PCI)
+- Dashboard con notificaciones de ventas recientes
+
+</td>
+</tr>
+</table>
+
+### 📷 Escáner EAN-13
+
+- Detección vía cámara con **QuaggaJS**
+- **Sistema de votos**: requiere N lecturas consistentes del mismo código antes de confirmar, eliminando falsos positivos por reflejos o texturas
+- **Validación matemática** del dígito de control (algoritmo EAN-13) antes de consultar la BD
+- Feedback visual progresivo con barra de confirmación en tiempo real
 
 ---
 
@@ -254,48 +278,39 @@ super_sale.idempotency_key   UNIQUE (null permitido para ventas legacy)
 ```
 ┌─────────────┐     ┌─────────────┐     ┌─────────────────┐
 │   Category  │     │    Brand    │     │  PaymentMethod  │
-│─────────────│     │─────────────│     │─────────────────│
-│ id_category │     │  id_brand   │     │id_payment_method│
-│ name        │     │ name        │     │ name            │
 └──────┬──────┘     └──────┬──────┘     └────────┬────────┘
-       │                   │                     │
-       └──────────┬────────┘                     │
+       └──────────┬─────────┘                    │
                   │                              │
-           ┌──────▼──────┐                       │
-           │   Product   │               ┌───────▼──────────────┐
-           │─────────────│               │         Sale          │
-           │ id_product  │◄──────────────│───────────────────────│
-           │ name        │  SaleDetail   │ id_sale               │
-           │ price       │               │ user (FK→User)        │
-           │ stock       │               │ customer (FK)         │
-           │ barcode     │               │ seller (FK)           │
-           │ state       │               │ payment (FK)          │
-           └──────┬──────┘               │ subtotal / iva / total│
-                  │                      │ idempotency_key (UUID)│◄── UNIQUE
-                  │                      └───────────────────────┘
+           ┌──────▼──────┐               ┌───────▼──────────────────┐
+           │   Product   │               │          Sale             │
+           │─────────────│◄──────────────│──────────────────────────│
+           │ id_product  │  SaleDetail   │ id_sale                  │
+           │ name        │               │ user (FK→User)           │
+           │ price       │               │ customer (FK)            │
+           │ stock       │               │ seller (FK)              │
+           │ barcode     │               │ payment (FK)             │
+           │ state       │               │ subtotal / iva / total   │
+           └──────┬──────┘               │ idempotency_key (UUID) ◄─── UNIQUE
+                  │                      └───────────────────────────┘
            ┌──────▼──────┐
            │  CartItem   │    ┌─────────────┐     ┌─────────────┐
            │─────────────│    │  Customer   │     │   Seller    │
            │ cart (FK)   │    │─────────────│     │─────────────│
            │ product (FK)│    │ dni (unique)│     │ dni (unique)│
-           │ quantity    │    │ email       │     │ email       │
-           └─────────────┘    │discount_pct │     │             │
-                              └─────────────┘     └─────────────┘
+           │ quantity    │    │ discount_pct│     │             │
+           └─────────────┘    └─────────────┘     └─────────────┘
 ```
 
-<div align="center">
+**Constraints de integridad activos en PostgreSQL:**
 
-| Modelo | Descripción |
-|:-------|:------------|
-| `Product` | Inventario con código EAN-13, estado calculado automáticamente desde stock |
-| `Category` / `Brand` | Clasificación y organización de productos |
-| `Customer` | Perfil con descuentos personalizados por porcentaje |
-| `Seller` | Registro de empleados vendedores |
-| `Sale` | Transacciones con IVA, descuentos, datos de pago censurados e **idempotency_key** |
-| `SaleDetail` | Línea items de cada venta con constraints de integridad |
-| `Cart` / `CartItem` | Carrito persistente por usuario con `unique_together` |
-
-</div>
+```sql
+CHECK (stock >= 0)         -- product_stock_non_negative
+CHECK (price > 0)          -- product_price_non_negative
+CHECK (subtotal >= 0)      -- sale_subtotal_non_negative
+CHECK (total >= 0)         -- sale_total_non_negative
+CHECK (quantity >= 1)      -- saledetail_quantity_non_negative
+UNIQUE (idempotency_key)   -- super_sale (null permitido para ventas legacy)
+```
 
 ---
 
@@ -303,61 +318,55 @@ super_sale.idempotency_key   UNIQUE (null permitido para ventas legacy)
 
 ### Requisitos previos
 
-- Python 3.10 o superior
-- PostgreSQL 15+ (servidor activo)
+- Python `3.10+`
+- PostgreSQL `15+`
 - Cuenta de Google Cloud con API Key de Gemini
 - Cuenta Gmail con Contraseña de Aplicación (para SMTP)
+
+### Instalación rápida (Linux/Mac)
+
+```bash
+git clone https://github.com/Kadir011/Sistema-de-Ventas-Supermercado.git
+cd Sistema-de-Ventas-Supermercado/app
+chmod +x setup.sh && ./setup.sh
+```
+
+El script instala dependencias, crea la base de datos, ejecuta migraciones e inserta datos iniciales (65 categorías, 77 marcas, 11 métodos de pago).
 
 ### Instalación manual
 
 ```bash
-# 1. Clonar el repositorio
+# 1. Clonar y activar entorno virtual
 git clone https://github.com/Kadir011/Sistema-de-Ventas-Supermercado.git
 cd Sistema-de-Ventas-Supermercado
-
-# 2. Configurar entorno virtual
 python -m venv env
+source env/bin/activate        # Linux/Mac
+# env\Scripts\activate         # Windows
 
-# Windows
-env\Scripts\activate
+# 2. Instalar dependencias
+pip install -r app/requirements.txt
 
-# Linux/Mac
-source env/bin/activate
+# 3. Configurar variables de entorno (ver sección siguiente)
 
-# 3. Instalar dependencias
-pip install -r requirements.txt
-
-# 4. Crear archivo .env (ver sección siguiente)
-
-# 5. Ejecutar migraciones
+# 4. Ejecutar migraciones
 cd app
 python manage.py makemigrations
 python manage.py migrate
 
-# 6. Crear superusuario
+# 5. Crear superusuario
 python manage.py createsuperuser
 
-# 7. Levantar servidor
+# 6. Levantar servidor
 python manage.py runserver
 ```
 
-### Instalación automática (Linux/Mac)
-
-El script `setup.sh` detecta automáticamente el entorno virtual en múltiples rutas posibles y carga los datos iniciales (categorías, marcas, métodos de pago).
-
-```bash
-cd app
-chmod +x setup.sh
-./setup.sh
-```
-
-> **Nota Windows (Git Bash):** Si el script no encuentra el entorno virtual automáticamente, te pedirá la ruta completa. Ejemplo: `C:/PROGRAMACION/proyecto/env`
+> **Nota Windows (Git Bash):** Si el `setup.sh` no encuentra el entorno virtual automáticamente, te pedirá la ruta completa. Ej: `C:/proyecto/env`
 
 ---
 
 ## Variables de Entorno
 
-Crear archivo `.env` en la raíz de `/app`:
+Crear archivo `.env` en `/app/`:
 
 ```env
 # ── Base de Datos ─────────────────────────────
@@ -375,7 +384,7 @@ DEFAULT_FROM_EMAIL=tu_correo@gmail.com
 # ── Google Gemini AI ───────────────────────────
 GEMINI_API_KEY=tu_api_key_de_gemini
 
-# ── Django (opcional) ─────────────────────────
+# ── Django ────────────────────────────────────
 SECRET_KEY=tu_secret_key_django
 DEBUG=True
 ALLOWED_HOSTS=localhost,127.0.0.1
@@ -398,33 +407,30 @@ django_supermercado/
     ├── core/
     │   ├── security/           # Módulo de autenticación
     │   │   ├── models.py      # User (AbstractUser) con user_type
-    │   │   ├── views/auth.py  # Login dual · Registro con creación de Customer
-    │   │   └── urls.py
+    │   │   ├── forms/auth.py  # Registro con creación de Customer (idempotente)
+    │   │   └── views/auth.py  # Login dual (cliente/admin) con validación cruzada
     │   └── super/              # Módulo principal del negocio
     │       ├── models.py      # Product · Sale · Cart · SaleDetail · …
     │       ├── services/       # ← Capa de servicios (SOLID + Patrones)
-    │       │   ├── ai_client.py          # DIP: interfaz AIClient + GeminiAIClient
-    │       │   ├── chat_context.py       # SRP: Builder + Director para chatbot
-    │       │   ├── checkout_service.py   # SRP: orquestación del checkout
-    │       │   ├── idempotency_service.py# Singleton: gestión de claves UUID
-    │       │   └── payment_processors.py # OCP + Strategy: procesadores de pago
+    │       │   ├── ai_client.py           # DIP: AIClient + GeminiAIClient
+    │       │   ├── chat_context.py        # Builder+Director: contexto chatbot
+    │       │   ├── checkout_service.py    # SRP: orquestación del checkout
+    │       │   ├── idempotency_service.py # Singleton: claves UUID
+    │       │   └── payment_processors.py  # OCP + Strategy: procesadores de pago
     │       ├── views/
-    │       │   ├── cart.py    # ← Idempotencia: select_for_update + F()
-    │       │   ├── sale.py    # ← Idempotencia: UUID en handle_ajax
-    │       │   ├── chatbot.py # Google Gemini con contexto dinámico
+    │       │   ├── cart.py    # Idempotencia: select_for_update + F()
+    │       │   ├── sale.py    # Idempotencia: UUID en handle_ajax
+    │       │   ├── chatbot.py # Gemini con contexto dinámico por rol
     │       │   └── shop.py / product.py / customer.py / seller.py
     │       ├── form/          # Formularios Django con validaciones
-    │       └── urls.py
-    ├── templates/
-    │   ├── components/        # base.html · navbar · chatbot · footer
-    │   ├── security/          # login.html · signup.html
-    │   └── super/             # shop · cart · checkout · sales · products
+    │       └── urls.py        # 25+ rutas del módulo
+    ├── templates/             # Templates HTML por módulo
     ├── static/
-    │   ├── css/               # Estilos optimizados por módulo
+    │   ├── css/               # Estilos modulares por formulario
     │   └── js/
-    │       ├── checkout.js    # ← Idempotencia: btn.dataset.submitted
-    │       ├── sale.js        # ← Idempotencia: idempotency_key en payload
-    │       ├── scan_barcode.js # Quagga · sistema de votos · EAN-13
+    │       ├── checkout.js    # Luhn · validación · idempotencia cliente
+    │       ├── sale.js        # Idempotencia en panel admin
+    │       ├── scan_barcode.js # Quagga · votos · EAN-13
     │       └── chatbot.js
     ├── manage.py
     ├── requirements.txt
@@ -433,31 +439,25 @@ django_supermercado/
 
 ---
 
-## Estado del Proyecto
+## Changelog
 
-<div align="center">
-
-| Versión | Estado | Notas |
-|:-------:|:------:|:------|
-| `1.1.0` | ✅ Estable | Idempotencia · SOLID · Patrones de diseño · Setup.sh mejorado |
-| `1.0.0` | ✅ Estable | Versión inicial funcional |
-
-</div>
-
-### Changelog v1.1.0
+### v1.1.0 — Arquitectura SOLID + Idempotencia
 
 - ✅ **Idempotencia en checkout**: `idempotency_key` UUID con constraint UNIQUE en `Sale`
 - ✅ **Idempotencia en ventas admin**: UUID en payload JSON de `SaleCreateView`
 - ✅ **Race condition en carrito**: `select_for_update()` + `F('quantity') + 1`
-- ✅ **Atomicidad en eliminación**: `@transaction.atomic` en `SaleDeleteView.delete()`
-- ✅ **Protección cliente**: botón submit deshabilitado tras primer click
-- ✅ **Principio SRP**: servicios extraídos a `core/super/services/`
-- ✅ **Principio OCP + Strategy**: `PaymentProcessor` extensible sin modificar checkout
-- ✅ **Principio DIP**: `ChatbotProxyView` depende de `AIClient` (abstracción)
+- ✅ **Atomicidad en eliminación**: `@transaction.atomic` en `SaleDeleteView`
+- ✅ **Protección cliente**: botón submit deshabilitado tras primer clic
+- ✅ **SRP**: servicios extraídos a `core/super/services/`
+- ✅ **OCP + Strategy**: `PaymentProcessor` extensible sin modificar checkout
+- ✅ **DIP**: `ChatbotProxyView` depende de `AIClient` (abstracción)
 - ✅ **Singleton**: `IdempotencyService` con instancia única compartida
 - ✅ **Builder/Director**: `ChatContextDirector` ensambla contexto por rol
 - ✅ **CSS modular**: estilos separados por módulo (customer, product, sale, seller)
-- ✅ **setup.sh mejorado**: detección automática del virtualenv en múltiples rutas
+- ✅ **Setup.sh mejorado**: detección automática del virtualenv en múltiples rutas
+- ✅ **Tests unitarios**: `PaymentProcessor` e `IdempotencyService` cubiertos
+
+### v1.0.0 — Versión inicial funcional
 
 ---
 
@@ -466,23 +466,14 @@ django_supermercado/
 <div align="center">
 
 **Kadir Barquet Bravo**
-Desarrollador Full Stack
+Full Stack Developer
 
-[![LinkedIn](https://img.shields.io/badge/LinkedIn-kadir--barquet--bravo-0A66C2?style=flat-square&logo=linkedin&logoColor=white)](https://www.linkedin.com/in/kadir-barquet-bravo/)
-[![GitHub](https://img.shields.io/badge/GitHub-Kadir011-181717?style=flat-square&logo=github&logoColor=white)](https://github.com/Kadir011)
-[![Email](https://img.shields.io/badge/Email-barquetbravokadir%40gmail.com-EA4335?style=flat-square&logo=gmail&logoColor=white)](mailto:barquetbravokadir@gmail.com)
+[![LinkedIn](https://img.shields.io/badge/LinkedIn-kadir--barquet--bravo-0A66C2?style=for-the-badge&logo=linkedin&logoColor=white)](https://www.linkedin.com/in/kadir-barquet-bravo/)
+[![GitHub](https://img.shields.io/badge/GitHub-Kadir011-181717?style=for-the-badge&logo=github&logoColor=white)](https://github.com/Kadir011)
+[![Email](https://img.shields.io/badge/Email-barquetbravokadir%40gmail.com-EA4335?style=for-the-badge&logo=gmail&logoColor=white)](mailto:barquetbravokadir@gmail.com)
 
-</div>
+<br/>
 
----
+<sub>Built with ❤️ in Guayaquil, Ecuador · Django 5.1.4 · Python 3.10+ · v1.1.0</sub>
 
-## Licencia
-
-Este proyecto está licenciado bajo **MIT License**.
-Puedes usarlo, modificarlo y distribuirlo libremente siempre que incluyas el aviso de copyright original.
-
----
-
-<div align="center">
-<sub>Built with ❤️ in Guayaquil, Ecuador · Django 5.1.4 · Python 3.10+</sub>
 </div>
