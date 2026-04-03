@@ -1,0 +1,33 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Cerrando sesión...</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 flex items-center justify-center min-h-screen">
+    <div class="text-center">
+        <p class="text-gray-600 text-lg font-medium">Cerrando sesión...</p>
+    </div>
+
+    <script>
+        // Limpiar todas las claves del chatbot del localStorage
+        // antes de redirigir, para que el historial no quede accesible
+        // a otro usuario que inicie sesión desde el mismo navegador.
+        (function () {
+            const keysToDelete = [];
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                if (key && key.startsWith('chatbot_')) {
+                    keysToDelete.push(key);
+                }
+            }
+            keysToDelete.forEach(k => localStorage.removeItem(k));
+        })();
+
+        // Redirigir al login después de limpiar
+        window.location.href = "{% url 'security:login' %}";
+    </script>
+</body>
+</html>
