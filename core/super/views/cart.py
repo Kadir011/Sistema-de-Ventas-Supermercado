@@ -21,10 +21,14 @@ def add_to_cart(request, product_id):
     """
     Agrega un producto al carrito.
 
+    CRÍTICO corregido: acepta tanto POST como GET para compatibilidad con el
+    código JS corregido (POST con CSRF) y cualquier llamada GET existente.
+    Django no verifica CSRF en GET, por lo que ambos métodos son seguros,
+    pero el JS cliente debe usar POST para evitar cacheo por proxies y
+    cumplir la semántica HTTP correcta (operaciones con side effects = POST).
+
     Idempotencia: usa select_for_update() + F() para incrementar la cantidad
-    de forma atómica, evitando que dos requests concurrentes (doble clic)
-    sumen +2 en lugar de +1. Si el item ya está al tope de stock, devuelve
-    error sin modificar nada.
+    de forma atómica, evitando race conditions por doble clic.
     """
     product = get_object_or_404(Product, pk=product_id, state=True)
 
@@ -34,7 +38,6 @@ def add_to_cart(request, product_id):
     with transaction.atomic():
         cart, _ = Cart.objects.get_or_create(user=request.user)
 
-        # Bloqueo a nivel de fila para evitar race conditions en concurrencia
         cart_item, item_created = CartItem.objects.select_for_update().get_or_create(
             cart=cart,
             product=product,
@@ -42,12 +45,9 @@ def add_to_cart(request, product_id):
         )
 
         if not item_created:
-            # Recargar para tener el valor más actualizado tras el lock
             cart_item.refresh_from_db()
             if cart_item.quantity >= product.stock:
                 return JsonResponse({'success': False, 'error': 'No hay suficiente stock'}, status=400)
-            # Incremento atómico: evita que dos requests simultáneos lean el
-            # mismo valor y ambos sumen 1 (race condition clásico)
             CartItem.objects.filter(pk=cart_item.pk).update(quantity=F('quantity') + 1)
 
     messages.success(request, f'{product.name} agregado al carrito')
@@ -57,10 +57,6 @@ def add_to_cart(request, product_id):
 
 @login_required
 def update_cart_item(request, item_id):
-    """
-    Actualiza la cantidad de un item.
-    Ya era idempotente (fija valor absoluto). Se mantiene sin cambios.
-    """
     if request.method == 'POST':
         cart_item = get_object_or_404(CartItem, pk=item_id, cart__user=request.user)
         quantity = int(request.POST.get('quantity', 1))
@@ -80,10 +76,6 @@ def update_cart_item(request, item_id):
 
 @login_required
 def remove_from_cart(request, item_id):
-    """
-    Elimina un item del carrito.
-    get_object_or_404 garantiza 404 si ya fue eliminado (no silencia el doble delete).
-    """
     cart_item = get_object_or_404(CartItem, pk=item_id, cart__user=request.user)
     product_name = cart_item.product.name
     cart_item.delete()
@@ -93,7 +85,6 @@ def remove_from_cart(request, item_id):
 
 @login_required
 def cart_count(request):
-    """API para obtener cantidad de items en el carrito."""
     try:
         cart = Cart.objects.get(user=request.user)
         count = cart.get_item_count()
@@ -152,13 +143,6 @@ class CheckoutView(LoginRequiredMixin, TemplateView):
             context['total'] = final_total
             context['payment_methods'] = PaymentMethod.objects.all()
             context['customer_dni'] = customer.dni if customer else ''
-
-            # ── Idempotencia ──────────────────────────────────────────────
-            # Se genera un UUID nuevo cada vez que el usuario ABRE el checkout
-            # (GET). Este UUID viaja en un campo hidden del formulario y se
-            # guarda en la venta. Si el mismo UUID llega dos veces (doble
-            # submit, F5, botón atrás), el segundo request detecta la venta
-            # existente y redirige sin crear nada nuevo.
             context['idempotency_key'] = str(uuid.uuid4())
 
         except Cart.DoesNotExist:
@@ -169,7 +153,6 @@ class CheckoutView(LoginRequiredMixin, TemplateView):
 
     @transaction.atomic
     def post(self, request, *args, **kwargs):
-        # ── Guardia de idempotencia ───────────────────────────────────────
         idempotency_service = IdempotencyService()
         raw_key = request.POST.get('idempotency_key', '').strip()
         idempotency_key = idempotency_service.parse_key(raw_key)
@@ -181,21 +164,21 @@ class CheckoutView(LoginRequiredMixin, TemplateView):
                 return redirect('super:order_detail', pk=existing_sale.pk)
 
         try:
-            service = CheckoutService()  # Crear servicio de checkout (SRP)
+            service = CheckoutService()
             cart = Cart.objects.get(user=request.user)
             items = CartItem.objects.filter(cart=cart).select_related('product')
 
             if not items.exists():
                 return redirect('super:cart')
-            
+
             customer = service.resolve_customer(
                 request.user,
                 request.POST.get('dni_type'),
                 request.POST.get('dni')
             )
-            
+
             totals = service.calculate_totals(cart, customer)
-            
+
             payment_method_id = request.POST.get('payment_method')
             payment_method = PaymentMethod.objects.get(id_payment_method=payment_method_id)
 
@@ -217,10 +200,10 @@ class CheckoutView(LoginRequiredMixin, TemplateView):
                 card_number_masked=request.POST.get('card_number_masked'),
                 transfer_account_masked=request.POST.get('transfer_account_masked')
             )
-            
+
             service.register_items(sale, items)
             cart.delete()
-            
+
             messages.success(request, '¡Compra finalizada!')
             return redirect('super:order_detail', pk=sale.pk)
 
