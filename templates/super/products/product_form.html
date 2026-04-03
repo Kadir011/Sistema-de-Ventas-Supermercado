@@ -130,8 +130,8 @@
                 <div class="grid-2">
                     <div class="field-group">
                         <label class="field-label"><i class='bx bx-calendar-check'></i>Fecha de elaboración</label>
-                        {# INFORMATIVO corregido: placeholder y pattern para Safari < 14.1
-                           que no renderiza el date picker nativo. #}
+                        <!--INFORMATIVO corregido: placeholder y pattern para Safari < 14.1
+                           que no renderiza el date picker nativo.-->
                         <input type="date" name="production_date" id="id_production_date"
                                value="{{ form.instance.production_date|default:'' }}"
                                class="field-input"
