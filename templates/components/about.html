@@ -1,29 +1,110 @@
 {% extends 'components/base.html' %}
+{% load static %}
 {% block title %}Sobre Nosotros{% endblock %}
 {% block content %}
-<div class="container mx-auto py-8 px-16">
-    <h1 class="text-3xl font-bold mb-6">Sobre Nosotros</h1> 
-    <div class="bg-white shadow-lg rounded-lg p-8 mb-6">
-        <h2 class="text-2xl font-semibold text-blue-600 mb-4">Nuestra Misión</h2>
-        <p class="text-lg text-gray-700">Nuestra misión es brindarte la mejor experiencia de compra en línea, con una amplia variedad de productos y servicios de alta calidad.</p>
-    </div> 
-    <div class="bg-white shadow-lg rounded-lg p-8 mb-6">
-        <h2 class="text-2xl font-semibold text-blue-600 mb-4">Nuestra Visión</h2>
-        <p class="text-lg text-gray-700">Nuestra visión es crear una economía de alta calidad y sostenibilidad en línea, con una amplia variedad de productos y servicios de alta calidad.</p>
+
+<link rel="stylesheet" href="{% static 'css/components/about.css' %}">
+
+<!-- ═══ HERO ═══ -->
+<div class="about-hero">
+  <div class="about-hero-grid"></div>
+  <div class="about-eyebrow">Acerca de nosotros</div>
+  <h1 class="about-hero-title">
+    Más que un<br>supermercado,<br><span>una experiencia.</span>
+  </h1>
+  <p class="about-hero-desc">
+    Somos una plataforma de e-commerce diseñada para llevar el supermercado a tu pantalla, con la tecnología, seguridad y atención que mereces.
+  </p>
+
+  <div class="hero-stats">
+    <div class="hero-stat">
+      <div class="hero-stat-num">65+</div>
+      <div class="hero-stat-label">Categorías</div>
     </div>
-    <div class="bg-white shadow-lg rounded-lg p-8 mb-6">
-        <h2 class="text-2xl font-semibold text-blue-600 mb-4">Nuestros Objetivos</h2>
-        <ul class="list-disc pl-6 text-lg text-gray-700">
-            <li>Ofrecer precios competitivos y de alta calidad</li>
-            <li>Proporcionar una experiencia de compra única y personalizada</li>
-            <li>Fomentar la sostenibilidad y la economía de alta calidad</li>
-            <li>Promover la innovación y la diversidad en la industria</li>
-        </ul> 
+    <div class="hero-stat">
+      <div class="hero-stat-num">77+</div>
+      <div class="hero-stat-label">Marcas</div>
     </div>
-</div> 
+    <div class="hero-stat">
+      <div class="hero-stat-num">24/7</div>
+      <div class="hero-stat-label">Asistente IA</div>
+    </div>
+    <div class="hero-stat">
+      <div class="hero-stat-num">100%</div>
+      <div class="hero-stat-label">Seguro</div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ MISIÓN, VISIÓN, OBJETIVOS ═══ -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+
+  <!-- Misión -->
+  <div class="about-card">
+    <div class="about-card-icon" style="background:#dcfce7;">
+      <i class='bx bx-target-lock' style="color:#16a34a;"></i>
+    </div>
+    <div class="about-card-title">Nuestra Misión</div>
+    <p class="about-card-text">
+      Brindarte la mejor experiencia de compra en línea, con una amplia variedad de productos de alta calidad, precios competitivos y atención personalizada en cada paso del proceso.
+    </p>
+  </div>
+
+  <!-- Visión -->
+  <div class="about-card">
+    <div class="about-card-icon" style="background:#dbeafe;">
+      <i class='bx bx-glasses' style="color:#2563eb;"></i>
+    </div>
+    <div class="about-card-title">Nuestra Visión</div>
+    <p class="about-card-text">
+      Convertirnos en el supermercado online de referencia en Ecuador, reconocido por la innovación tecnológica, la confianza de nuestros clientes y el compromiso con la sostenibilidad.
+    </p>
+  </div>
+
+  <!-- Objetivos -->
+  <div class="about-card">
+    <div class="about-card-icon" style="background:#fef3c7;">
+      <i class='bx bx-check-double' style="color:#d97706;"></i>
+    </div>
+    <div class="about-card-title">Nuestros Objetivos</div>
+    <ul class="obj-list">
+      <li class="obj-item">
+        <span class="obj-dot"><i class='bx bx-check'></i></span>
+        Ofrecer precios competitivos y transparentes
+      </li>
+      <li class="obj-item">
+        <span class="obj-dot"><i class='bx bx-check'></i></span>
+        Experiencia de compra única y personalizada
+      </li>
+      <li class="obj-item">
+        <span class="obj-dot"><i class='bx bx-check'></i></span>
+        Fomentar la innovación y la diversidad
+      </li>
+      <li class="obj-item">
+        <span class="obj-dot"><i class='bx bx-check'></i></span>
+        Garantizar seguridad en cada transacción
+      </li>
+    </ul>
+  </div>
+
+</div>
+
+<!-- ═══ VALORES ═══ -->
+<div class="values-section">
+  <div class="text-center mb-10">
+    <div class="section-eyebrow">Lo que nos define</div>
+    <div class="section-title">Nuestros Valores</div>
+  </div>
+  <div class="flex flex-wrap justify-center gap-4">
+    <div class="value-chip"><i class='bx bx-shield-quarter'></i>Seguridad</div>
+    <div class="value-chip"><i class='bx bx-heart'></i>Confianza</div>
+    <div class="value-chip"><i class='bx bx-bulb'></i>Innovación</div>
+    <div class="value-chip"><i class='bx bx-dollar-circle'></i>Precios Justos</div>
+    <div class="value-chip"><i class='bx bx-headphone'></i>Soporte 24/7</div>
+    <div class="value-chip"><i class='bx bx-leaf'></i>Sostenibilidad</div>
+    <div class="value-chip"><i class='bx bx-smile'></i>Satisfacción</div>
+    <div class="value-chip"><i class='bx bx-package'></i>Calidad</div>
+  </div>
+</div>
+
 {% endblock %}
-
-
-
-
-
