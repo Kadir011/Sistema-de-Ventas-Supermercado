@@ -1,17 +1,11 @@
 /**
  * scan_barcode.js — Escáner EAN-13 optimizado
- * 
- * Mejoras aplicadas:
- * - halfSample: false → máxima precisión en cada frame
- * - patchSize: "small" → mejor detección en empaques con texturas y curvas
- * - Frecuencia mínima de detección (debounce por votos): requiere N lecturas
- *   consistentes antes de confirmar, eliminando falsos positivos
- * - Área de escaneo ampliada: menos zona ignorada = más región activa
- * - Workers dinámicos calibrados para no saturar el CPU del móvil
- * - Constraints de cámara mejorados: focusMode, exposureMode, whiteBalance
- * - Zoom óptico moderado cuando está disponible (1.5x) para acercar el código
- * - Canvas de pre-visualización siempre visible para depuración en tiempo real
- * - Feedback visual de "progreso de confirmación" (barra de votos)
+ *
+ * Correcciones cross-browser aplicadas:
+ * - [CRÍTICO] navigator.hardwareConcurrency con fallback robusto (Safari iOS)
+ * - [CRÍTICO] advanced camera constraints movidas a applyConstraints() con try/catch
+ * - [CRÍTICO] Fallback a cámara frontal si OverconstrainedError en iOS
+ * - [INFO] Fallback para facingMode "environment" en dispositivos sin cámara trasera
  */
 
 document.addEventListener('DOMContentLoaded', function () {
@@ -30,15 +24,20 @@ document.addEventListener('DOMContentLoaded', function () {
 
     /* ── Estado interno ────────────────────────────────────── */
     let isScanning   = false;
-    let voteMap      = {};          // { barcode: count }
+    let voteMap      = {};
     let lastScanTime = 0;
 
-    // Configuración de votos: cuántas lecturas consecutivas 
-    // del MISMO código se necesitan para confirmar la detección.
-    // Sube este número si hay demasiados falsos positivos.
     const VOTES_REQUIRED = 3;
 
-    /* ── Exponer inicio globalmente (para "Escanear Otro") ─── */
+    /* ── Calcular workers de forma robusta (CRÍTICO — Safari iOS) ──
+       navigator.hardwareConcurrency puede ser undefined en Safari iOS
+       antiguo. Number() lo convierte a NaN y || 2 garantiza el fallback. */
+    function getNumWorkers() {
+        const cores = Number(navigator.hardwareConcurrency) || 2;
+        return Math.min(4, Math.max(1, Math.floor(cores / 2)));
+    }
+
+    /* ── Exponer inicio globalmente ─────────────────────────── */
     window.initQuagga = startScanner;
 
     /* ── Botones ───────────────────────────────────────────── */
@@ -61,94 +60,94 @@ document.addEventListener('DOMContentLoaded', function () {
     /* ══════════════════════════════════════════════════════════
        INICIO DEL ESCÁNER
     ══════════════════════════════════════════════════════════ */
-    function startScanner() {
-        if (isScanning) return;
-
-        // Resetear estado de votos
-        voteMap = {};
-        updateVoteBar(0);
-
-        Quagga.init({
+    function buildQuaggaConfig(useFrontCamera) {
+        return {
             inputStream: {
                 name   : 'Live',
                 type   : 'LiveStream',
                 target : document.querySelector('#interactive'),
                 constraints: {
-                    facingMode : 'environment',
-
-                    // Resolución alta: ayuda a leer códigos pequeños/lejanos.
-                    // Si la cámara no soporta HD baja automáticamente.
+                    /* CRÍTICO — advanced constraints eliminadas del constraints
+                       principal. Se aplican después vía applyConstraints() con
+                       try/catch para evitar OverconstrainedError en Safari iOS. */
+                    facingMode : useFrontCamera ? 'user' : 'environment',
                     width  : { min: 640, ideal: 1920, max: 3840 },
                     height : { min: 480, ideal: 1080, max: 2160 },
-
-                    // Foco continuo (vital para empaques brillosos / curvos)
-                    // y compensación automática de exposición
-                    advanced: [
-                        { focusMode      : 'continuous' },
-                        { exposureMode   : 'continuous' },
-                        { whiteBalanceMode: 'continuous' },
-                        // Zoom óptico 1.5x cuando está disponible
-                        // (ayuda a acercar el código sin perder calidad)
-                        { zoom: 1.5 }
-                    ]
                 },
-
-                // Área activa de escaneo: más amplia que antes.
-                // Se ignora solo un 15% por lado para reducir ruido de bordes
-                // pero sin recortar demasiada zona útil.
                 area: {
                     top    : '15%',
                     right  : '5%',
                     left   : '5%',
                     bottom : '15%'
                 },
-
-                // Pre-procesamiento de imagen: convierte a escala de grises
-                // y aplica umbral adaptativo para mejorar contraste en
-                // empaques oscuros, brillosos o con iluminación pobre.
                 singleChannel: false,
             },
-
             locator: {
-                // "small" es más lento pero detecta códigos diminutos
-                // y funciona mejor sobre texturas/degradados de empaques.
-                // Cámbialo a "medium" si el rendimiento del dispositivo
-                // es muy bajo (teléfonos de gama baja).
                 patchSize  : 'small',
-
-                // false = máxima precisión. La velocidad no mejora si
-                // la cámara tarda más en enfocar que Quagga en procesar.
                 halfSample : false,
             },
-
-            // Workers dinámicos:
-            // - Usamos la mitad de los núcleos disponibles para no
-            //   saturar el CPU (importante en móviles).
-            // - Mínimo 1, máximo 4.
-            numOfWorkers: Math.min(4, Math.max(1, Math.floor((navigator.hardwareConcurrency || 2) / 2))),
-
+            numOfWorkers: getNumWorkers(),
             decoder: {
-                readers: [
-                    'ean_reader'    // Solo EAN-13: menos carga, sin falsos positivos de otros formatos
-                ],
-                // Múltiples intentos por frame: mejora la tasa de acierto
-                // en condiciones de baja iluminación.
-                multiple: false,
+                readers  : ['ean_reader'],
+                multiple : false,
             },
-
-            // locate: true permite a Quagga buscar el código en toda la imagen
-            // (dentro del área definida) en lugar de asumir una posición fija.
             locate: true,
+        };
+    }
 
-        }, function (err) {
+    /* ── Aplicar constraints avanzadas de cámara (CRÍTICO) ──
+       Se intenta aplicar focusMode y zoom DESPUÉS de iniciar Quagga,
+       dentro de un try/catch. Si el navegador no lo soporta (Firefox,
+       Safari antiguo), se ignora silenciosamente sin romper el escáner. */
+    async function applyAdvancedCameraConstraints() {
+        try {
+            const video = document.querySelector('#interactive video');
+            if (!video || !video.srcObject) return;
+
+            const track = video.srcObject.getVideoTracks()[0];
+            if (!track || typeof track.applyConstraints !== 'function') return;
+
+            await track.applyConstraints({
+                advanced: [
+                    { focusMode: 'continuous' },
+                    { exposureMode: 'continuous' },
+                    { whiteBalanceMode: 'continuous' },
+                    { zoom: 1.5 }
+                ]
+            });
+        } catch (e) {
+            /* Ignorado — el escáner funciona sin estas optimizaciones */
+        }
+    }
+
+    function startScanner(useFrontCamera) {
+        if (isScanning) return;
+
+        voteMap = {};
+        updateVoteBar(0);
+
+        Quagga.init(buildQuaggaConfig(!!useFrontCamera), function (err) {
             if (err) {
+                /* CRÍTICO — Fallback a cámara frontal si falla environment (Safari iOS) */
+                if (!useFrontCamera &&
+                    (err.name === 'OverconstrainedError' ||
+                     err.name === 'NotReadableError' ||
+                     (err.message && err.message.includes('constraint')))) {
+                    setStatus('Reintentando con cámara frontal...', 'blue');
+                    setTimeout(() => startScanner(true), 500);
+                    return;
+                }
                 console.error('[Quagga init]', err);
                 setStatus('❌ Sin acceso a la cámara', 'red');
                 return;
             }
+
             Quagga.start();
             isScanning = true;
             setStatus('📷 Enfoque el código en el área central', 'black');
+
+            /* Aplicar optimizaciones de cámara de forma asíncrona y segura */
+            setTimeout(applyAdvancedCameraConstraints, 800);
         });
 
         /* ── Feedback visual (canvas overlay) ─────────────── */
@@ -159,7 +158,6 @@ document.addEventListener('DOMContentLoaded', function () {
 
             if (!result) return;
 
-            // Dibujar cajas candidatas (verde claro)
             if (result.boxes) {
                 result.boxes
                     .filter(b => b !== result.box)
@@ -168,12 +166,10 @@ document.addEventListener('DOMContentLoaded', function () {
                     );
             }
 
-            // Caja de detección principal (azul)
             if (result.box) {
                 Quagga.ImageDebug.drawPath(result.box, { x: 0, y: 1 }, ctx, { color: '#38bdf8', lineWidth: 2 });
             }
 
-            // Línea de lectura confirmada (roja)
             if (result.codeResult?.code) {
                 Quagga.ImageDebug.drawPath(result.line, { x: 'x', y: 'y' }, ctx, { color: '#ef4444', lineWidth: 3 });
             }
@@ -184,19 +180,13 @@ document.addEventListener('DOMContentLoaded', function () {
             const code = result.codeResult?.code;
             if (!code) return;
 
-            // Validación matemática EAN-13 inmediata
             if (!validateEAN13(code)) return;
 
             const now = Date.now();
-
-            // Anti-rebote duro: una vez confirmado un código,
-            // ignora nuevas lecturas por 2 segundos.
             if (now - lastScanTime < 2000) return;
 
-            // Sistema de votos: acumular lecturas del mismo código
             voteMap[code] = (voteMap[code] || 0) + 1;
 
-            // Limpiar votos de otros códigos (solo confiamos en el más votado)
             Object.keys(voteMap).forEach(k => {
                 if (k !== code) delete voteMap[k];
             });
@@ -204,13 +194,11 @@ document.addEventListener('DOMContentLoaded', function () {
             const votes = voteMap[code];
             updateVoteBar(votes);
 
-            // Actualizar estado visual progresivo
             if (votes < VOTES_REQUIRED) {
                 setStatus(`🔍 Leyendo… (${votes}/${VOTES_REQUIRED})`, 'blue');
                 return;
             }
 
-            // ✅ CÓDIGO CONFIRMADO
             lastScanTime = now;
             voteMap = {};
             updateVoteBar(0);
@@ -228,12 +216,11 @@ document.addEventListener('DOMContentLoaded', function () {
         Quagga.stop();
         isScanning = false;
 
-        // Limpiar overlay
         const canvas = document.querySelector('#interactive canvas');
         if (canvas) canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height);
     }
 
-    /* ── Barra de votos (feedback visual de confirmación) ─── */
+    /* ── Barra de votos ────────────────────────────────────── */
     function updateVoteBar(votes) {
         if (!voteBar) return;
         const pct = Math.min((votes / VOTES_REQUIRED) * 100, 100);
@@ -244,7 +231,7 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
-    /* ── Actualizar texto de estado ────────────────────────── */
+    /* ── Estado del escáner ────────────────────────────────── */
     function setStatus(text, color) {
         if (!scanningStatus) return;
         scanningStatus.textContent = text;
@@ -360,4 +347,4 @@ document.addEventListener('DOMContentLoaded', function () {
         }
         return value;
     }
-}); 
+});
