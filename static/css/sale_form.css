@@ -92,6 +92,18 @@
     cursor: not-allowed;
 }
 
+/* ADVERTENCIA corregida — Safari muestra spin buttons en inputs readonly.
+   Se ocultan explícitamente para todos los navegadores webkit. */
+.field-input[readonly]::-webkit-inner-spin-button,
+.field-input[readonly]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+.field-input[readonly][type=number] {
+    -moz-appearance: textfield;
+}
+
 .grid-2 {
     display: grid;
     grid-template-columns: 1fr 1fr;
