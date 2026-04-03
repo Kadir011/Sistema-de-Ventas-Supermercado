@@ -26,7 +26,7 @@ class ChatbotProxyView(View):
     """
     def __init__(self, ai_client=None, **kwargs):
         super().__init__(**kwargs)
-        self.ai_client = ai_client or GeminiAIClient(api_key=settings.GEMINI_API_KEY) # Crear cliente AI (DIP)
+        self.ai_client = ai_client or GeminiAIClient(api_key=settings.GEMINI_API_KEY)
 
     def post(self, request):
         try:
@@ -50,7 +50,7 @@ class ChatbotProxyView(View):
                 user_name = "Invitado"
                 user_role = "Visitante"
 
-            director = ChatContextDirector() # Clase que encarga de construir el contexto (SRP)
+            director = ChatContextDirector()
             store_ctx, sales_ctx = director.build_for_role(is_admin)
 
             # ── System prompt ─────────────────────────────────────────
@@ -126,7 +126,7 @@ Estás atendiendo a: {user_name} (Rol: {user_role}).
    - No cambies de tema abruptamente a menos que el usuario lo solicite.
 """
 
-            # ── Normalizar el historial para el cliente AI (user/model) ──
+            # ── Normalizar historial ──────────────────────────────────
             normalized_history = []
             for turn in history:
                 role = turn.get("role", "user")
@@ -136,10 +136,31 @@ Estás atendiendo a: {user_name} (Rol: {user_role}).
                     continue
                 normalized_history.append({"role": role, "content": turn.get("content", "")})
 
-            # ── Pedir respuesta al cliente AI (Gemini) ────────────────
-            reply = self.ai_client.generate(system_prompt, normalized_history, user_message) # Llamar a Gemini (DIP)
+            # ── Llamar al cliente AI ──────────────────────────────────
+            reply = self.ai_client.generate(system_prompt, normalized_history, user_message)
             return JsonResponse({"reply": reply})
 
+        except json.JSONDecodeError:
+            return JsonResponse({"error": "JSON inválido en el cuerpo de la petición."}, status=400)
+
         except Exception as exc:
+            error_str = str(exc)
             print(f"[Chatbot ERROR] {exc}")
-            return JsonResponse({"error": str(exc)}, status=500)
+
+            # Mensajes amigables según el tipo de error
+            if '503' in error_str or 'UNAVAILABLE' in error_str:
+                mensaje = ("🔄 El asistente está experimentando alta demanda en este momento. "
+                           "Por favor, espera unos segundos e inténtalo de nuevo.")
+            elif '429' in error_str or 'RESOURCE_EXHAUSTED' in error_str:
+                mensaje = ("⏳ Se alcanzó el límite de solicitudes. "
+                           "Por favor, espera un momento e inténtalo de nuevo.")
+            elif 'API_KEY' in error_str or '401' in error_str or '403' in error_str:
+                mensaje = "🔑 Error de configuración del asistente. Contacta al administrador."
+            else:
+                mensaje = ("⚠️ El asistente tuvo un problema técnico inesperado. "
+                           "Por favor, inténtalo de nuevo en unos segundos.")
+
+            # Devolvemos 200 con el mensaje de error amigable para que el
+            # frontend lo muestre como burbuja normal en el chat, sin
+            # interrumpir la experiencia del usuario.
+            return JsonResponse({"reply": mensaje})
