@@ -2,6 +2,18 @@
 {% load static %}
 {% block title %}{{ title }}{% endblock %}
 {% block content %}
+
+{# CRÍTICO corregido: los valores numéricos del checkout se inyectan aquí
+   como data-attributes de un elemento HTML, que sí es procesado por Django.
+   El archivo checkout.js (estático) los lee desde el DOM, nunca desde
+   etiquetas template dentro del JS. #}
+<div id="checkout-data"
+     data-total="{{ total|stringformat:'.2f' }}"
+     data-subtotal="{{ subtotal|stringformat:'.2f' }}"
+     data-iva="{{ iva|stringformat:'.2f' }}"
+     data-discount="{{ discount|stringformat:'.2f' }}"
+     style="display:none;"></div>
+
 <div class="container mx-auto py-8 px-4">
     <h1 class="text-3xl font-bold mb-6 text-gray-800">
         <i class='bx bx-credit-card text-green-600'></i> {{ title }}
@@ -12,10 +24,6 @@
             <form method="post" id="checkout-form" class="bg-white rounded-lg shadow-md p-6 space-y-6">
                 {% csrf_token %}
 
-                {# ── Idempotencia ─────────────────────────────────────────────────── #}
-                {# UUID generado en el GET. Si el mismo formulario se envía dos veces  #}
-                {# (doble clic, F5, botón "atrás"), el backend detecta la clave y       #}
-                {# redirige a la venta ya creada sin procesar nada nuevo.               #}
                 <input type="hidden" name="idempotency_key" value="{{ idempotency_key }}">
                 
                 <!-- TIPO DE FACTURA -->
@@ -81,7 +89,7 @@
                         <div>
                             <p class="font-bold">Método de Pago No Disponible</p>
                             <p class="text-sm">Este método no está habilitado actualmente. Use:
-                               <strong>Efectivo, Tarjeta de Crédito, Tarjeta de Débito o Transferencia Bancaria</strong>.</p>
+                               <strong>Efectivo, Tarjeta de Crédito o Tarjeta de Débito</strong>.</p>
                         </div>
                     </div>
 
@@ -137,12 +145,7 @@
                          class="relative w-full max-w-sm mx-auto h-44 rounded-2xl shadow-xl text-white p-5 flex flex-col justify-between overflow-hidden transition-all duration-500"
                          style="background: linear-gradient(135deg,#1a1f71 0%,#2563eb 100%)">
                         <div class="flex justify-between items-start">
-                            <div class="w-10 h-7 bg-yellow-300 rounded-md flex items-center justify-center grid grid-cols-2 gap-0.5 p-1">
-                                <div class="w-full h-full bg-yellow-500 rounded-sm"></div>
-                                <div class="w-full h-full bg-yellow-500 rounded-sm"></div>
-                                <div class="w-full h-full bg-yellow-500 rounded-sm"></div>
-                                <div class="w-full h-full bg-yellow-500 rounded-sm"></div>
-                            </div>
+                            <div class="w-10 h-7 bg-yellow-300 rounded-md"></div>
                             <span id="preview_network" class="text-xs font-bold opacity-80 uppercase tracking-widest"></span>
                         </div>
                         <div class="font-mono text-xl tracking-widest text-center" id="preview_number">
@@ -208,19 +211,15 @@
                                     <option value="Banco Internacional">Banco Internacional</option>
                                     <option value="Banco Bolivariano">Banco Bolivariano</option>
                                     <option value="Banco del Austro">Banco del Austro</option>
-                                    <option value="Banco General Rumiñahui">Banco General Rumiñahui</option>
-                                    <option value="Banco Solidario">Banco Solidario</option>
                                     <option value="Diners Club">Diners Club</option>
                                 </optgroup>
                                 <optgroup label="Bancos Públicos">
                                     <option value="BanEcuador">BanEcuador</option>
                                     <option value="Banco del Estado">Banco del Estado</option>
-                                    <option value="CFN">CFN</option>
                                 </optgroup>
                                 <optgroup label="Cooperativas">
                                     <option value="JEP">JEP</option>
                                     <option value="Jardín Azuayo">Jardín Azuayo</option>
-                                    <option value="Cooprogreso">Cooprogreso</option>
                                 </optgroup>
                                 <optgroup label="Internacional">
                                     <option value="Otro / Internacional">Otro / Internacional</option>
@@ -233,9 +232,11 @@
                                    placeholder="Ej: 123456" maxlength="20"
                                    class="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-blue-400 font-mono"
                                    oninput="this.value=this.value.replace(/[^0-9A-Za-z]/g,'').toUpperCase()">
-                            <p class="text-xs text-gray-400 mt-1">Número impreso en el comprobante del datáfono.</p>
                         </div>
                     </div>
+
+                    {# Campo oculto para número de tarjeta censurado #}
+                    <input type="hidden" name="card_number_masked" id="card_number_masked">
                 </div>
 
                 <!-- SECCIÓN TRANSFERENCIA -->
@@ -244,12 +245,9 @@
                         <i class='bx bx-transfer text-green-600'></i>
                         Datos para Transferencia Bancaria
                     </h3>
-                    <p class="text-sm text-gray-600">
-                        Seleccione el banco al que realizará la transferencia y el tipo de cuenta.
-                    </p>
                     <div>
                         <label class="block text-gray-700 font-semibold mb-2 text-sm">Banco Destino *</label>
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3" id="transfer_bank_cards">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                             <label class="cursor-pointer">
                                 <input type="radio" name="transfer_bank" value="guayaquil" class="hidden peer" onchange="onTransferBankChange()">
                                 <div class="peer-checked:border-green-600 peer-checked:bg-green-100 border-2 border-gray-200 rounded-xl p-4 flex items-center gap-3 transition-all hover:border-green-400">
@@ -294,10 +292,6 @@
                         </div>
                     </div>
                     <div id="transfer_account_info" class="hidden rounded-xl border-2 border-green-300 bg-white p-5 space-y-4">
-                        <div class="flex items-center gap-2 mb-2">
-                            <i class='bx bx-info-circle text-green-600 text-lg'></i>
-                            <p class="text-sm font-bold text-green-800">Datos de la cuenta destino</p>
-                        </div>
                         <div class="grid grid-cols-2 gap-y-3 text-sm pb-4 border-b border-gray-200">
                             <span class="text-gray-500 font-medium">Banco:</span>
                             <span id="tinfo_bank" class="font-bold text-gray-800"></span>
@@ -308,27 +302,16 @@
                         </div>
                         <div>
                             <label class="block text-gray-700 font-semibold mb-2 text-sm">N° de Cuenta *</label>
-                            <input type="text" id="transfer_account_number_input" name="transfer_account_number_input"
+                            <input type="text" id="transfer_account_number_input"
                                    placeholder="Número de cuenta"
-                                   class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-green-400 font-mono text-lg tracking-widest transition-colors"
-                                   oninput="this.value=this.value.replace(/[^0-9]/g); updateTransferAccountNumber()">
-                            <p class="text-xs text-gray-400 mt-1">Edite si es diferente al mostrado arriba</p>
+                                   class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-green-400 font-mono text-lg tracking-widest"
+                                   oninput="this.value=this.value.replace(/[^0-9]/g,''); updateTransferAccountNumber()">
                         </div>
-                        <p class="text-xs text-orange-600 mt-2 flex items-start gap-1">
-                            <i class='bx bx-error-circle mt-0.5 flex-shrink-0'></i>
-                            Realice la transferencia por el monto exacto. Guarde el comprobante.
-                        </p>
                     </div>
                     <input type="hidden" name="transfer_bank_name" id="transfer_bank_name">
                     <input type="hidden" name="transfer_account_number" id="transfer_account_number">
                     <input type="hidden" name="transfer_account_type_value" id="transfer_account_type_value">
-                    <input type="hidden" name="card_number_masked" id="card_number_masked">
                     <input type="hidden" name="transfer_account_masked" id="transfer_account_masked">
-                    <input type="hidden" name="invoice_subtotal" value="{{ subtotal }}">
-                    <input type="hidden" name="invoice_iva" value="{{ iva }}">
-                    <input type="hidden" name="invoice_discount" value="{{ discount }}">
-                    <input type="hidden" name="invoice_discount_pct" value="{{ discount_pct }}">
-                    <input type="hidden" name="invoice_total" value="{{ total }}">
                 </div>
 
                 <!-- TOTAL + MONTO RECIBIDO -->
@@ -370,7 +353,6 @@
                 </div>
                 
                 <div class="flex gap-4">
-                    {# submit_btn: deshabilitado vía JS al primer clic para evitar doble submit #}
                     <button type="submit" id="submit_btn"
                             class="w-full bg-green-600 text-white py-4 rounded-xl font-black hover:bg-green-700 transition-all text-xl shadow-xl transform hover:-translate-y-1">
                         <i class='bx bx-check-circle'></i> FINALIZAR COMPRA
@@ -412,22 +394,13 @@
 
 <script src="{% static 'js/checkout.js' %}"></script>
 
-{# ── Protección de doble submit en el cliente ──────────────────────────────── #}
-{# Si el usuario hace doble clic o recarga antes de que el servidor responda,   #}
-{# el botón se deshabilita inmediatamente tras el primer submit.                #}
-{# El servidor también rechaza duplicados vía idempotency_key, pero esta capa   #}
-{# evita incluso enviar el segundo request.                                     #}
 <script>
 document.getElementById('checkout-form').addEventListener('submit', function(e) {
     const btn = document.getElementById('submit_btn');
-
-    // Si ya fue enviado (doble clic), cancelar el segundo submit
     if (btn.dataset.submitted) {
         e.preventDefault();
         return;
     }
-
-    // Marcar como enviado y deshabilitar visualmente
     btn.dataset.submitted = 'true';
     btn.disabled = true;
     btn.classList.add('opacity-60', 'cursor-not-allowed');
