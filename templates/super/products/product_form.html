@@ -29,7 +29,6 @@
             <form method="post" enctype="multipart/form-data">
                 {% csrf_token %}
 
-                <!-- Nombre -->
                 <div class="field-group mb-5">
                     <label class="field-label"><i class='bx bx-tag'></i>Nombre del producto</label>
                     <input type="text" name="name" value="{{ form.instance.name|default:'' }}"
@@ -38,7 +37,6 @@
                     {% if form.name.errors %}<span class="field-error"><i class='bx bx-error-circle'></i>{{ form.name.errors.0 }}</span>{% endif %}
                 </div>
 
-                <!-- Categoría y Marca -->
                 <div class="grid-2 mb-5">
                     <div class="field-group">
                         <label class="field-label"><i class='bx bx-category'></i>Categoría</label>
@@ -62,13 +60,11 @@
                     </div>
                 </div>
 
-                <!-- Descripción -->
                 <div class="field-group mb-5">
                     <label class="field-label"><i class='bx bx-text'></i>Descripción</label>
                     <textarea name="description" class="field-input" placeholder="Describe el producto...">{{ form.instance.description|default:'' }}</textarea>
                 </div>
 
-                <!-- Precio, Stock -->
                 <div class="section-divider"><span>Precio e inventario</span></div>
 
                 <div class="grid-2 mb-5">
@@ -88,7 +84,6 @@
                     </div>
                 </div>
 
-                <!-- Estado (calculado desde stock) -->
                 <div class="field-group mb-5">
                     <label class="field-label"><i class='bx bx-toggle-right'></i>Estado del producto</label>
                     <div class="flex items-center gap-3 py-2">
@@ -101,7 +96,6 @@
                     </div>
                 </div>
 
-                <!-- Imagen -->
                 <div class="section-divider"><span>Imagen y código</span></div>
 
                 <div class="grid-2 mb-5">
@@ -131,26 +125,34 @@
                     </div>
                 </div>
 
-                <!-- Fechas -->
                 <div class="section-divider"><span>Fechas</span></div>
 
                 <div class="grid-2">
                     <div class="field-group">
                         <label class="field-label"><i class='bx bx-calendar-check'></i>Fecha de elaboración</label>
+                        {# INFORMATIVO corregido: placeholder y pattern para Safari < 14.1
+                           que no renderiza el date picker nativo. #}
                         <input type="date" name="production_date" id="id_production_date"
                                value="{{ form.instance.production_date|default:'' }}"
-                               class="field-input" required>
+                               class="field-input"
+                               placeholder="AAAA-MM-DD"
+                               pattern="\d{4}-\d{2}-\d{2}"
+                               title="Formato: AAAA-MM-DD"
+                               required>
                     </div>
                     <div class="field-group">
                         <label class="field-label"><i class='bx bx-calendar-x'></i>Fecha de vencimiento</label>
                         <input type="date" name="expiration_date" id="id_expiration_date"
                                value="{{ form.instance.expiration_date|default:'' }}"
-                               class="field-input" readonly style="cursor: not-allowed;">
+                               class="field-input"
+                               placeholder="AAAA-MM-DD"
+                               pattern="\d{4}-\d{2}-\d{2}"
+                               title="Formato: AAAA-MM-DD"
+                               readonly style="cursor: not-allowed;">
                         <span class="field-hint">Se calcula automáticamente (+30 días)</span>
                     </div>
                 </div>
 
-                <!-- Botones -->
                 <div class="flex items-center justify-between mt-8 pt-6" style="border-top: 1px solid #f3f4f6;">
                     <a href="{{ back_url }}" class="btn-cancel">
                         <i class='bx bx-arrow-back'></i> Cancelar
@@ -167,7 +169,6 @@
 <script src="{% static 'js/expiration_date.js' %}"></script>
 <script src="{% static 'js/barcode_validation.js' %}"></script>
 <script>
-// State badge actualizado con el stock
 document.addEventListener('DOMContentLoaded', () => {
     const stockInput = document.getElementById('id_stock');
     const stateBadge = document.getElementById('state-badge');
