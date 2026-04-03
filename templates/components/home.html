@@ -2,98 +2,195 @@
 {% load static %} 
 {% block title %}{{ title }}{% endblock %}
 {% block content %}
-<!-- Hero Section -->
-<section class="bg-red-600 text-white py-20">
-    <div class="container mx-auto text-center">
-        <h1 class="text-4xl font-bold mb-4">Bienvenidos a My Supermarket</h1> 
-        <p class="text-lg mb-6">Aquí podrás encontrar todo lo que necesitas para tu hogar y tu vida en general.</p> 
-        <a href="{% url 'super:catalog' %}" class="bg-white text-red-600 py-3 px-6 rounded-full shadow-md hover:bg-gray-100 transition">
-            Explora los productos
-        </a> 
-    </div> 
-</section>
 
-<div class="container mx-auto px-4">
-    <section class="py-16 bg-gray-100">
-        <div class="container mx-auto p-6">
-            <h1 class="text-3xl font-bold text-center mb-8">Productos Destacados</h1>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-                
-                <!-- Producto 1 -->
-                <div class="bg-white rounded-lg shadow-lg p-6">
-                    <img src="{% static 'img/products/product_1.jpg' %}" alt="Coca-Cola 1L" class="w-full h-40 object-contain">
-                    <h3 class="text-xl font-semibold mt-4">Coca-Cola 1L</h3>
-                    <p class="text-gray-600 mt-2">Disfruta de una refrescante bebida gaseosa Coca-Cola.</p>
-                </div>
+<link rel="stylesheet" href="{% static 'css/home.css' %}">
 
-                <!-- Producto 2 -->
-                <div class="bg-white rounded-lg shadow-lg p-6">
-                    <img src="{% static 'img/products/product_2.jpg' %}" alt="Doritos Flaming Hot" class="w-full h-40 object-contain">
-                    <h3 class="text-xl font-semibold mt-4">Doritos Flaming Hot</h3>
-                    <p class="text-gray-600 mt-2">Disfruta de una experiencia probando los nuevos Doritos Flaming Hot.</p>
-                </div>
+<!-- ═══ HERO ═══ -->
+<div class="home-hero -mx-4 -mt-6 px-6 py-20 lg:py-0">
+  <div class="hero-grid"></div>
+  <div class="max-w-7xl mx-auto w-full relative z-10 lg:py-28">
+    <div class="max-w-[56%] lg:max-w-[50%]">
+      <div class="hero-badge">
+        <span style="width:6px;height:6px;background:#4ade80;border-radius:50%;display:inline-block;"></span>
+        Supermercado Online · Guayaquil
+      </div>
+      <h1 class="hero-title">
+        Todo lo que<br>necesitas,<br><span class="accent">en un lugar.</span>
+      </h1>
+      <p class="hero-desc">
+        Compra desde casa con precios competitivos, variedad de marcas y entrega rápida. La experiencia de supermercado que mereces.
+      </p>
+      <div class="flex flex-wrap gap-4">
+        <a href="{% url 'super:catalog' %}" class="hero-cta">
+          <i class='bx bx-store text-xl'></i> Explorar productos
+        </a>
+        <a href="{% url 'security:register' %}" class="hero-cta-outline">
+          <i class='bx bx-user-plus'></i> Crear cuenta
+        </a>
+      </div>
+    </div>
+  </div>
 
-                <!-- Producto 3 -->
-                <div class="bg-white rounded-lg shadow-lg p-6">
-                    <img src="{% static 'img/products/product_3.jpg' %}" alt="Chocolate Kitkat" class="w-full h-40 object-contain">
-                    <h3 class="text-xl font-semibold mt-4">Chocolate Kitkat</h3>
-                    <p class="text-gray-600 mt-2">Ven y prueba el nuevo chocolate Kitkat de Nestlé.</p>
-                </div>
-
-            </div>
-        </div>
-    </section> 
+  <!-- Floating cards (desktop) -->
+  <div class="hero-float hidden lg:flex">
+    <div class="float-card">
+      <div class="float-icon" style="background:rgba(34,197,94,0.15);">🛒</div>
+      <div>
+        <div class="float-label">Carrito activo</div>
+        <div class="float-value">Lista en segundos</div>
+      </div>
+    </div>
+    <div class="float-card">
+      <div class="float-icon" style="background:rgba(251,191,36,0.15);">⚡</div>
+      <div>
+        <div class="float-label">Pago seguro</div>
+        <div class="float-value">Efectivo · Tarjeta</div>
+      </div>
+    </div>
+    <div class="float-card">
+      <div class="float-icon" style="background:rgba(99,102,241,0.15);">📄</div>
+      <div>
+        <div class="float-label">Facturación</div>
+        <div class="float-value">PDF instantáneo</div>
+      </div>
+    </div>
+  </div>
 </div>
 
-<!-- ¿Por Qué Elegirnos? -->
-<section class="bg-red-50 py-16 px-8">
-    <div class="container mx-auto text-center">
-        <h2 class="text-3xl font-semibold mb-8">¿Por Qué Elegirnos?</h2>
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div class="p-6 bg-white rounded-lg shadow-lg hover:shadow-2xl transition">
-                <div class="flex justify-center items-center mb-4">
-                    <!-- Icono de sostenibilidad con Boxicons -->
-                    <i class="bx bx-dollar text-4xl text-blue-600"></i>
-                </div>
-                <h3 class="text-xl font-semibold text-green-600">Precios Económicos</h3>
-                <p class="text-gray-600 mt-2">Ofrecemos precios económicos para que puedas disfrutar de los productos sin tener que preocuparte por los costos.</p>
-            </div>
-            <div class="p-6 bg-white rounded-lg shadow-lg hover:shadow-2xl transition">
-                <div class="flex justify-center items-center mb-4">
-                    <!-- Icono de calidad con Boxicons -->
-                    <i class="bx bxs-check-circle text-4xl text-blue-600"></i>
-                </div>
-                <h3 class="text-xl font-semibold text-green-600">Calidad Asegurada</h3>
-                <p class="text-gray-600 mt-2">Contamos con los más altos estándares de calidad en todos nuestros productos.</p>
-            </div>
-            <div class="p-6 bg-white rounded-lg shadow-lg hover:shadow-2xl transition">
-                <div class="flex justify-center items-center mb-4">
-                    <!-- Icono de soporte con Boxicons -->
-                    <i class="bx bx-headphone text-4xl text-blue-600"></i>
-                </div>
-                <h3 class="text-xl font-semibold text-green-600">Soporte 24/7</h3>
-                <p class="text-gray-600 mt-2">Ofrecemos atención y soporte constante para garantizar tu satisfacción.</p>
-            </div>
-        </div>
-    </div> 
-</section> 
-
-<section class="bg-red-600 text-white py-20 mt-16">
-    <div class="container mx-auto text-center">
-        <h2 class="text-3xl font-semibold mb-6">Contáctanos</h2>
-        <p class="text-lg mb-8">Contáctanos para más información sobre nuestros productos y servicios.</p>
-        <a href="{% url 'super:contact' %}" class="bg-white text-red-600 py-3 px-6 rounded-full shadow-md hover:bg-gray-100 transition">
-            Contáctanos
-        </a>
+<!-- ═══ STATS ═══ -->
+<div class="stats-bar -mx-4">
+  <div class="max-w-7xl mx-auto grid grid-cols-2 md:grid-cols-4 divide-x divide-gray-100">
+    <div class="stat-item">
+      <div class="stat-num">65+</div>
+      <div class="stat-label">Categorías</div>
     </div>
+    <div class="stat-item">
+      <div class="stat-num">77+</div>
+      <div class="stat-label">Marcas</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-num">15%</div>
+      <div class="stat-label">IVA incluido</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-num">24/7</div>
+      <div class="stat-label">Soporte IA</div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ PRODUCTOS DESTACADOS ═══ -->
+<section class="py-20 -mx-4 px-6">
+  <div class="max-w-7xl mx-auto">
+    <div class="text-center mb-14">
+      <div class="section-eyebrow">Selección especial</div>
+      <h2 class="section-title">Productos Destacados</h2>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+
+      <!-- Producto 1 -->
+      <div class="product-card">
+        <div class="product-card-img">
+          <span class="product-chip">⭐ Top ventas</span>
+          <img src="{% static 'img/products/product_1.jpg' %}" alt="Coca-Cola 1L">
+        </div>
+        <div class="p-5">
+          <p style="font-family:'DM Sans',sans-serif;font-size:0.75rem;color:#9ca3af;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px;">Bebidas</p>
+          <h3 style="font-family:'Syne',sans-serif;font-size:1.15rem;font-weight:700;color:#111827;margin-bottom:6px;">Coca-Cola 1L</h3>
+          <p style="font-family:'DM Sans',sans-serif;font-size:0.875rem;color:#6b7280;line-height:1.55;">La bebida gaseosa clásica e inconfundible que refresca en cualquier momento.</p>
+        </div>
+      </div>
+
+      <!-- Producto 2 -->
+      <div class="product-card" style="border-color:#dcfce7;box-shadow:0 2px 12px rgba(22,163,74,0.08);">
+        <div class="product-card-img" style="background:linear-gradient(135deg,#fefce8,#fef9c3);">
+          <span class="product-chip" style="background:rgba(234,179,8,0.9);">🔥 Popular</span>
+          <img src="{% static 'img/products/product_2.jpg' %}" alt="Doritos Flaming Hot">
+        </div>
+        <div class="p-5">
+          <p style="font-family:'DM Sans',sans-serif;font-size:0.75rem;color:#9ca3af;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px;">Frituras</p>
+          <h3 style="font-family:'Syne',sans-serif;font-size:1.15rem;font-weight:700;color:#111827;margin-bottom:6px;">Doritos Flaming Hot</h3>
+          <p style="font-family:'DM Sans',sans-serif;font-size:0.875rem;color:#6b7280;line-height:1.55;">La experiencia más picante y adictiva en snacks que estás buscando.</p>
+        </div>
+      </div>
+
+      <!-- Producto 3 -->
+      <div class="product-card">
+        <div class="product-card-img" style="background:linear-gradient(135deg,#fdf4ff,#fae8ff);">
+          <span class="product-chip" style="background:rgba(147,51,234,0.85);">✨ Nuevo</span>
+          <img src="{% static 'img/products/product_3.jpg' %}" alt="Chocolate Kitkat">
+        </div>
+        <div class="p-5">
+          <p style="font-family:'DM Sans',sans-serif;font-size:0.75rem;color:#9ca3af;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px;">Chocolates</p>
+          <h3 style="font-family:'Syne',sans-serif;font-size:1.15rem;font-weight:700;color:#111827;margin-bottom:6px;">Chocolate KitKat</h3>
+          <p style="font-family:'DM Sans',sans-serif;font-size:0.875rem;color:#6b7280;line-height:1.55;">El irresistible chocolate de Nestlé con su crujiente oblea inconfundible.</p>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="text-center mt-10">
+      <a href="{% url 'super:catalog' %}" style="font-family:'DM Sans',sans-serif;font-weight:600;color:#16a34a;display:inline-flex;align-items:center;gap:6px;border-bottom:2px solid #16a34a;padding-bottom:2px;text-decoration:none;transition:opacity 0.2s;" onmouseover="this.style.opacity=0.7" onmouseout="this.style.opacity=1">
+        Ver todo el catálogo <i class='bx bx-right-arrow-alt'></i>
+      </a>
+    </div>
+  </div>
 </section>
-{% endblock %} 
 
+<!-- ═══ POR QUÉ ELEGIRNOS ═══ -->
+<section class="why-section -mx-4 px-6 py-20">
+  <div class="max-w-7xl mx-auto">
+    <div class="text-center mb-14">
+      <div class="section-eyebrow">Nuestras ventajas</div>
+      <h2 class="section-title">¿Por qué elegirnos?</h2>
+    </div>
 
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+      <div class="why-card">
+        <div class="why-icon-wrap" style="background:#dcfce7;">
+          <i class='bx bx-dollar text-green-600'></i>
+        </div>
+        <h3>Precios Competitivos</h3>
+        <p>Ofrecemos los mejores precios del mercado para que tu compra rinda al máximo sin sacrificar calidad.</p>
+      </div>
+      <div class="why-card">
+        <div class="why-icon-wrap" style="background:#dbeafe;">
+          <i class='bx bxs-check-shield text-blue-600'></i>
+        </div>
+        <h3>Compra 100% Segura</h3>
+        <p>Protección contra transacciones duplicadas, encriptación de datos y pago seguro en cada paso del proceso.</p>
+      </div>
+      <div class="why-card">
+        <div class="why-icon-wrap" style="background:#fef3c7;">
+          <i class='bx bx-bot text-amber-500'></i>
+        </div>
+        <h3>Asistente con IA</h3>
+        <p>Nuestro chatbot conoce el inventario en tiempo real y está disponible las 24 horas para ayudarte.</p>
+      </div>
+    </div>
+  </div>
+</section>
 
+<!-- ═══ CTA BOTTOM ═══ -->
+<section class="cta-bottom -mx-4 px-6 py-24">
+  <div class="max-w-7xl mx-auto relative z-10 text-center">
+    <div class="section-eyebrow" style="color:#4ade80;">¿Listo para empezar?</div>
+    <h2 class="cta-bottom-title mb-6">
+      Tu supermercado,<br>ahora en línea.
+    </h2>
+    <p style="font-family:'DM Sans',sans-serif;color:rgba(255,255,255,0.55);font-size:1.05rem;max-width:460px;margin:0 auto 36px;line-height:1.7;">
+      Crea tu cuenta gratis y accede a cientos de productos, facturas PDF y ofertas exclusivas.
+    </p>
+    <div class="flex flex-wrap justify-center gap-4">
+      <a href="{% url 'super:contact' %}" class="hero-cta-outline">
+        <i class='bx bx-envelope'></i> Contáctanos
+      </a>
+      <a href="{% url 'security:register' %}" class="hero-cta">
+        <i class='bx bx-user-plus'></i> Registrarse gratis
+      </a>
+    </div>
+  </div>
+</section>
 
-
-
-
-
-
+{% endblock %}

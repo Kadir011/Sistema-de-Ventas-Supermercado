@@ -1,19 +1,48 @@
 {% extends 'components/base.html' %}
-{% block title %}{{title}}{% endblock %}
+{% load static %}
+{% block title %}{{ title }}{% endblock %}
 {% block content %}
-<div class="container mx-auto py-8 px-16">
-    <div class="bg-white shadow-lg rounded-lg p-8">
-        <h1 class="text-3xl font-bold mb-4">{{description}}</h1>
-        <div class="mt-6 flex justify-between">
-            <a href="{{back_url}}" class="bg-gray-300 text-black px-6 py-2 rounded-lg hover:bg-gray-400">Cancelar</a>
-            <form action="{% url 'super:product_delete' product.pk %}" method="post">
-                {% csrf_token %}
-                <button type="submit" class="bg-red-500 text-white px-6 py-2 rounded-lg hover:bg-red-600">{{ grabar }}</button>
-            </form> 
-        </div> 
-    </div> 
-</div> 
+
+<link rel="stylesheet" href="{% static 'css/product/product_delete.css' %}">
+
+<div class="delete-wrap">
+  <div class="delete-card">
+    <div class="delete-header">
+      <div class="delete-icon-ring">
+        <i class='bx bx-package text-red-500' style="font-size:2rem;"></i>
+      </div>
+      <div class="delete-title">{{ title }}</div>
+      <div class="delete-subtitle">Acción irreversible</div>
+    </div>
+
+    <div class="delete-body">
+      <div class="delete-desc">
+        <i class='bx bx-error-circle'></i>
+        <span>{{ description }}</span>
+      </div>
+
+      <div class="stock-note">
+        <i class='bx bx-info-circle' style="flex-shrink:0;margin-top:1px;"></i>
+        Al eliminar este producto también se eliminará del catálogo y dejará de aparecer en la tienda.
+      </div>
+
+      <div class="delete-warning">
+        <i class='bx bx-lock-alt'></i>
+        Esta acción no se puede deshacer
+      </div>
+
+      <form action="{% url 'super:product_delete' product.pk %}" method="post">
+        {% csrf_token %}
+        <button type="submit" class="btn-delete">
+          <i class='bx bx-trash'></i> {{ grabar }}
+        </button>
+      </form>
+
+      <a href="{{ back_url }}" class="btn-cancel">
+        <i class='bx bx-arrow-back'></i> Cancelar y volver
+      </a>
+    </div>
+  </div>
+</div>
+
 {% endblock %}
-
-
-

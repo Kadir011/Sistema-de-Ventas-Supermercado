@@ -1,19 +1,48 @@
 {% extends 'components/base.html' %}
-{% block title %}{{title}}{% endblock %}
+{% load static %}
+{% block title %}{{ title }}{% endblock %}
 {% block content %}
-<div class="container mx-auto py-8 px-16">
-    <div class="bg-white shadow-lg rounded-lg p-8">
-        <h1 class="text-3xl font-bold mb-6">{{title}}</h1>
-        <h1 class="text-3xl font-bold mb-4">{{description}}</h1>
-        <form method="post" class="mt-4">
-            {% csrf_token %}
-            <button type="submit" class="bg-red-600 text-white px-6 py-2 rounded-lg hover:bg-red-700 transition-all">{{grabar}}</button>
-            <a href={{back_url}} class="bg-gray-300 text-black px-6 py-2 rounded-lg hover:bg-gray-400 transition-all">Cancelar</a>
-        </form> 
+
+<link rel="stylesheet" href="{% static 'css/sale/sale_delete.css' %}">
+
+<div class="delete-wrap">
+  <div class="delete-card">
+    <div class="delete-header">
+      <div class="delete-icon-ring">
+        <i class='bx bx-receipt text-red-500' style="font-size:2rem;"></i>
+      </div>
+      <div class="delete-title">{{ title }}</div>
+      <div class="delete-subtitle">Acción irreversible</div>
     </div>
-</div> 
-{% endblock %} 
 
+    <div class="delete-body">
+      <div class="delete-desc">
+        <i class='bx bx-error-circle'></i>
+        <span>{{ description }}</span>
+      </div>
 
+      <div class="stock-note">
+        <i class='bx bx-refresh' style="flex-shrink:0;margin-top:1px;"></i>
+        El stock de todos los productos de esta venta será restaurado automáticamente de forma segura.
+      </div>
 
+      <div class="delete-warning">
+        <i class='bx bx-lock-alt'></i>
+        Esta acción no se puede deshacer
+      </div>
 
+      <form method="post">
+        {% csrf_token %}
+        <button type="submit" class="btn-delete">
+          <i class='bx bx-trash'></i> {{ grabar }}
+        </button>
+      </form>
+
+      <a href="{{ back_url }}" class="btn-cancel">
+        <i class='bx bx-arrow-back'></i> Cancelar y volver
+      </a>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
