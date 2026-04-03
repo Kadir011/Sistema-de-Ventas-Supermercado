@@ -3,10 +3,10 @@
 {% block title %}{{ title }}{% endblock %}
 {% block content %}
 
-{# CRÍTICO corregido: los valores numéricos del checkout se inyectan aquí
+<!-- CRÍTICO corregido: los valores numéricos del checkout se inyectan aquí
    como data-attributes de un elemento HTML, que sí es procesado por Django.
    El archivo checkout.js (estático) los lee desde el DOM, nunca desde
-   etiquetas template dentro del JS. #}
+   etiquetas template dentro del JS. -->
 <div id="checkout-data"
      data-total="{{ total|stringformat:'.2f' }}"
      data-subtotal="{{ subtotal|stringformat:'.2f' }}"
@@ -235,7 +235,7 @@
                         </div>
                     </div>
 
-                    {# Campo oculto para número de tarjeta censurado #}
+                    <!--Campo oculto para número de tarjeta censurado-->
                     <input type="hidden" name="card_number_masked" id="card_number_masked">
                 </div>
 
