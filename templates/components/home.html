@@ -24,9 +24,11 @@
         <a href="{% url 'super:catalog' %}" class="hero-cta">
           <i class='bx bx-store text-xl'></i> Explorar productos
         </a>
-        <a href="{% url 'security:register' %}" class="hero-cta-outline">
-          <i class='bx bx-user-plus'></i> Crear cuenta
-        </a>
+        {% if not user.is_authenticated %}
+          <a href="{% url 'security:register' %}" class="hero-cta-outline">
+            <i class='bx bx-user-plus'></i> Crear cuenta
+          </a>
+        {% endif %}
       </div>
     </div>
   </div>
@@ -176,20 +178,42 @@
 <section class="cta-bottom -mx-4 px-6 py-24">
   <div class="max-w-7xl mx-auto relative z-10 text-center">
     <div class="section-eyebrow" style="color:#4ade80;">¿Listo para empezar?</div>
-    <h2 class="cta-bottom-title mb-6">
-      Tu supermercado,<br>ahora en línea.
-    </h2>
-    <p style="font-family:'DM Sans',sans-serif;color:rgba(255,255,255,0.55);font-size:1.05rem;max-width:460px;margin:0 auto 36px;line-height:1.7;">
-      Crea tu cuenta gratis y accede a cientos de productos, facturas PDF y ofertas exclusivas.
-    </p>
-    <div class="flex flex-wrap justify-center gap-4">
-      <a href="{% url 'super:contact' %}" class="hero-cta-outline">
-        <i class='bx bx-envelope'></i> Contáctanos
-      </a>
-      <a href="{% url 'security:register' %}" class="hero-cta">
-        <i class='bx bx-user-plus'></i> Registrarse gratis
-      </a>
-    </div>
+
+    {% if user.is_authenticated %}
+      <!-- Usuario ya ingresado: invitarlo a explorar la tienda -->
+      <h2 class="cta-bottom-title mb-6">
+        Bienvenido de vuelta,<br>{{ user.first_name|default:user.username }}.
+      </h2>
+      <p style="font-family:'DM Sans',sans-serif;color:rgba(255,255,255,0.55);font-size:1.05rem;max-width:460px;margin:0 auto 36px;line-height:1.7;">
+        Explora nuestro catálogo y encuentra todo lo que necesitas.
+      </p>
+      <div class="flex flex-wrap justify-center gap-4">
+        <a href="{% url 'super:contact' %}" class="hero-cta-outline">
+          <i class='bx bx-envelope'></i> Contáctanos
+        </a>
+        <a href="{% url 'super:shop' %}" class="hero-cta">
+          <i class='bx bx-store'></i> Ir a la tienda
+        </a>
+      </div>
+
+    {% else %}
+      <!-- Visitante: mostrar botón de registro -->
+      <h2 class="cta-bottom-title mb-6">
+        Tu supermercado,<br>ahora en línea.
+      </h2>
+      <p style="font-family:'DM Sans',sans-serif;color:rgba(255,255,255,0.55);font-size:1.05rem;max-width:460px;margin:0 auto 36px;line-height:1.7;">
+        Crea tu cuenta gratis y accede a cientos de productos, facturas PDF y ofertas exclusivas.
+      </p>
+      <div class="flex flex-wrap justify-center gap-4">
+        <a href="{% url 'super:contact' %}" class="hero-cta-outline">
+          <i class='bx bx-envelope'></i> Contáctanos
+        </a>
+        <a href="{% url 'security:register' %}" class="hero-cta">
+          <i class='bx bx-user-plus'></i> Registrarse gratis
+        </a>
+      </div>
+    {% endif %}
+
   </div>
 </section>
 
