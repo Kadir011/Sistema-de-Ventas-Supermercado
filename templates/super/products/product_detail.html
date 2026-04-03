@@ -133,8 +133,7 @@
                             <span class="text-sm text-gray-600">Disponible: {{ product.stock }}</span>
                         </div>
                         
-                        {# CRÍTICO corregido: data-attributes en lugar de onclick con IDs inline,
-                           y la función usa POST con CSRF #}
+                        <!--CRÍTICO corregido: data-attributes en lugar de onclick con IDs inline, y la función usa POST con CSRF-->
                         <button type="button" id="btn-add-cart"
                                 data-product-id="{{ product.id_product }}"
                                 data-max-stock="{{ product.stock }}"
