@@ -1,165 +1,168 @@
 {% extends 'components/base.html' %}
 {% load widget_tweaks %}
 {% load static %}
-{% block title %}Regístrate{% endblock %}
+{% block title %}Crear Cuenta{% endblock %}
 {% block content %}
-<div class="container mx-auto py-12">
-    <div class="bg-white shadow-md rounded-lg p-8 max-w-md mx-auto">
-        <div class="text-center mb-6">
-            <i class='bx bxs-user-plus text-5xl text-green-600'></i>
-            <h2 class="text-2xl font-bold mt-2">Crear Cuenta de Cliente</h2>
-            <p class="text-gray-600 text-sm">Regístrate para comprar en nuestra tienda</p>
-        </div>
 
-        <form action="{% url 'security:register' %}" method="post">
-            {% csrf_token %}
+<link rel="stylesheet" href="{% static 'css/security/auth_form.css' %}">
 
-            {{ form.non_field_errors }}
+<div class="auth-wrap">
+  <div class="auth-card">
 
-            <!-- Información Personal -->
-            <div class="mb-4">
-                <label for="id_first_name" class="block text-gray-700 font-semibold mb-2">
-                    <i class='bx bx-user'></i> Nombre *
-                </label>
-                {{ form.first_name|add_class:"w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500" }}
-                {{ form.first_name.errors }}
-            </div>
-
-            <div class="mb-4">
-                <label for="id_last_name" class="block text-gray-700 font-semibold mb-2">
-                    <i class='bx bx-user'></i> Apellido *
-                </label>
-                {{ form.last_name|add_class:"w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500" }}
-                {{ form.last_name.errors }}
-            </div>
-
-            <div class="mb-4">
-                <label for="id_dni" class="block text-gray-700 font-semibold mb-2">
-                    <i class='bx bx-id-card'></i> Cédula *
-                </label>
-                {{ form.dni|add_class:"w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 only-numbers" }}
-                {{ form.dni.errors }}
-            </div>
-
-            <!-- Credenciales -->
-            <div class="mb-4">
-                <label for="id_username" class="block text-gray-700 font-semibold mb-2">
-                    <i class='bx bx-at'></i> Nombre de usuario *
-                </label>
-                {{ form.username|add_class:"w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500" }}
-                {{ form.username.errors }}
-            </div>
-
-            <div class="mb-4">
-                <label for="id_email" class="block text-gray-700 font-semibold mb-2">
-                    <i class='bx bx-envelope'></i> Correo electrónico *
-                </label>
-                {{ form.email|add_class:"w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500" }}
-                {{ form.email.errors }}
-            </div>
-
-            <!-- Contraseñas -->
-            <div class="mb-4">
-                <div class="flex justify-between items-center mb-2">
-                    <label for="id_password1" class="block text-gray-700 font-semibold">
-                        <i class='bx bx-lock-alt'></i> Contraseña *
-                    </label>
-                    <a href="#"
-                       id="id_sugerir"
-                       class="text-green-600 text-sm underline decoration-dotted underline-offset-2 hover:text-green-800 transition-colors cursor-pointer select-none">
-                        <i class='bx bx-refresh'></i> Generar contraseña
-                    </a>
-                </div>
-                <div class="relative">
-                    <input type="password" name="password1" id="id_password1"
-                           class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
-                           required>
-                    <button type="button" onclick="togglePassword('id_password1', 'toggleIcon1')"
-                            class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-500">
-                        <i id="toggleIcon1" class='bx bx-show text-xl'></i>
-                    </button>
-                </div>
-                <p class="text-xs text-gray-500 mt-1">Mínimo 8 caracteres</p>
-                {{ form.password1.errors }}
-            </div>
-
-            <div class="mb-4">
-                <label for="id_password2" class="block text-gray-700 font-semibold mb-2">
-                    <i class='bx bx-lock-alt'></i> Confirmar Contraseña *
-                </label>
-                <div class="relative">
-                    <input type="password" name="password2" id="id_password2"
-                           class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
-                           required>
-                    <button type="button" onclick="togglePassword('id_password2', 'toggleIcon2')"
-                            class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-500">
-                        <i id="toggleIcon2" class='bx bx-show text-xl'></i>
-                    </button>
-                </div>
-                {{ form.password2.errors }}
-            </div>
-
-            <!-- Información Adicional (Opcional) -->
-            <details class="mb-4">
-                <summary class="cursor-pointer text-gray-700 font-semibold mb-2">
-                    <i class='bx bx-info-circle'></i> Información adicional (opcional)
-                </summary>
-                
-                <div class="mt-3 space-y-3 pl-4">
-                    <div>
-                        <label for="id_phone_number" class="block text-gray-600 text-sm mb-1">Teléfono</label>
-                        {{ form.phone_number|add_class:"w-full px-3 py-2 border rounded-lg text-sm" }}
-                    </div>
-
-                    <div>
-                        <label for="id_address" class="block text-gray-600 text-sm mb-1">Dirección</label>
-                        {{ form.address|add_class:"w-full px-3 py-2 border rounded-lg text-sm" }}
-                    </div>
-
-                    <div>
-                        <label for="id_date_of_birth" class="block text-gray-600 text-sm mb-1">Fecha de nacimiento</label>
-                        {{ form.date_of_birth|add_class:"w-full px-3 py-2 border rounded-lg text-sm" }}
-                    </div>
-
-                    <div>
-                        <label for="id_gender" class="block text-gray-600 text-sm mb-1">Género</label>
-                        {{ form.gender|add_class:"w-full px-3 py-2 border rounded-lg text-sm" }}
-                    </div>
-                </div>
-            </details>
-
-            <!-- Botón de Enviar -->
-            <div class="mt-6">
-                <button type="submit" 
-                        class="w-full bg-green-600 text-white py-3 rounded-lg font-semibold hover:bg-green-700 transition">
-                    <i class='bx bx-user-check'></i> Crear Cuenta
-                </button>
-            </div>
-        </form>
-
-        <!-- Link para iniciar sesión -->
-        <div class="mt-6 text-center">
-            <p class="text-gray-700 text-sm">¿Ya tienes una cuenta? 
-                <a href="{% url 'security:login' %}" class="text-green-600 font-semibold hover:underline">
-                    Inicia sesión aquí
-                </a>
-            </p>
-        </div>
+    <!-- Header -->
+    <div class="auth-header">
+      <div class="auth-logo">
+        <i class='bx bx-user-plus' style="color:#16a34a;font-size:1.6rem;"></i>
+      </div>
+      <div class="auth-title">Crear cuenta</div>
+      <div class="auth-subtitle">Regístrate para comprar en My Supermarket</div>
     </div>
+
+    <!-- Form -->
+    <form action="{% url 'security:register' %}" method="post">
+      {% csrf_token %}
+
+      <div class="auth-body">
+
+        {{ form.non_field_errors }}
+
+        <!-- Nombre y Apellido -->
+        <div class="grid-2">
+          <div class="field-group">
+            <label class="field-label"><i class='bx bx-user'></i> Nombre</label>
+            {{ form.first_name|add_class:"field-input" }}
+            {% if form.first_name.errors %}
+              <span class="field-error"><i class='bx bx-error-circle'></i>{{ form.first_name.errors.0 }}</span>
+            {% endif %}
+          </div>
+          <div class="field-group">
+            <label class="field-label"><i class='bx bx-user'></i> Apellido</label>
+            {{ form.last_name|add_class:"field-input" }}
+            {% if form.last_name.errors %}
+              <span class="field-error"><i class='bx bx-error-circle'></i>{{ form.last_name.errors.0 }}</span>
+            {% endif %}
+          </div>
+        </div>
+
+        <!-- Cédula -->
+        <div class="field-group">
+          <label class="field-label"><i class='bx bx-id-card'></i> Cédula</label>
+          {{ form.dni|add_class:"field-input only-numbers" }}
+          {% if form.dni.errors %}
+            <span class="field-error"><i class='bx bx-error-circle'></i>{{ form.dni.errors.0 }}</span>
+          {% endif %}
+        </div>
+
+        <div class="section-divider"><span>Credenciales de acceso</span></div>
+
+        <!-- Usuario -->
+        <div class="field-group">
+          <label class="field-label"><i class='bx bx-at'></i> Usuario</label>
+          {{ form.username|add_class:"field-input" }}
+          {% if form.username.errors %}
+            <span class="field-error"><i class='bx bx-error-circle'></i>{{ form.username.errors.0 }}</span>
+          {% endif %}
+        </div>
+
+        <!-- Email -->
+        <div class="field-group">
+          <label class="field-label"><i class='bx bx-envelope'></i> Correo electrónico</label>
+          {{ form.email|add_class:"field-input" }}
+          {% if form.email.errors %}
+            <span class="field-error"><i class='bx bx-error-circle'></i>{{ form.email.errors.0 }}</span>
+          {% endif %}
+        </div>
+
+        <!-- Contraseña -->
+        <div class="field-group">
+          <div class="flex items-center justify-between mb-1">
+            <label class="field-label"><i class='bx bx-lock-alt'></i> Contraseña</label>
+            <a href="#" id="id_sugerir" class="suggest-link">
+              <i class='bx bx-refresh'></i> Generar
+            </a>
+          </div>
+          <div class="password-wrap">
+            <input type="password" name="password1" id="id_password1"
+                   class="field-input" placeholder="Mínimo 8 caracteres" required autocomplete="new-password">
+            <button type="button" class="toggle-pw" onclick="togglePassword('id_password1','icon1')">
+              <i id="icon1" class='bx bx-show'></i>
+            </button>
+          </div>
+          <div class="hint-text">Mínimo 8 caracteres</div>
+          {{ form.password1.errors }}
+        </div>
+
+        <!-- Confirmar Contraseña -->
+        <div class="field-group">
+          <label class="field-label"><i class='bx bx-lock-alt'></i> Confirmar contraseña</label>
+          <div class="password-wrap">
+            <input type="password" name="password2" id="id_password2"
+                   class="field-input" placeholder="Repite tu contraseña" required autocomplete="new-password">
+            <button type="button" class="toggle-pw" onclick="togglePassword('id_password2','icon2')">
+              <i id="icon2" class='bx bx-show'></i>
+            </button>
+          </div>
+          {{ form.password2.errors }}
+        </div>
+
+        <!-- Información adicional (opcional) -->
+        <details>
+          <summary class="optional-toggle">
+            <i class='bx bx-plus-circle'></i>
+            Información adicional (opcional)
+          </summary>
+          <div style="padding-top: 4px;">
+            <div class="field-group">
+              <label class="field-label"><i class='bx bx-phone'></i> Teléfono</label>
+              {{ form.phone_number|add_class:"field-input" }}
+            </div>
+            <div class="field-group">
+              <label class="field-label"><i class='bx bx-map-pin'></i> Dirección</label>
+              {{ form.address|add_class:"field-input" }}
+            </div>
+            <div class="grid-2">
+              <div class="field-group">
+                <label class="field-label"><i class='bx bx-calendar'></i> Nacimiento</label>
+                {{ form.date_of_birth|add_class:"field-input" }}
+              </div>
+              <div class="field-group">
+                <label class="field-label"><i class='bx bx-male-female'></i> Género</label>
+                {{ form.gender|add_class:"field-input" }}
+              </div>
+            </div>
+          </div>
+        </details>
+
+        <!-- Botón -->
+        <button type="submit" class="btn-submit">
+          <i class='bx bx-user-check'></i> Crear Cuenta
+        </button>
+
+      </div>
+    </form>
+
+    <!-- Footer -->
+    <div class="auth-footer">
+      ¿Ya tienes cuenta?
+      <a href="{% url 'security:login' %}" class="ml-1">Inicia sesión aquí</a>
+    </div>
+
+  </div>
 </div>
+
 <script>
-    function togglePassword(inputId, iconId) {
-        const passwordInput = document.getElementById(inputId);
-        const toggleIcon = document.getElementById(iconId);
-        
-        if (passwordInput.type === 'password') {
-            passwordInput.type = 'text';
-            toggleIcon.classList.replace('bx-show', 'bx-hide');
-        } else {
-            passwordInput.type = 'password';
-            toggleIcon.classList.replace('bx-hide', 'bx-show');
-        }
-    }
+function togglePassword(inputId, iconId) {
+  const inp  = document.getElementById(inputId);
+  const icon = document.getElementById(iconId);
+  if (inp.type === 'password') {
+    inp.type = 'text';
+    icon.className = 'bx bx-hide';
+  } else {
+    inp.type = 'password';
+    icon.className = 'bx bx-show';
+  }
+}
 </script>
 <script src="{% static 'js/generate_password.js' %}"></script>
+
 {% endblock %}
