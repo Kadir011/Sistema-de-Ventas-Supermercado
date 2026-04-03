@@ -35,12 +35,14 @@
 
       <div class="auth-body">
 
-        <!-- Info box -->
-        <div class="auth-info-box info-green" id="customerInfo">
+        <!-- Info box cliente (visible por defecto) -->
+        <div class="auth-info-box info-green" id="customerInfo" style="display:flex;">
           <i class='bx bx-info-circle' style="font-size:1rem;flex-shrink:0;"></i>
           Inicia sesión para acceder a tu carrito y realizar compras.
         </div>
-        <div class="auth-info-box info-red hidden" id="adminInfo">
+
+        <!-- Info box admin (oculto por defecto) -->
+        <div class="auth-info-box info-red" id="adminInfo" style="display:none;">
           <i class='bx bx-shield-alt-2' style="font-size:1rem;flex-shrink:0;"></i>
           Acceso restringido solo para administradores del sistema.
         </div>
@@ -79,7 +81,7 @@
       ¿No tienes cuenta?
       <a href="{% url 'security:register' %}" class="link-green ml-1">Regístrate gratis</a>
     </div>
-    <div class="auth-footer hidden" id="adminNote">
+    <div class="auth-footer" id="adminNote" style="display:none;">
       Los administradores son creados directamente por el sistema.
     </div>
 
@@ -100,25 +102,27 @@ function togglePassword(inputId, iconId) {
 }
 
 function showTab(type) {
-  const tabC   = document.getElementById('tab-customer');
-  const tabA   = document.getElementById('tab-admin');
-  const infoC  = document.getElementById('customerInfo');
-  const infoA  = document.getElementById('adminInfo');
-  const regP   = document.getElementById('registerPrompt');
-  const admN   = document.getElementById('adminNote');
-  const btn    = document.getElementById('submitBtn');
-  const uname  = document.getElementById('username');
-  const pass   = document.getElementById('password');
-  const logo   = document.getElementById('auth-logo-icon');
+  const tabC      = document.getElementById('tab-customer');
+  const tabA      = document.getElementById('tab-admin');
+  const infoC     = document.getElementById('customerInfo');
+  const infoA     = document.getElementById('adminInfo');
+  const regP      = document.getElementById('registerPrompt');
+  const admN      = document.getElementById('adminNote');
+  const btn       = document.getElementById('submitBtn');
+  const uname     = document.getElementById('username');
+  const pass      = document.getElementById('password');
+  const logo      = document.getElementById('auth-logo-icon');
   const loginType = document.getElementById('loginType');
 
   if (type === 'customer') {
     tabC.className  = 'tab-btn active-customer';
     tabA.className  = 'tab-btn';
-    infoC.classList.remove('hidden');
-    infoA.classList.add('hidden');
-    regP.classList.remove('hidden');
-    admN.classList.add('hidden');
+
+    infoC.style.display = 'flex';
+    infoA.style.display = 'none';
+    regP.style.display  = '';
+    admN.style.display  = 'none';
+
     btn.className   = 'btn-submit btn-green';
     btn.innerHTML   = "<i class='bx bx-log-in'></i> Iniciar Sesión";
     uname.className = 'field-input focus-green';
@@ -126,13 +130,16 @@ function showTab(type) {
     logo.style.background = '#dcfce7';
     logo.innerHTML  = "<i class='bx bx-store' style='color:#16a34a;font-size:1.6rem;'></i>";
     loginType.value = 'customer';
+
   } else {
     tabA.className  = 'tab-btn active-admin';
     tabC.className  = 'tab-btn';
-    infoA.classList.remove('hidden');
-    infoC.classList.add('hidden');
-    regP.classList.add('hidden');
-    admN.classList.remove('hidden');
+
+    infoA.style.display = 'flex';
+    infoC.style.display = 'none';
+    regP.style.display  = 'none';
+    admN.style.display  = '';
+
     btn.className   = 'btn-submit btn-red';
     btn.innerHTML   = "<i class='bx bx-shield-quarter'></i> Acceder como Admin";
     uname.className = 'field-input focus-red';
