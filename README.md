@@ -32,12 +32,13 @@
 ![Singleton](https://img.shields.io/badge/Pattern-Singleton-ec4899?style=flat-square&labelColor=0d1117)
 ![Builder](https://img.shields.io/badge/Pattern-Builder%2FDirector-10b981?style=flat-square&labelColor=0d1117)
 ![Idempotency](https://img.shields.io/badge/Feature-Idempotency-0ea5e9?style=flat-square&labelColor=0d1117)
+![CrossBrowser](https://img.shields.io/badge/Feature-Cross--Browser-f97316?style=flat-square&labelColor=0d1117)
 
 <br/>
 
 > **Vende · Gestiona · Escala** — Sistema integral con POS, tienda online e IA conversacional
 >
-> *Capa de servicios desacoplada con principios **SOLID** e idempotencia end-to-end — v1.1.0*
+> *Capa de servicios desacoplada con principios **SOLID**, idempotencia end-to-end y compatibilidad cross-browser — v1.2.0*
 
 </div>
 
@@ -57,6 +58,8 @@
   - [Mecanismos de protección](#mecanismos-de-protección)
   - [Flujo de idempotencia (Checkout)](#flujo-de-idempotencia-checkout)
   - [Operaciones protegidas](#operaciones-protegidas)
+- [Compatibilidad Cross-Browser](#compatibilidad-cross-browser)
+- [Sistema de Diseño Frontend](#sistema-de-diseño-frontend)
 - [Módulos del Sistema](#módulos-del-sistema)
   - [🛒 Tienda Online (Cliente)](#-tienda-online-cliente)
   - [🤖 Chatbot con IA](#-chatbot-con-ia)
@@ -70,6 +73,7 @@
 - [Variables de Entorno](#variables-de-entorno)
 - [Estructura del Proyecto](#estructura-del-proyecto)
 - [Changelog](#changelog)
+  - [v1.2.0 — Diseño Frontend + Auditoría Cross-Browser](#v120--diseño-frontend--auditoría-cross-browser)
   - [v1.1.0 — Arquitectura SOLID + Idempotencia](#v110--arquitectura-solid--idempotencia)
   - [v1.0.0 — Versión inicial funcional](#v100--versión-inicial-funcional)
 - [Desarrollador](#desarrollador)
@@ -80,7 +84,7 @@
 
 **MySupermarket** es una plataforma empresarial de doble propósito que combina un robusto **sistema de punto de venta (POS)** con una experiencia de **e-commerce moderna**. Diseñada para supermercados medianos, unifica inventario, ventas físicas y compras online en un único sistema centralizado, eliminando procesos manuales fragmentados.
 
-El diferenciador principal radica en su **arquitectura desacoplada con SOLID**, un sistema de **idempotencia end-to-end** que elimina ventas duplicadas incluso ante doble clic o fallo de red, e integración de **IA conversacional** con acceso al inventario en tiempo real.
+El diferenciador principal radica en su **arquitectura desacoplada con SOLID**, un sistema de **idempotencia end-to-end** que elimina ventas duplicadas incluso ante doble clic o fallo de red, integración de **IA conversacional** con acceso al inventario en tiempo real, y un **sistema de diseño frontend consistente** con componentes reutilizables auditados para compatibilidad cross-browser.
 
 ---
 
@@ -112,6 +116,7 @@ El diferenciador principal radica en su **arquitectura desacoplada con SOLID**, 
 | ![Quagga](https://img.shields.io/badge/-QuaggaJS-6366f1?style=flat-square) QuaggaJS | `0.12.1` | Escáner EAN-13 |
 | ![JsBarcode](https://img.shields.io/badge/-JsBarcode-374151?style=flat-square) JsBarcode | `3.11.5` | Visualización de códigos |
 | ![Boxicons](https://img.shields.io/badge/-Boxicons-f97316?style=flat-square) Boxicons | `2.1.4` | Iconografía |
+| ![Jakarta Sans](https://img.shields.io/badge/-Plus_Jakarta_Sans-8b5cf6?style=flat-square) Plus Jakarta Sans | `—` | Tipografía base |
 
 </td>
 </tr>
@@ -125,6 +130,7 @@ El diferenciador principal radica en su **arquitectura desacoplada con SOLID**, 
 ┌──────────────────────────────────────────────────────────────────┐
 │                      CLIENTE / BROWSER                           │
 │   Tailwind CSS 3.x · JavaScript ES6+ · QuaggaJS (EAN-13)        │
+│   Plus Jakarta Sans · CSS modular por módulo                     │
 └───────────────────────────┬──────────────────────────────────────┘
                             │ HTTP/HTTPS
 ┌───────────────────────────▼──────────────────────────────────────┐
@@ -132,7 +138,7 @@ El diferenciador principal radica en su **arquitectura desacoplada con SOLID**, 
 │                                                                  │
 │  ┌─────────────┐  ┌──────────────┐  ┌──────────────────────┐    │
 │  │    Views    │  │ Middlewares  │  │    URL Routing       │    │
-│  │  (thin)     │  │ CSRF · Auth  │  │   10+ módulos        │    │
+│  │  (thin)     │  │ CSRF · Auth  │  │   25+ rutas          │    │
 │  └──────┬──────┘  └──────────────┘  └──────────────────────┘    │
 │         │ delega                                                  │
 │  ┌──────▼──────────────────────────────────────┐                 │
@@ -142,7 +148,7 @@ El diferenciador principal radica en su **arquitectura desacoplada con SOLID**, 
 │  │  PaymentProcessor   ← OCP + Strategy        │                 │
 │  │  IdempotencyService ← Singleton             │                 │
 │  │  ChatContextDirector← Builder + Director    │                 │
-│  │  GeminiAIClient     ← DIP (AIClient)        │                 │
+│  │  GeminiAIClient     ← DIP (AIClient ABC)    │                 │
 │  └──────┬──────────────────────────────────────┘                 │
 │         │                                                        │
 │  ┌──────▼──────┐  ┌──────────────────────────────────────────┐  │
@@ -158,7 +164,7 @@ El diferenciador principal radica en su **arquitectura desacoplada con SOLID**, 
                             │
 ┌───────────────────────────▼──────────────────────────────────────┐
 │                    GOOGLE GEMINI API                              │
-│         gemini-flash · Contexto dinámico por rol                 │
+│   Reintentos con backoff exponencial · Contexto dinámico por rol │
 └──────────────────────────────────────────────────────────────────┘
 ```
 
@@ -171,7 +177,7 @@ El diferenciador principal radica en su **arquitectura desacoplada con SOLID**, 
 | **S** — Single Responsibility | `CheckoutService`, `StoreContextBuilder`, `SalesContextBuilder` y `ChatContextDirector` tienen una única responsabilidad cada uno. Las vistas son thin controllers que delegan a servicios. |
 | **O** — Open/Closed | `PaymentProcessor` es extensible sin modificar el checkout: agregar un nuevo método de pago solo requiere una nueva clase y registrarla en `PAYMENT_PROCESSORS`. |
 | **L** — Liskov Substitution | `CashPaymentProcessor`, `CardPaymentProcessor` y `TransferPaymentProcessor` implementan `PaymentProcessor` y son intercambiables donde se espere la abstracción. |
-| **I** — Interface Segregation | `AIClient` expone solo `generate()`. Las clases concretas no se ven forzadas a implementar métodos que no usan. |
+| **I** — Interface Segregation | `AIClient` (ABC) expone solo `generate()`. Las clases concretas no se ven forzadas a implementar métodos que no usan. |
 | **D** — Dependency Inversion | `ChatbotProxyView` depende de la abstracción `AIClient`, no de `GeminiAIClient` directamente. Sustituir el proveedor de IA no requiere tocar la vista. |
 
 ---
@@ -180,7 +186,7 @@ El diferenciador principal radica en su **arquitectura desacoplada con SOLID**, 
 
 | Patrón | Implementación | Beneficio |
 |---|---|---|
-| 🎯 **Strategy** | `PaymentProcessor` → `CashPaymentProcessor`, `CardPaymentProcessor`, `TransferPaymentProcessor` | Cada método de pago encapsula su lógica de cálculo de monto y cambio de forma intercambiable sin condiciones en el checkout. |
+| 🎯 **Strategy** | `PaymentProcessor` → `CashPaymentProcessor`, `CardPaymentProcessor`, `TransferPaymentProcessor` | Cada método de pago encapsula su lógica de cálculo de monto y cambio sin condiciones en el checkout. |
 | 🔒 **Singleton** | `IdempotencyService` | Una única instancia compartida gestiona la verificación y resolución de claves UUID en toda la aplicación, sin estado duplicado. |
 | 🏗️ **Builder / Director** | `ChatContextDirector` + `StoreContextBuilder` + `SalesContextBuilder` | Ensambla el contexto del chatbot por partes según el rol del usuario, sin que la vista conozca los detalles de construcción. |
 
@@ -195,14 +201,16 @@ El sistema implementa **idempotencia end-to-end**: la misma operación puede eje
 | Mecanismo | Descripción |
 |---|---|
 | 🔑 **Sesión Django** | Autenticación con separación estricta de roles: clientes y administradores usan flujos de login independientes con validación cruzada. |
-| 🛡️ **CSRF** | Activo en todas las peticiones POST, incluyendo AJAX con `X-CSRFToken`. |
+| 🛡️ **CSRF** | Activo en todas las peticiones POST, incluyendo AJAX con `X-CSRFToken`. Corregido en `add_to_cart` para usar POST en lugar de GET. |
 | 🔐 **Bcrypt** | Hash de contraseñas con 10 rondas de salt a través del sistema de auth de Django. |
 | 💳 **Validación Luhn** | Verificación matemática del número de tarjeta en tiempo real con feedback visual progresivo. |
 | 🃏 **Enmascaramiento PCI** | Tarjetas y cuentas se almacenan parcialmente enmascaradas (`1234 XXXX XXXX 5678`) — nunca en texto plano. |
-| 🔁 **UUID Idempotency Key** | Generado en el GET del checkout, viaja en campo hidden y se almacena con constraint `UNIQUE` en la BD. |
+| 🔁 **UUID Idempotency Key** | Generado en el GET del checkout/formulario, viaja en campo hidden y se almacena con constraint `UNIQUE` en la BD. |
 | ⚛️ **Transacciones atómicas** | `ATOMIC_REQUESTS=True` + `@transaction.atomic` en operaciones críticas. |
-| 🔒 **select_for_update() + F()** | Bloqueo a nivel de fila e incremento atómico en el carrito para eliminar race conditions. |
+| 🔒 **select_for_update() + F()** | Bloqueo a nivel de fila e incremento atómico en el carrito y ventas para eliminar race conditions. |
 | 💉 **SQL Injection** | ORM de Django con queries parametrizadas. Sin concatenación de strings SQL. |
+| 🔄 **Reintentos con backoff** | `GeminiAIClient` reintenta hasta 3 veces ante errores 503/UNAVAILABLE con espera exponencial (1.5s → 3s → 6s). |
+| 🧹 **Limpieza de sesión** | El logout borra el historial del chatbot de `localStorage` antes de redirigir, evitando que datos de un usuario queden expuestos a otro. |
 
 ### Flujo de idempotencia (Checkout)
 
@@ -227,6 +235,49 @@ Botón deshabilitado en JS al primer clic (defensa en profundidad)
 | **Crear venta (admin)** | Doble clic en "Guardar" crea ventas duplicadas | UUID en payload JSON + verificación en backend + botón deshabilitado en JS |
 | **Agregar al carrito** | Dos clics rápidos suman +2 en lugar de +1 | `select_for_update()` + `F('quantity') + 1` (atómico en BD) |
 | **Eliminar venta** | Fallo a mitad deja stock inconsistente | `@transaction.atomic` envuelve restauración + eliminación |
+| **Registro de usuario** | Race condition crea dos usuarios con mismo email | `get_or_create` + captura de `IntegrityError` |
+
+---
+
+## Compatibilidad Cross-Browser
+
+Auditoría completa aplicada sobre toda la codebase frontend:
+
+| Categoría | Fix aplicado | Archivo |
+|---|---|---|
+| 🔴 **Crítico** | `navigator.hardwareConcurrency` con fallback `\|\| 2` para Safari iOS antiguo | `scan_barcode.js` |
+| 🔴 **Crítico** | Constraints avanzados de cámara movidos a `applyConstraints()` con `try/catch` | `scan_barcode.js` |
+| 🔴 **Crítico** | Fallback a cámara frontal si `OverconstrainedError` en iOS | `scan_barcode.js` |
+| 🔴 **Crítico** | `add_to_cart` cambiado de GET a POST para evitar caché de proxies y cumplir semántica HTTP | `cart.py`, `shop.html` |
+| 🔴 **Crítico** | Valores del checkout leídos desde `data-attributes` DOM, no desde template tags dentro de JS | `checkout.js`, `checkout.html` |
+| 🟡 **Advertencia** | `position: sticky` con prefijo `-webkit-sticky` para Safari < 13 | `base.css` |
+| 🟡 **Advertencia** | `backdrop-filter` con prefijo `-webkit-backdrop-filter` para Firefox < 103 | `base.css` |
+| 🟡 **Advertencia** | Spin buttons ocultos en `readonly` inputs para Safari | `sale_form.css`, `base.css` |
+| 🔵 **Informativo** | `@media (prefers-reduced-motion: reduce)` para animaciones accesibles | `base.css` |
+| 🔵 **Informativo** | `line-clamp: 2` estándar junto al prefijo webkit | `base.css` |
+| 🔵 **Informativo** | Placeholder en `input[type=date]` para Safari < 14.1 | `product_form.html` |
+
+---
+
+## Sistema de Diseño Frontend
+
+Todos los formularios y páginas principales siguen un sistema de diseño consistente:
+
+**Tipografía:** Plus Jakarta Sans (base) · Syne (títulos) · DM Sans (descripción)
+
+**Paleta por módulo:**
+
+| Módulo | Color de acento | CSS |
+|---|---|---|
+| Clientes | Verde (`#16a34a`) | `customer_form.css` |
+| Vendedores | Azul (`#2563eb`) | `seller_form.css` |
+| Productos | Púrpura (`#7c3aed`) | `product_form.css` |
+| Ventas | Cyan (`#0ea5e9`) | `sale_form.css` |
+| Eliminaciones | Rojo (`#dc2626`) | `*_delete.css` |
+| Tienda cliente | Verde (`#14532d`) | navbar |
+| Panel admin | Rojo oscuro (`#991b1b`) | navbar |
+
+**Componentes comunes:** Cards con gradiente en header, inputs con focus ring animado, botones con sombra y hover lift, breadcrumbs, grid-2/grid-3 responsive.
 
 ---
 
@@ -237,28 +288,30 @@ Botón deshabilitado en JS al primer clic (defensa en profundidad)
 <td width="33%" valign="top">
 
 ### 🛒 Tienda Online (Cliente)
-- Catálogo con filtros por categoría, marca y búsqueda
+- Catálogo público con filtros por categoría, marca y búsqueda
 - Carrito con actualización dinámica y validación de stock
-- Checkout con selección de tipo de factura (Consumidor Final / Datos personales)
+- Checkout con tipo de factura (Consumidor Final / Datos personales)
+- Métodos de pago: Efectivo, Tarjeta de Crédito/Débito, Transferencia
 - Historial de compras con descarga de facturas PDF
 
 </td>
 <td width="33%" valign="top">
 
 ### 🤖 Chatbot con IA
-- Integración con Google Gemini Flash
+- Integración con Google Gemini Flash con reintentos automáticos
 - Contexto dinámico con inventario, precios y políticas en tiempo real
 - Respuestas diferenciadas por rol (visitante, cliente, administrador)
-- Admins reciben datos de ventas en tiempo real durante la conversación
+- Admins reciben datos de ventas de últimas 24h/7d/30d
+- Historial persistido en `localStorage` por usuario, limpiado al logout
 
 </td>
 <td width="33%" valign="top">
 
 ### ⚙️ Panel Administrativo
 - CRUD completo de productos, categorías, marcas, clientes y vendedores
-- Registro histórico de ventas con búsqueda y filtros
+- Registro histórico de ventas con búsqueda, filtros y modal de detalle
 - Generación automática de facturas PDF con datos censurados (PCI)
-- Dashboard con notificaciones de ventas recientes
+- Dashboard con notificaciones de ventas de las últimas 24 horas
 
 </td>
 </tr>
@@ -267,9 +320,10 @@ Botón deshabilitado en JS al primer clic (defensa en profundidad)
 ### 📷 Escáner EAN-13
 
 - Detección vía cámara con **QuaggaJS**
-- **Sistema de votos**: requiere N lecturas consistentes del mismo código antes de confirmar, eliminando falsos positivos por reflejos o texturas
-- **Validación matemática** del dígito de control (algoritmo EAN-13) antes de consultar la BD
+- **Sistema de votos**: requiere 3 lecturas consistentes del mismo código antes de confirmar
+- **Validación matemática** del dígito de control (algoritmo EAN-13)
 - Feedback visual progresivo con barra de confirmación en tiempo real
+- Fallbacks cross-browser para Safari iOS, Firefox y cámaras sin modo trasero
 
 ---
 
@@ -290,15 +344,16 @@ Botón deshabilitado en JS al primer clic (defensa en profundidad)
            │ stock       │               │ seller (FK)              │
            │ barcode     │               │ payment (FK)             │
            │ state       │               │ subtotal / iva / total   │
-           └──────┬──────┘               │ idempotency_key (UUID) ◄─── UNIQUE
-                  │                      └───────────────────────────┘
-           ┌──────▼──────┐
-           │  CartItem   │    ┌─────────────┐     ┌─────────────┐
-           │─────────────│    │  Customer   │     │   Seller    │
-           │ cart (FK)   │    │─────────────│     │─────────────│
-           │ product (FK)│    │ dni (unique)│     │ dni (unique)│
-           │ quantity    │    │ discount_pct│     │             │
-           └─────────────┘    └─────────────┘     └─────────────┘
+           └──────┬──────┘               │ card_number_masked       │
+                  │                      │ transfer_account_masked  │
+           ┌──────▼──────┐               │ idempotency_key (UUID) ◄─── UNIQUE
+           │  CartItem   │               └───────────────────────────┘
+           │─────────────│    ┌─────────────┐     ┌─────────────┐
+           │ cart (FK)   │    │  Customer   │     │   Seller    │
+           │ product (FK)│    │─────────────│     │─────────────│
+           │ quantity    │    │ dni (unique)│     │ dni (unique)│
+           └─────────────┘    │ discount_%  │     │             │
+                              └─────────────┘     └─────────────┘
 ```
 
 **Constraints de integridad activos en PostgreSQL:**
@@ -307,9 +362,12 @@ Botón deshabilitado en JS al primer clic (defensa en profundidad)
 CHECK (stock >= 0)         -- product_stock_non_negative
 CHECK (price > 0)          -- product_price_non_negative
 CHECK (subtotal >= 0)      -- sale_subtotal_non_negative
+CHECK (iva >= 0)           -- sale_iva_non_negative
+CHECK (discount >= 0)      -- sale_discount_non_negative
 CHECK (total >= 0)         -- sale_total_non_negative
 CHECK (quantity >= 1)      -- saledetail_quantity_non_negative
 UNIQUE (idempotency_key)   -- super_sale (null permitido para ventas legacy)
+UNIQUE (cart, product)     -- CartItem (evita duplicados en carrito)
 ```
 
 ---
@@ -407,31 +465,41 @@ django_supermercado/
     ├── core/
     │   ├── security/           # Módulo de autenticación
     │   │   ├── models.py      # User (AbstractUser) con user_type
-    │   │   ├── forms/auth.py  # Registro con creación de Customer (idempotente)
-    │   │   └── views/auth.py  # Login dual (cliente/admin) con validación cruzada
+    │   │   ├── forms/auth.py  # Registro con get_or_create idempotente
+    │   │   └── views/auth.py  # Login dual · logout con limpieza localStorage
     │   └── super/              # Módulo principal del negocio
     │       ├── models.py      # Product · Sale · Cart · SaleDetail · …
     │       ├── services/       # ← Capa de servicios (SOLID + Patrones)
-    │       │   ├── ai_client.py           # DIP: AIClient + GeminiAIClient
+    │       │   ├── ai_client.py           # DIP: AIClient ABC + GeminiAIClient
     │       │   ├── chat_context.py        # Builder+Director: contexto chatbot
     │       │   ├── checkout_service.py    # SRP: orquestación del checkout
     │       │   ├── idempotency_service.py # Singleton: claves UUID
     │       │   └── payment_processors.py  # OCP + Strategy: procesadores de pago
     │       ├── views/
-    │       │   ├── cart.py    # Idempotencia: select_for_update + F()
-    │       │   ├── sale.py    # Idempotencia: UUID en handle_ajax
-    │       │   ├── chatbot.py # Gemini con contexto dinámico por rol
-    │       │   └── shop.py / product.py / customer.py / seller.py
+    │       │   ├── cart.py    # POST correcto · select_for_update + F()
+    │       │   ├── sale.py    # UUID idempotency · select_for_update · F()
+    │       │   ├── chatbot.py # Gemini con reintentos · contexto por rol
+    │       │   └── shop.py / product.py / customer.py / seller.py / home.py
     │       ├── form/          # Formularios Django con validaciones
     │       └── urls.py        # 25+ rutas del módulo
     ├── templates/             # Templates HTML por módulo
     ├── static/
-    │   ├── css/               # Estilos modulares por formulario
+    │   ├── css/
+    │   │   ├── components/    # base.css · home.css · menu.css · about.css
+    │   │   ├── customer/      # customer_form.css · customer_delete.css
+    │   │   ├── seller/        # seller_form.css · seller_delete.css
+    │   │   ├── product/       # product_form.css · product_delete.css
+    │   │   ├── sale/          # sale_form.css · sale_delete.css
+    │   │   └── security/      # auth_form.css · signup_form.css
     │   └── js/
-    │       ├── checkout.js    # Luhn · validación · idempotencia cliente
-    │       ├── sale.js        # Idempotencia en panel admin
-    │       ├── scan_barcode.js # Quagga · votos · EAN-13
-    │       └── chatbot.js
+    │       ├── checkout.js        # Luhn · validación · data-attributes DOM
+    │       ├── sale.js            # Idempotencia UUID · botón anti-doble-clic
+    │       ├── scan_barcode.js    # Quagga · votos · EAN-13 · cross-browser
+    │       ├── chatbot.js         # localStorage por usuario · historial
+    │       ├── barcode_validation.js
+    │       ├── expiration_date.js
+    │       ├── generate_password.js
+    │       └── validations.js
     ├── manage.py
     ├── requirements.txt
     └── setup.sh               # Script de instalación automática
@@ -441,19 +509,34 @@ django_supermercado/
 
 ## Changelog
 
+### v1.2.0 — Diseño Frontend + Auditoría Cross-Browser
+
+- ✅ **Sistema de diseño unificado**: Plus Jakarta Sans, paleta por módulo, cards con gradiente, focus states animados
+- ✅ **CSS modular**: 10 archivos CSS separados por módulo (customer, seller, product, sale, security, components)
+- ✅ **Navbar rediseñado**: cliente (verde) y admin (rojo oscuro), mobile-first con hamburger, user pill, cart badge
+- ✅ **Home page rediseñada**: hero fullscreen, floating cards, stats bar, products section, why-us, CTA bottom
+- ✅ **Formularios rediseñados**: customer, seller, product, sale con sistema de diseño consistente
+- ✅ **Delete pages rediseñadas**: customer, seller, product, sale con card centrada y notas contextuales
+- ✅ **Auditoría cross-browser crítica**: `add_to_cart` cambiado de GET a POST con CSRF
+- ✅ **Fix crítico checkout.js**: valores numéricos leídos desde `data-attributes` DOM, no desde template tags en JS estático
+- ✅ **Fix scan_barcode.js**: `hardwareConcurrency` con fallback, constraints avanzados con `try/catch`, fallback a cámara frontal
+- ✅ **Prefijos webkit**: `position: sticky`, `backdrop-filter`, `line-clamp` con fallbacks
+- ✅ **Accesibilidad**: `prefers-reduced-motion` en animaciones, placeholder para `input[type=date]` en Safari
+- ✅ **Chatbot mejorado**: limpieza de `localStorage` al logout, clave de storage por usuario/rol
+- ✅ **GeminiAIClient**: reintentos automáticos con backoff exponencial ante errores 503/UNAVAILABLE
+
 ### v1.1.0 — Arquitectura SOLID + Idempotencia
 
 - ✅ **Idempotencia en checkout**: `idempotency_key` UUID con constraint UNIQUE en `Sale`
 - ✅ **Idempotencia en ventas admin**: UUID en payload JSON de `SaleCreateView`
-- ✅ **Race condition en carrito**: `select_for_update()` + `F('quantity') + 1`
+- ✅ **Race condition en carrito**: `select_for_update()` + `F('quantity') + 1` (atómico en BD)
 - ✅ **Atomicidad en eliminación**: `@transaction.atomic` en `SaleDeleteView`
 - ✅ **Protección cliente**: botón submit deshabilitado tras primer clic
 - ✅ **SRP**: servicios extraídos a `core/super/services/`
 - ✅ **OCP + Strategy**: `PaymentProcessor` extensible sin modificar checkout
-- ✅ **DIP**: `ChatbotProxyView` depende de `AIClient` (abstracción)
+- ✅ **DIP**: `ChatbotProxyView` depende de `AIClient` (abstracción ABC)
 - ✅ **Singleton**: `IdempotencyService` con instancia única compartida
 - ✅ **Builder/Director**: `ChatContextDirector` ensambla contexto por rol
-- ✅ **CSS modular**: estilos separados por módulo (customer, product, sale, seller)
 - ✅ **Setup.sh mejorado**: detección automática del virtualenv en múltiples rutas
 - ✅ **Tests unitarios**: `PaymentProcessor` e `IdempotencyService` cubiertos
 
@@ -474,6 +557,6 @@ Full Stack Developer
 
 <br/>
 
-<sub>Built with ❤️ in Guayaquil, Ecuador · Django 5.1.4 · Python 3.10+ · v1.1.0</sub>
+<sub>Built with ❤️ in Guayaquil, Ecuador · Django 5.1.4 · Python 3.10+ · v1.2.0</sub>
 
 </div>
