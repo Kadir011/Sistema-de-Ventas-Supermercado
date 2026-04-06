@@ -1,25 +1,26 @@
 /**
  * chatbot.js — Asistente virtual My Supermarket
+ * v2.0 — Diferenciación completa por rol (admin / customer / guest)
  *
- * Persistencia del historial:
- * - Se usa localStorage con una clave que incluye el rol/usuario,
- *   así el historial sobrevive navegaciones entre páginas (full page reload).
- * - sessionStorage se pierde en cada navegación en Django (MPA).
- * - El historial se limpia automáticamente al cerrar sesión (logout).
+ * Mejoras:
+ * - Resumen ejecutivo al abrir (admin: KPIs + alertas; cliente: historial)
+ * - Botones de acción rápida contextuales por rol
+ * - Burbujas de bienvenida diferenciadas
+ * - Persistencia por usuario en localStorage
  */
 
 document.addEventListener("DOMContentLoaded", () => {
 
-    /* ── Clave de storage basada en el usuario actual ────────────── */
+    /* ── Contexto del usuario ─────────────────────────────────── */
     const userRole = (typeof CHATBOT_USER_ROLE !== "undefined") ? CHATBOT_USER_ROLE : "guest";
-    const userName = (typeof CHATBOT_USER_NAME !== "undefined") ? CHATBOT_USER_NAME : "guest";
-    // Clave única por usuario: si cambia de sesión, usa un espacio diferente
-    const STORAGE_PREFIX   = `chatbot_${userRole}_${userName.replace(/\s+/g, '_')}`;
-    const KEY_HISTORY      = `${STORAGE_PREFIX}_history`;
-    const KEY_MESSAGES     = `${STORAGE_PREFIX}_messages`;
-    const KEY_WELCOME      = `${STORAGE_PREFIX}_welcome`;
+    const userName = (typeof CHATBOT_USER_NAME !== "undefined") ? CHATBOT_USER_NAME : "Invitado";
 
-    /* ── Elementos del DOM ───────────────────────────────────────── */
+    const STORAGE_PREFIX = `chatbot_${userRole}_${userName.replace(/\s+/g, '_')}`;
+    const KEY_HISTORY    = `${STORAGE_PREFIX}_history`;
+    const KEY_MESSAGES   = `${STORAGE_PREFIX}_messages`;
+    const KEY_WELCOME    = `${STORAGE_PREFIX}_welcome`;
+
+    /* ── Elementos DOM ───────────────────────────────────────── */
     const chatbotButton    = document.getElementById("chatbot-button");
     const chatbotModal     = document.getElementById("chatbot-modal");
     const closeChatbot     = document.getElementById("close-chatbot");
@@ -29,109 +30,219 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (!chatbotButton || !chatbotModal) return;
 
-    /* ── Helpers de storage (con fallback silencioso) ────────────── */
-    function storageGet(key) {
-        try { return localStorage.getItem(key); } catch (_) { return null; }
-    }
-    function storageSet(key, value) {
-        try { localStorage.setItem(key, value); } catch (_) {}
-    }
+    /* ── Storage helpers ─────────────────────────────────────── */
+    const storageGet = (k) => { try { return localStorage.getItem(k); } catch { return null; } };
+    const storageSet = (k, v) => { try { localStorage.setItem(k, v); } catch {} };
 
-    /* ── Recuperar estado previo ─────────────────────────────────── */
     let conversationHistory = [];
-    let welcomeShown        = storageGet(KEY_WELCOME) === "true";
+    let welcomeShown = storageGet(KEY_WELCOME) === "true";
 
     try {
         const raw = storageGet(KEY_HISTORY);
         if (raw) conversationHistory = JSON.parse(raw);
-    } catch (_) {}
+    } catch {}
 
-    /* ── Persistir historial de conversación ─────────────────────── */
     function persistHistory() {
         storageSet(KEY_HISTORY, JSON.stringify(conversationHistory));
     }
 
-    /* ── Persistir burbujas renderizadas ─────────────────────────── */
-    function persistMessage(text, sender) {
+    function persistMessage(text, sender, type = 'text') {
         try {
             const raw = storageGet(KEY_MESSAGES);
-            const messages = raw ? JSON.parse(raw) : [];
-            messages.push({ text, sender });
-            // Máximo 60 burbujas almacenadas
-            if (messages.length > 60) messages.splice(0, messages.length - 60);
-            storageSet(KEY_MESSAGES, JSON.stringify(messages));
-        } catch (_) {}
+            const msgs = raw ? JSON.parse(raw) : [];
+            msgs.push({ text, sender, type });
+            if (msgs.length > 80) msgs.splice(0, msgs.length - 80);
+            storageSet(KEY_MESSAGES, JSON.stringify(msgs));
+        } catch {}
     }
 
-    /* ── Restaurar burbujas en el DOM ────────────────────────────── */
     function restoreMessages() {
         try {
             const raw = storageGet(KEY_MESSAGES);
             if (!raw) return;
-            const messages = JSON.parse(raw);
-            messages.forEach(({ text, sender }) => _renderBubble(text, sender));
+            JSON.parse(raw).forEach(({ text, sender, type }) => _renderBubble(text, sender, type));
             scrollToBottom();
-        } catch (_) {}
+        } catch {}
     }
 
-    /* ── Saludo inicial personalizado ────────────────────────────── */
-    function buildWelcomeMessage() {
-        if (userRole === "guest") {
-            return ("¡Hola, Invitado! 👋 Soy tu asistente de My Supermarket. "
-                  + "Puedo ayudarte con información de productos, precios y métodos de pago. "
-                  + "Regístrate para poder comprar. ¿En qué te puedo ayudar?");
-        } else if (userRole === "admin") {
-            return (`¡Hola, ${userName}! 👋 Bienvenido al panel de My Supermarket. `
-                  + "¿En qué te puedo ayudar hoy?");
-        } else {
-            return (`¡Hola, ${userName}! 👋 Bienvenido a My Supermarket. `
-                  + "Puedo ayudarte con productos, precios y tu carrito de compras. "
-                  + "¿En qué te puedo ayudar?");
+    /* ── Configuración de acciones rápidas por rol ───────────── */
+    const QUICK_ACTIONS = {
+        admin: [
+            { label: "📊 Ventas de hoy",         prompt: "¿Cuántas ventas y cuánto se recaudó hoy?" },
+            { label: "⚠️ Alertas de stock",       prompt: "¿Qué productos tienen stock crítico o están agotados?" },
+            { label: "📈 Resumen ejecutivo",      prompt: "Dame un resumen ejecutivo del negocio" },
+            { label: "🏆 Top productos (30 días)", prompt: "¿Cuáles son los productos más vendidos este mes?" },
+            { label: "🗂️ Ir a Reportes",          prompt: "Quiero ver los reportes del sistema. ¿Cómo llego?" },
+            { label: "📦 Productos con poco stock", prompt: "Lista los 5 productos con menos stock disponible" },
+        ],
+        customer: [
+            { label: "🛒 Ver tienda",             prompt: "¿Cómo entro a la tienda para comprar?" },
+            { label: "🔍 Buscar producto",         prompt: "Ayúdame a buscar un producto" },
+            { label: "💳 Métodos de pago",         prompt: "¿Qué métodos de pago aceptan?" },
+            { label: "📄 Mis compras",             prompt: "¿Cómo veo mis compras anteriores y descargo mis facturas?" },
+            { label: "🏷️ Precios y descuentos",   prompt: "¿Cómo funcionan los descuentos? ¿Mis precios incluyen IVA?" },
+            { label: "📷 Escáner de productos",    prompt: "¿Puedo escanear un código de barras para ver el precio?" },
+        ],
+        guest: [
+            { label: "🎁 ¿Qué ofrecen?",          prompt: "¿Qué productos y marcas tienen disponibles?" },
+            { label: "📝 ¿Cómo me registro?",      prompt: "¿Cómo creo una cuenta para comprar?" },
+            { label: "💰 ¿Cómo son los precios?",  prompt: "¿Los precios incluyen IVA? ¿Tienen descuentos?" },
+            { label: "💳 Formas de pago",           prompt: "¿Qué métodos de pago aceptan?" },
+            { label: "📦 Proceso de compra",        prompt: "¿Cómo funciona el proceso de compra?" },
+            { label: "🔒 ¿Es seguro comprar?",      prompt: "¿Es seguro comprar aquí? ¿Protegen mis datos?" },
+        ],
+    };
+
+    /* ── Resumen ejecutivo por rol ───────────────────────────── */
+    async function fetchQuickSummary() {
+        try {
+            const res = await fetch('/chatbot/summary/');
+            if (!res.ok) return null;
+            return await res.json();
+        } catch { return null; }
+    }
+
+    function buildAdminSummaryHTML(data) {
+        const alerts = [];
+        if (data.out_of_stock > 0)    alerts.push(`<span class="alert-chip red">⚠️ ${data.out_of_stock} agotados</span>`);
+        if (data.low_stock_count > 0) alerts.push(`<span class="alert-chip amber">📦 ${data.low_stock_count} stock crítico</span>`);
+
+        return `
+        <div class="exec-summary">
+            <div class="exec-title">📊 Resumen ejecutivo</div>
+            <div class="exec-kpis">
+                <div class="exec-kpi">
+                    <span class="kpi-num">${data.count_24h}</span>
+                    <span class="kpi-label">Ventas hoy</span>
+                </div>
+                <div class="exec-kpi">
+                    <span class="kpi-num">$${data.total_24h.toFixed(2)}</span>
+                    <span class="kpi-label">Recaudado hoy</span>
+                </div>
+                <div class="exec-kpi">
+                    <span class="kpi-num">$${data.total_7d.toFixed(2)}</span>
+                    <span class="kpi-label">Esta semana</span>
+                </div>
+            </div>
+            ${alerts.length ? `<div class="exec-alerts">${alerts.join('')}</div>` : ''}
+        </div>`;
+    }
+
+    function buildCustomerSummaryHTML(data) {
+        if (!data.order_count) return '';
+        return `
+        <div class="exec-summary customer">
+            <div class="exec-title">👤 Tu cuenta</div>
+            <div class="exec-kpis">
+                <div class="exec-kpi">
+                    <span class="kpi-num">${data.order_count}</span>
+                    <span class="kpi-label">Compras</span>
+                </div>
+                <div class="exec-kpi">
+                    <span class="kpi-num">$${data.total_spent.toFixed(2)}</span>
+                    <span class="kpi-label">Total gastado</span>
+                </div>
+                ${data.last_order_date ? `<div class="exec-kpi"><span class="kpi-num" style="font-size:0.75rem;">${data.last_order_date}</span><span class="kpi-label">Última compra</span></div>` : ''}
+            </div>
+        </div>`;
+    }
+
+    /* ── Mensajes de bienvenida ───────────────────────────────── */
+    function getWelcomeText() {
+        if (userRole === 'admin') {
+            return `¡Hola, ${userName}! 👋 Soy tu asistente de gestión.\n\nPuedes preguntarme sobre ventas, stock, métricas del negocio o pedirme que te guíe a cualquier sección del panel.`;
         }
+        if (userRole === 'customer') {
+            return `¡Hola, ${userName}! 👋 Soy tu asistente de compras.\n\nPuedo ayudarte a encontrar productos, conocer precios, guiarte en el proceso de compra o consultar tus pedidos anteriores.`;
+        }
+        return `¡Hola! 👋 Bienvenido a My Supermarket.\n\nExplora nuestro catálogo, conoce nuestros productos y regístrate gratis para empezar a comprar. ¿En qué te puedo ayudar?`;
     }
 
-    /* ── Abrir / cerrar modal ────────────────────────────────────── */
-    chatbotButton.addEventListener("click", () => {
+    /* ── Renderizado de botones de acción rápida ─────────────── */
+    function renderQuickActions() {
+        const actions = QUICK_ACTIONS[userRole] || QUICK_ACTIONS.guest;
+        const wrap = document.createElement('div');
+        wrap.className = 'quick-actions-wrap';
+        wrap.innerHTML = `<p class="qa-label">Acciones rápidas:</p>`;
+
+        const grid = document.createElement('div');
+        grid.className = 'qa-grid';
+
+        actions.forEach(({ label, prompt }) => {
+            const btn = document.createElement('button');
+            btn.className = 'qa-btn';
+            btn.textContent = label;
+            btn.addEventListener('click', () => {
+                // Remover los botones tras el primer uso
+                wrap.remove();
+                chatInput.value = prompt;
+                processMessage();
+            });
+            grid.appendChild(btn);
+        });
+
+        wrap.appendChild(grid);
+        messageContainer.appendChild(wrap);
+    }
+
+    /* ── Apertura del modal ──────────────────────────────────── */
+    chatbotButton.addEventListener("click", async () => {
         chatbotModal.classList.toggle("hidden");
 
-        if (!chatbotModal.classList.contains("hidden")) {
-            chatInput.focus();
+        if (chatbotModal.classList.contains("hidden")) return;
 
-            if (messageContainer.children.length === 0) {
-                // El DOM está vacío (navegación a nueva página o primera vez)
-                if (!welcomeShown) {
-                    // Primera vez en toda la sesión: mostrar saludo
-                    welcomeShown = true;
-                    storageSet(KEY_WELCOME, "true");
-                    displayMessage(buildWelcomeMessage(), "bot");
-                } else {
-                    // Ya había mensajes previos: restaurarlos desde storage
-                    restoreMessages();
+        chatInput.focus();
+
+        if (messageContainer.children.length === 0) {
+            if (!welcomeShown) {
+                welcomeShown = true;
+                storageSet(KEY_WELCOME, "true");
+
+                // Mensaje de bienvenida
+                displayMessage(getWelcomeText(), "bot");
+
+                // Resumen ejecutivo para admin y customer
+                if (userRole === 'admin' || userRole === 'customer') {
+                    const summary = await fetchQuickSummary();
+                    if (summary && summary.data && Object.keys(summary.data).length) {
+                        const html = userRole === 'admin'
+                            ? buildAdminSummaryHTML(summary.data)
+                            : buildCustomerSummaryHTML(summary.data);
+                        if (html) {
+                            const el = document.createElement('div');
+                            el.className = 'mb-3';
+                            el.innerHTML = html;
+                            messageContainer.appendChild(el);
+                        }
+                    }
                 }
+
+                // Botones de acción rápida
+                renderQuickActions();
+                scrollToBottom();
+            } else {
+                restoreMessages();
             }
-            // Si el contenedor ya tiene hijos (modal cerrado y reabierto
-            // sin navegar), no hacemos nada: los mensajes ya están ahí.
-
-            scrollToBottom();
         }
+
+        scrollToBottom();
     });
 
-    closeChatbot.addEventListener("click", () => {
-        chatbotModal.classList.add("hidden");
-    });
+    closeChatbot.addEventListener("click", () => chatbotModal.classList.add("hidden"));
 
-    /* ── Envío de mensajes ───────────────────────────────────────── */
+    /* ── Envío de mensajes ───────────────────────────────────── */
     sendMessage.addEventListener("click", processMessage);
     chatInput.addEventListener("keypress", (e) => {
-        if (e.key === "Enter" && !e.shiftKey) {
-            e.preventDefault();
-            processMessage();
-        }
+        if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); processMessage(); }
     });
 
     async function processMessage() {
         const userMessage = chatInput.value.trim();
         if (!userMessage) return;
+
+        // Remover botones de acción rápida si aún están visibles
+        const qa = messageContainer.querySelector('.quick-actions-wrap');
+        if (qa) qa.remove();
 
         displayMessage(userMessage, "user");
         chatInput.value = "";
@@ -143,7 +254,6 @@ document.addEventListener("DOMContentLoaded", () => {
         scrollToBottom();
 
         const reply = await sendToBackend(userMessage);
-
         loadingEl.remove();
         displayMessage(reply, "bot");
 
@@ -152,63 +262,45 @@ document.addEventListener("DOMContentLoaded", () => {
         chatInput.focus();
     }
 
-    /* ── Llamada al backend ──────────────────────────────────────── */
+    /* ── Backend ────────────────────────────────────────────── */
     async function sendToBackend(userMessage) {
         try {
             const csrf = getCookie("csrftoken") || "";
-            const headers = { "Content-Type": "application/json" };
-            if (csrf) headers["X-CSRFToken"] = csrf;
-
             const response = await fetch("/chatbot/api/", {
                 method: "POST",
-                headers,
-                body: JSON.stringify({
-                    message: userMessage,
-                    history: conversationHistory,
-                }),
+                headers: { "Content-Type": "application/json", ...(csrf ? { "X-CSRFToken": csrf } : {}) },
+                body: JSON.stringify({ message: userMessage, history: conversationHistory }),
             });
 
-            const contentType = response.headers.get("content-type") || "";
-            if (!contentType.includes("application/json")) {
-                console.error("[Chatbot] Respuesta no es JSON. Status:", response.status);
-                return "⚠️ El asistente no está disponible en este momento. Intenta más tarde.";
+            if (!response.headers.get("content-type")?.includes("application/json")) {
+                return "⚠️ El asistente no está disponible en este momento.";
             }
 
             const data = await response.json();
-
-            if (data.error) {
-                console.warn("[Chatbot] Error del backend:", data.error);
-                return "⚠️ " + data.error;
-            }
+            if (data.error) return "⚠️ " + data.error;
 
             const botReply = data.reply || "No obtuve respuesta.";
 
-            // Actualizar historial y persistirlo
             conversationHistory.push({ role: "user",  content: userMessage });
-            conversationHistory.push({ role: "model", content: botReply   });
-
-            // Máximo 80 entradas (40 turnos de conversación)
-            if (conversationHistory.length > 80) {
-                conversationHistory = conversationHistory.slice(-80);
-            }
-
+            conversationHistory.push({ role: "model", content: botReply });
+            if (conversationHistory.length > 80) conversationHistory = conversationHistory.slice(-80);
             persistHistory();
+
             return botReply;
 
-        } catch (err) {
-            console.error("[Chatbot] Error de red:", err);
-            return "⚠️ Error de conexión. Revisa tu internet e inténtalo de nuevo.";
+        } catch {
+            return "⚠️ Error de conexión. Revisa tu internet.";
         }
     }
 
-    /* ── Renderizado ─────────────────────────────────────────────── */
-    function displayMessage(text, sender) {
-        _renderBubble(text, sender);
-        persistMessage(text, sender);
+    /* ── Renderizado de burbujas ─────────────────────────────── */
+    function displayMessage(text, sender, type = 'text') {
+        _renderBubble(text, sender, type);
+        persistMessage(text, sender, type);
         scrollToBottom();
     }
 
-    function _renderBubble(text, sender) {
+    function _renderBubble(text, sender, type = 'text') {
         const wrap = document.createElement("div");
         wrap.classList.add("mb-3", "flex");
 
@@ -244,7 +336,7 @@ document.addEventListener("DOMContentLoaded", () => {
         return el;
     }
 
-    /* ── Helpers ─────────────────────────────────────────────────── */
+    /* ── Helpers ────────────────────────────────────────────── */
     function markdownToHtml(text) {
         return text
             .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")
