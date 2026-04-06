@@ -1,5 +1,5 @@
 from django.urls import path 
-from core.super.views import customer, product, seller, sale, scan_barcode, shop, cart, chatbot
+from core.super.views import customer, product, seller, sale, scan_barcode, shop, cart, chatbot, reports
 from core.super.views import home
 
 app_name = 'super'
@@ -63,4 +63,8 @@ urlpatterns = [
 
     # CHATBOT
     path('chatbot/api/', chatbot.ChatbotProxyView.as_view(), name='chatbot_api'),
+    
+    # REPORTES (ADMIN)
+    path('reportes/', reports.ReportsView.as_view(), name='reports'),
+    path('reportes/exportar/', reports.ExportReportsExcelView.as_view(), name='export_reports_excel'),
 ]
