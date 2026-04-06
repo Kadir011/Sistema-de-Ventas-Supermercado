@@ -36,16 +36,24 @@ def _parse_date(value, fallback):
         return fallback
 
 
-def _apply_filters(request):
-    """Lee los parámetros GET y devuelve el queryset de Sale filtrado."""
+def _apply_filters(request, force_all=False):
+    """Lee los parámetros GET y devuelve el queryset de Sale filtrado.
+    Si force_all=True, ignora los filtros y devuelve todo el histórico."""
     today = date.today()
+
+    if force_all:
+        date_from = date(2000, 1, 1)
+        date_to   = today
+        qs = Sale.objects.all()
+        return qs, date_from, date_to
+
     date_from = _parse_date(request.GET.get("date_from"), today - timedelta(days=30))
     date_to   = _parse_date(request.GET.get("date_to"),   today)
-    payment   = request.GET.get("payment", "")
-    seller_id = request.GET.get("seller", "")
+    payment     = request.GET.get("payment", "")
+    seller_id   = request.GET.get("seller", "")
     customer_id = request.GET.get("customer", "")
-    min_total = request.GET.get("min_total", "")
-    max_total = request.GET.get("max_total", "")
+    min_total   = request.GET.get("min_total", "")
+    max_total   = request.GET.get("max_total", "")
 
     qs = Sale.objects.filter(
         sale_date__date__gte=date_from,
@@ -81,13 +89,12 @@ class ReportsView(LoginRequiredMixin, TemplateView):
         agg = qs.aggregate(
             total_revenue=Sum("total"),
             total_sales=Count("id_sale"),
-            avg_ticket=Avg("total"),
             total_discount=Sum("discount"),
         )
-        total_revenue  = agg["total_revenue"]  or Decimal("0.00")
-        total_sales    = agg["total_sales"]    or 0
-        avg_ticket     = agg["avg_ticket"]     or Decimal("0.00")
-        total_discount = agg["total_discount"] or Decimal("0.00")
+        total_revenue = agg["total_revenue"] or Decimal("0.00")
+        total_sales   = agg["total_sales"]   or 0
+        total_discount= agg["total_discount"]or Decimal("0.00")
+        avg_ticket    = (total_revenue / total_sales) if total_sales else Decimal("0.00")
 
         # Ventas por día (para gráfico)
         from django.db.models.functions import TruncDate
@@ -176,7 +183,11 @@ class ExportReportsExcelView(LoginRequiredMixin, View):
     login_url = "/security/login/"
 
     def get(self, request, *args, **kwargs):
-        qs, date_from, date_to = _apply_filters(request)
+        # Si viene el parámetro ?all=1, exporta todo sin filtros
+        if request.GET.get("all") == "1":
+           qs, date_from, date_to = _apply_filters(request, force_all=True)
+        else:
+           qs, date_from, date_to = _apply_filters(request)
 
         wb = Workbook()
 
@@ -241,13 +252,13 @@ class ExportReportsExcelView(LoginRequiredMixin, View):
         # KPIs
         agg = qs.aggregate(
             rev=Sum("total"), cnt=Count("id_sale"),
-            avg=Avg("total"), disc=Sum("discount"), iva=Sum("iva")
+            disc=Sum("discount"), iva=Sum("iva")
         )
         total_revenue  = float(agg["rev"]  or 0)
         total_sales    = int(agg["cnt"]    or 0)
-        avg_ticket     = float(agg["avg"]  or 0)
         total_discount = float(agg["disc"] or 0)
         total_iva      = float(agg["iva"]  or 0)
+        avg_ticket     = (total_revenue / total_sales) if total_sales else 0.0
 
         kpis = [
             ("💰 Ingresos Totales", f"${total_revenue:,.2f}", GREEN),
@@ -476,7 +487,7 @@ class ExportReportsExcelView(LoginRequiredMixin, View):
             SaleDetail.objects
             .filter(sale__in=qs)
             .values("product__category__name")
-            .annotate(qty=Sum("quantity"), revenue=Sum("subtotal"), avg=Avg("subtotal"))
+            .annotate(qty=Sum("quantity"), revenue=Sum("subtotal"), items=Count("id_detail"))
             .order_by("-revenue")
         )
         total_rev_cat = sum(float(c2["revenue"] or 0) for c2 in top_cat)
@@ -489,7 +500,7 @@ class ExportReportsExcelView(LoginRequiredMixin, View):
                 int(cat["qty"] or 0),
                 float(cat["revenue"] or 0),
                 f"{pct:.1f}%",
-                float(cat["avg"] or 0),
+                float(cat["revenue"] or 0) / int(cat["items"] or 1),
             ]
             for ci, val in enumerate(row_data, 1):
                 c = ws4.cell(row=ri, column=ci, value=val)
@@ -528,13 +539,16 @@ class ExportReportsExcelView(LoginRequiredMixin, View):
 
         top_sellers = (
             qs.values("seller__name", "seller__last_name")
-              .annotate(cnt=Count("id_sale"), total=Sum("total"), avg=Avg("total"))
+              .annotate(cnt=Count("id_sale"), total=Sum("total"))
               .order_by("-total")[:10]
         )
         for ri, s in enumerate(top_sellers, 3):
             bg = GRAY_LIGHT if ri % 2 == 0 else WHITE
             name = f"{s['seller__name'] or ''} {s['seller__last_name'] or ''}".strip() or "—"
-            row_data = [name, int(s["cnt"] or 0), float(s["total"] or 0), float(s["avg"] or 0)]
+            cnt   = int(s["cnt"] or 0)
+            total = float(s["total"] or 0)
+            avg   = (total / cnt) if cnt else 0.0
+            row_data = [name, cnt, total, avg]
             for ci, val in enumerate(row_data, 1):
                 c = ws5.cell(row=ri, column=ci, value=val)
                 c.font = data_font()
@@ -563,13 +577,16 @@ class ExportReportsExcelView(LoginRequiredMixin, View):
 
         top_customers = (
             qs.values("customer__name", "customer__last_name")
-              .annotate(cnt=Count("id_sale"), total=Sum("total"), avg=Avg("total"))
+              .annotate(cnt=Count("id_sale"), total=Sum("total"))
               .order_by("-total")[:10]
         )
         for ri, cu in enumerate(top_customers, 3):
             bg = GRAY_LIGHT if ri % 2 == 0 else WHITE
             name = f"{cu['customer__name'] or ''} {cu['customer__last_name'] or ''}".strip() or "—"
-            row_data = [name, int(cu["cnt"] or 0), float(cu["total"] or 0), float(cu["avg"] or 0)]
+            cnt   = int(cu["cnt"] or 0)
+            total = float(cu["total"] or 0)
+            avg   = (total / cnt) if cnt else 0.0
+            row_data = [name, cnt, total, avg]
             for ci, val in enumerate(row_data, offset):
                 c = ws5.cell(row=ri, column=ci, value=val)
                 c.font = data_font()
