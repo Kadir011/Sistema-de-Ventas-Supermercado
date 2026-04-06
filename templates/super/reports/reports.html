@@ -1,0 +1,538 @@
+{% extends 'components/base.html' %}
+{% load static %}
+{% block title %}{{ title }}{% endblock %}
+{% block content %}
+
+<link rel="stylesheet" href="{% static 'css/reports/reports.css' %}">
+
+<!-- ═══ HERO ═══ -->
+<div class="reports-hero">
+  <div class="reports-hero-grid"></div>
+  <div class="reports-hero-inner flex flex-col md:flex-row md:items-center justify-between gap-4">
+    <div>
+      <div class="reports-eyebrow">Panel de Control · Administración</div>
+      <h1 class="reports-title">Reportes y Estadísticas</h1>
+      <p class="reports-subtitle">
+        Período: <strong style="color:rgba(255,255,255,0.9);">{{ date_from|date:'d/m/Y' }}</strong>
+        &rarr; <strong style="color:rgba(255,255,255,0.9);">{{ date_to|date:'d/m/Y' }}</strong>
+        &nbsp;·&nbsp; {{ total_sales }} venta{{ total_sales|pluralize }} encontrada{{ total_sales|pluralize }}
+      </p>
+    </div>
+    <div class="flex gap-3 flex-shrink-0">
+      <a href="{% url 'super:export_reports_excel' %}?{{ request.GET.urlencode }}"
+         class="btn-export" title="Exportar reporte a Excel">
+        <i class='bx bx-table' style="font-size:1.1rem;"></i>
+        Exportar Excel
+      </a>
+      <a href="{% url 'super:menu' %}" class="btn-export" style="color:#374151;">
+        <i class='bx bx-arrow-back' style="font-size:1.1rem;"></i>
+        Menú
+      </a>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ FILTROS ═══ -->
+<div class="filters-panel">
+  <div class="filters-title">
+    <i class='bx bx-filter-alt' style="color:#991b1b;font-size:1.1rem;"></i>
+    Filtros avanzados
+  </div>
+  <form method="get" id="filterForm">
+    <div class="filters-grid">
+
+      <!-- Fecha desde -->
+      <div>
+        <label class="filter-label">Desde</label>
+        <input type="date" name="date_from" value="{{ date_from }}" class="filter-input" id="inp_from">
+      </div>
+
+      <!-- Fecha hasta -->
+      <div>
+        <label class="filter-label">Hasta</label>
+        <input type="date" name="date_to" value="{{ date_to }}" class="filter-input" id="inp_to">
+      </div>
+
+      <!-- Método de pago -->
+      <div>
+        <label class="filter-label">Método de pago</label>
+        <input type="text" name="payment" value="{{ sel_payment }}"
+               placeholder="Ej: Efectivo" class="filter-input" list="payment-list">
+        <datalist id="payment-list">
+          <option value="Efectivo">
+          <option value="Tarjeta de crédito">
+          <option value="Tarjeta de débito">
+          <option value="Transferencia bancaria">
+        </datalist>
+      </div>
+
+      <!-- Vendedor -->
+      <div>
+        <label class="filter-label">Vendedor</label>
+        <select name="seller" class="filter-input">
+          <option value="">Todos</option>
+          {% for s in sellers %}
+            <option value="{{ s.pk }}" {% if sel_seller == s.pk|stringformat:'s' %}selected{% endif %}>
+              {{ s.get_full_name }}
+            </option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <!-- Cliente -->
+      <div>
+        <label class="filter-label">Cliente</label>
+        <select name="customer" class="filter-input">
+          <option value="">Todos</option>
+          {% for c in customers %}
+            <option value="{{ c.pk }}" {% if sel_customer == c.pk|stringformat:'s' %}selected{% endif %}>
+              {{ c.get_full_name }}
+            </option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <!-- Total mínimo -->
+      <div>
+        <label class="filter-label">Total mín. $</label>
+        <input type="number" name="min_total" value="{{ sel_min }}"
+               placeholder="0.00" step="0.01" class="filter-input">
+      </div>
+
+      <!-- Total máximo -->
+      <div>
+        <label class="filter-label">Total máx. $</label>
+        <input type="number" name="max_total" value="{{ sel_max }}"
+               placeholder="∞" step="0.01" class="filter-input">
+      </div>
+
+      <!-- Acciones -->
+      <div style="display:flex;flex-direction:column;gap:6px;">
+        <label class="filter-label">&nbsp;</label>
+        <button type="submit" class="btn-filter">
+          <i class='bx bx-search-alt'></i> Aplicar
+        </button>
+        <a href="{% url 'super:reports' %}" class="btn-clear">
+          <i class='bx bx-x'></i> Limpiar
+        </a>
+      </div>
+    </div>
+
+    <!-- Rangos rápidos -->
+    <div class="flex flex-wrap gap-2 mt-3">
+      <span style="font-family:'DM Sans',sans-serif;font-size:0.72rem;color:#9ca3af;font-weight:700;letter-spacing:.08em;text-transform:uppercase;align-self:center;">Rangos rápidos:</span>
+      {% for label, days in quick_ranges %}{% endfor %}
+      <button type="button" onclick="setRange(7)"  class="quick-btn">7 días</button>
+      <button type="button" onclick="setRange(30)" class="quick-btn">30 días</button>
+      <button type="button" onclick="setRange(90)" class="quick-btn">90 días</button>
+      <button type="button" onclick="setRange(365)"class="quick-btn">1 año</button>
+      <button type="button" onclick="setMonth()"   class="quick-btn">Este mes</button>
+    </div>
+  </form>
+</div>
+
+<style>
+.quick-btn {
+  padding: 4px 12px; border-radius: 999px; font-family:'DM Sans',sans-serif;
+  font-size:0.75rem; font-weight:700; border:1.5px solid #e5e7eb;
+  background:#fff; color:#374151; cursor:pointer; transition:all .15s;
+}
+.quick-btn:hover { border-color:#991b1b; color:#991b1b; background:#fef2f2; }
+</style>
+
+<!-- ═══ KPIs ═══ -->
+<div class="kpi-grid">
+  <div class="kpi-card green">
+    <div class="kpi-icon green"><i class='bx bx-dollar' style="color:#16a34a;"></i></div>
+    <div class="kpi-label">Ingresos totales</div>
+    <div class="kpi-value green">${{ total_revenue|floatformat:2 }}</div>
+  </div>
+  <div class="kpi-card blue">
+    <div class="kpi-icon blue"><i class='bx bx-receipt' style="color:#2563eb;"></i></div>
+    <div class="kpi-label">Ventas realizadas</div>
+    <div class="kpi-value blue">{{ total_sales }}</div>
+  </div>
+  <div class="kpi-card cyan">
+    <div class="kpi-icon cyan"><i class='bx bx-trending-up' style="color:#0ea5e9;"></i></div>
+    <div class="kpi-label">Ticket promedio</div>
+    <div class="kpi-value cyan">${{ avg_ticket|floatformat:2 }}</div>
+  </div>
+  <div class="kpi-card amber">
+    <div class="kpi-icon amber"><i class='bx bx-purchase-tag' style="color:#d97706;"></i></div>
+    <div class="kpi-label">Descuentos otorgados</div>
+    <div class="kpi-value amber">${{ total_discount|floatformat:2 }}</div>
+  </div>
+</div>
+
+<!-- ═══ GRÁFICO DIARIO + MÉTODOS DE PAGO ═══ -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-5 mb-5">
+
+  <!-- Gráfico de ventas por día -->
+  <div class="section-card lg:col-span-2">
+    <div class="section-card-header">
+      <div class="section-card-title">
+        <i class='bx bx-line-chart' style="color:#0ea5e9;font-size:1.1rem;"></i>
+        Ventas diarias — ingresos
+      </div>
+    </div>
+    <div class="section-card-body">
+      <div class="chart-container">
+        <canvas id="dailyChart"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- Por método de pago -->
+  <div class="section-card">
+    <div class="section-card-header">
+      <div class="section-card-title">
+        <i class='bx bx-credit-card' style="color:#7c3aed;font-size:1.1rem;"></i>
+        Métodos de pago
+      </div>
+    </div>
+    <div class="section-card-body">
+      <div class="chart-container" style="height:200px;">
+        <canvas id="paymentChart"></canvas>
+      </div>
+      <div class="mt-3 space-y-1">
+        {% for p in by_payment %}
+        <div style="display:flex;justify-content:space-between;font-family:'DM Sans',sans-serif;font-size:0.78rem;padding:3px 0;">
+          <span style="color:#374151;font-weight:600;">{{ p.payment__name|default:"—" }}</span>
+          <span style="color:#7c3aed;font-weight:700;">${{ p.total|floatformat:2 }}</span>
+        </div>
+        {% empty %}
+        <p style="color:#9ca3af;font-size:0.8rem;text-align:center;padding:12px 0;">Sin datos</p>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ PRODUCTOS + CATEGORÍAS ═══ -->
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-5 mb-5">
+
+  <!-- Top productos -->
+  <div class="section-card">
+    <div class="section-card-header">
+      <div class="section-card-title">
+        <i class='bx bx-package' style="color:#16a34a;font-size:1.1rem;"></i>
+        Productos más vendidos
+      </div>
+      <span style="font-family:'DM Sans',sans-serif;font-size:0.72rem;color:#9ca3af;">Top 15 por unidades</span>
+    </div>
+    <div class="section-card-body" style="padding:0;">
+      <div style="overflow-x:auto;">
+        <table class="report-table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Producto</th>
+              <th>Categoría</th>
+              <th style="text-align:right;">Uds.</th>
+              <th style="text-align:right;">Ingr. $</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for p in top_products %}
+            <tr>
+              <td>
+                <span class="rank-badge {% if forloop.counter == 1 %}rank-1{% elif forloop.counter == 2 %}rank-2{% elif forloop.counter == 3 %}rank-3{% else %}rank-n{% endif %}">
+                  {{ forloop.counter }}
+                </span>
+              </td>
+              <td style="font-weight:600;color:#111827;">{{ p.product__name|default:"—" }}</td>
+              <td>
+                <span style="font-size:0.72rem;background:#f3f4f6;color:#6b7280;padding:2px 8px;border-radius:999px;font-weight:600;">
+                  {{ p.product__category__name|default:"Sin cat." }}
+                </span>
+              </td>
+              <td style="text-align:right;font-weight:700;color:#374151;">{{ p.qty }}</td>
+              <td style="text-align:right;font-weight:700;color:#16a34a;">${{ p.revenue|floatformat:2 }}</td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="5" style="text-align:center;color:#9ca3af;padding:20px;">Sin datos en el período</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Por categoría -->
+  <div class="section-card">
+    <div class="section-card-header">
+      <div class="section-card-title">
+        <i class='bx bx-category' style="color:#f59e0b;font-size:1.1rem;"></i>
+        Ingresos por categoría
+      </div>
+    </div>
+    <div class="section-card-body">
+      {% with total_cat_rev=top_categories|length %}
+      {% for cat in top_categories %}
+        {% with rev=cat.revenue|floatformat:2 pct=cat.revenue %}
+        <div class="progress-bar-wrap">
+          <span class="progress-label" title="{{ cat.product__category__name|default:'Sin categoría' }}">
+            {{ cat.product__category__name|default:"Sin cat." }}
+          </span>
+          <div class="progress-bar-bg">
+            <div class="progress-bar-fill"
+                 data-pct="{{ cat.revenue }}"
+                 data-total="{% for c2 in top_categories %}{{ c2.revenue }}{% if not forloop.last %}+{% endif %}{% endfor %}"
+                 style="background: hsl({{ forloop.counter0|add:0 }}deg, 70%, 52%); width:0%;">
+            </div>
+          </div>
+          <span class="progress-value">${{ cat.revenue|floatformat:0 }}</span>
+        </div>
+        {% endwith %}
+      {% empty %}
+        <p style="color:#9ca3af;font-size:0.85rem;text-align:center;padding:20px 0;">Sin datos en el período</p>
+      {% endfor %}
+      {% endwith %}
+
+      <!-- Mini tabla categorías -->
+      {% if top_categories %}
+      <div style="overflow-x:auto;margin-top:16px;border-top:1px solid #f3f4f6;padding-top:12px;">
+        <table class="report-table">
+          <thead>
+            <tr>
+              <th>Categoría</th>
+              <th style="text-align:right;">Uds.</th>
+              <th style="text-align:right;">Ingresos $</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for cat in top_categories %}
+            <tr>
+              <td style="font-weight:600;color:#111827;">{{ cat.product__category__name|default:"Sin categoría" }}</td>
+              <td style="text-align:right;">{{ cat.qty }}</td>
+              <td style="text-align:right;font-weight:700;color:#d97706;">${{ cat.revenue|floatformat:2 }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<!-- ═══ TOP VENDEDORES + TOP CLIENTES ═══ -->
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-5 mb-5">
+
+  <!-- Vendedores -->
+  <div class="section-card">
+    <div class="section-card-header">
+      <div class="section-card-title">
+        <i class='bx bx-badge-check' style="color:#2563eb;font-size:1.1rem;"></i>
+        Top vendedores
+      </div>
+    </div>
+    <div class="section-card-body" style="padding:0;">
+      <table class="report-table">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Vendedor</th>
+            <th style="text-align:right;">Ventas</th>
+            <th style="text-align:right;">Total $</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for s in top_sellers %}
+          <tr>
+            <td>
+              <span class="rank-badge {% if forloop.counter == 1 %}rank-1{% elif forloop.counter == 2 %}rank-2{% elif forloop.counter == 3 %}rank-3{% else %}rank-n{% endif %}">
+                {{ forloop.counter }}
+              </span>
+            </td>
+            <td>
+              <div style="display:flex;align-items:center;gap:8px;">
+                <div style="width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,#2563eb,#1d4ed8);display:flex;align-items:center;justify-content:center;color:#fff;font-size:0.72rem;font-weight:800;flex-shrink:0;">
+                  {{ s.seller__name|first|upper }}
+                </div>
+                <span style="font-weight:600;color:#111827;">{{ s.seller__name }} {{ s.seller__last_name }}</span>
+              </div>
+            </td>
+            <td style="text-align:right;font-weight:700;">{{ s.count }}</td>
+            <td style="text-align:right;font-weight:700;color:#2563eb;">${{ s.total|floatformat:2 }}</td>
+          </tr>
+          {% empty %}
+          <tr><td colspan="4" style="text-align:center;color:#9ca3af;padding:20px;">Sin datos</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Clientes -->
+  <div class="section-card">
+    <div class="section-card-header">
+      <div class="section-card-title">
+        <i class='bx bx-group' style="color:#0ea5e9;font-size:1.1rem;"></i>
+        Top clientes
+      </div>
+    </div>
+    <div class="section-card-body" style="padding:0;">
+      <table class="report-table">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Cliente</th>
+            <th style="text-align:right;">Compras</th>
+            <th style="text-align:right;">Total $</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for cu in top_customers %}
+          <tr>
+            <td>
+              <span class="rank-badge {% if forloop.counter == 1 %}rank-1{% elif forloop.counter == 2 %}rank-2{% elif forloop.counter == 3 %}rank-3{% else %}rank-n{% endif %}">
+                {{ forloop.counter }}
+              </span>
+            </td>
+            <td>
+              <div style="display:flex;align-items:center;gap:8px;">
+                <div style="width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,#0ea5e9,#0284c7);display:flex;align-items:center;justify-content:center;color:#fff;font-size:0.72rem;font-weight:800;flex-shrink:0;">
+                  {{ cu.customer__name|first|upper }}
+                </div>
+                <span style="font-weight:600;color:#111827;">{{ cu.customer__name }} {{ cu.customer__last_name }}</span>
+              </div>
+            </td>
+            <td style="text-align:right;font-weight:700;">{{ cu.count }}</td>
+            <td style="text-align:right;font-weight:700;color:#0ea5e9;">${{ cu.total|floatformat:2 }}</td>
+          </tr>
+          {% empty %}
+          <tr><td colspan="4" style="text-align:center;color:#9ca3af;padding:20px;">Sin datos</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ SCRIPTS ═══ -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+// ── Datos desde Django ────────────────────────────────────────────────────────
+const dailyData = [
+  {% for d in daily_data %}
+  { day: "{{ d.day|date:'d/m' }}", total: {{ d.total|floatformat:2 }}, count: {{ d.count }} },
+  {% endfor %}
+];
+
+const paymentData = {
+  labels: [{% for p in by_payment %}"{{ p.payment__name|default:'Sin pago' }}"{% if not forloop.last %},{% endif %}{% endfor %}],
+  values: [{% for p in by_payment %}{{ p.total|floatformat:2 }}{% if not forloop.last %},{% endif %}{% endfor %}],
+};
+
+// ── Paleta de colores ─────────────────────────────────────────────────────────
+const PALETTE = ["#991b1b","#b91c1c","#2563eb","#0ea5e9","#16a34a","#d97706","#7c3aed","#ec4899"];
+
+Chart.defaults.font.family = "'DM Sans', sans-serif";
+Chart.defaults.font.size   = 11;
+
+// ── Gráfico diario ────────────────────────────────────────────────────────────
+const ctxDaily = document.getElementById('dailyChart')?.getContext('2d');
+if (ctxDaily && dailyData.length) {
+  new Chart(ctxDaily, {
+    type: 'bar',
+    data: {
+      labels: dailyData.map(d => d.day),
+      datasets: [{
+        label: 'Ingresos $',
+        data: dailyData.map(d => d.total),
+        backgroundColor: 'rgba(153,27,27,0.15)',
+        borderColor: '#991b1b',
+        borderWidth: 2,
+        borderRadius: 6,
+        hoverBackgroundColor: 'rgba(153,27,27,0.3)',
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            label: ctx => `$${ctx.raw.toLocaleString('es-EC', {minimumFractionDigits:2})}`
+          }
+        }
+      },
+      scales: {
+        y: {
+          grid: { color: '#f1f5f9' },
+          ticks: { callback: v => `$${v.toLocaleString()}` }
+        },
+        x: { grid: { display: false } }
+      }
+    }
+  });
+} else if (ctxDaily) {
+  const p = document.createElement('p');
+  p.style.cssText = 'text-align:center;color:#9ca3af;padding:60px 0;font-family:DM Sans,sans-serif;';
+  p.textContent = 'Sin datos de ventas en el período seleccionado.';
+  ctxDaily.canvas.parentNode.replaceChild(p, ctxDaily.canvas);
+}
+
+// ── Gráfico de pago (Doughnut) ─────────────────────────────────────────────────
+const ctxPay = document.getElementById('paymentChart')?.getContext('2d');
+if (ctxPay && paymentData.values.length) {
+  new Chart(ctxPay, {
+    type: 'doughnut',
+    data: {
+      labels: paymentData.labels,
+      datasets: [{
+        data: paymentData.values,
+        backgroundColor: PALETTE,
+        borderWidth: 2,
+        borderColor: '#fff',
+        hoverBorderColor: '#fff',
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      cutout: '60%',
+      plugins: {
+        legend: {
+          position: 'bottom',
+          labels: { boxWidth: 10, padding: 10, font: { size: 10 } }
+        },
+        tooltip: {
+          callbacks: {
+            label: ctx => ` $${parseFloat(ctx.raw).toLocaleString('es-EC', {minimumFractionDigits:2})}`
+          }
+        }
+      }
+    }
+  });
+}
+
+// ── Barras de progreso (categorías) ──────────────────────────────────────────
+document.querySelectorAll('.progress-bar-fill').forEach((bar, i) => {
+  const allBars = document.querySelectorAll('.progress-bar-fill');
+  const values  = Array.from(allBars).map(b => parseFloat(b.dataset.pct || 0));
+  const max     = Math.max(...values, 1);
+  const pct     = (parseFloat(bar.dataset.pct || 0) / max) * 100;
+  const hue     = (i * 37) % 360;
+  bar.style.background = `hsl(${hue}, 65%, 50%)`;
+  setTimeout(() => { bar.style.width = pct + '%'; }, 80 * i);
+});
+
+// ── Rangos rápidos ────────────────────────────────────────────────────────────
+function setRange(days) {
+  const today = new Date();
+  const from  = new Date(today);
+  from.setDate(today.getDate() - days + 1);
+  document.getElementById('inp_from').value = from.toISOString().slice(0,10);
+  document.getElementById('inp_to').value   = today.toISOString().slice(0,10);
+}
+
+function setMonth() {
+  const now = new Date();
+  const first = new Date(now.getFullYear(), now.getMonth(), 1);
+  document.getElementById('inp_from').value = first.toISOString().slice(0,10);
+  document.getElementById('inp_to').value   = now.toISOString().slice(0,10);
+}
+</script>
+
+{% endblock %}
