@@ -63,6 +63,7 @@ urlpatterns = [
 
     # CHATBOT
     path('chatbot/api/', chatbot.ChatbotProxyView.as_view(), name='chatbot_api'),
+    path('chatbot/summary/', chatbot.ChatbotSummaryView.as_view(), name='chatbot_summary'),
     
     # REPORTES (ADMIN)
     path('reportes/', reports.ReportsView.as_view(), name='reports'),
