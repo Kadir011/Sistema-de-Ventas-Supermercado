@@ -207,6 +207,12 @@
     --card-text: #0e7490;
 }
 
+.card-red {
+    --card-accent: #ef4444;
+    --card-bg: #fef2f2;
+    --card-text: #b91c1c;
+}
+
 .menu-card::before {
     background: var(--card-accent);
 }
