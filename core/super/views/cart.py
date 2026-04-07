@@ -228,4 +228,4 @@ class CheckoutView(LoginRequiredMixin, TemplateView):
             return redirect('super:checkout')
         except Exception as e:
             messages.error(request, f'Error al procesar la compra: {str(e)}')
-            return redirect('super:checkout')
+            return redirect('super:checkout') 
