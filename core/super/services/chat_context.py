@@ -1,4 +1,4 @@
-from core.super.models import Product, Category, Brand, PaymentMethod, Sale, SaleDetail
+from core.super.models import Product, Category, Brand, PaymentMethod, Sale, SaleDetail, Customer
 from django.db.models import Sum, Count, Avg
 from django.utils import timezone
 from datetime import timedelta
@@ -166,9 +166,33 @@ class SalesContextBuilder:
 
 
 class CustomerContextBuilder:
-    """Contexto extra para clientes autenticados: su historial reciente."""
+    """Contexto extra para clientes autenticados: historial reciente y descuento activo."""
 
     def build(self, user) -> str:
+        parts = []
+
+        # ── Descuento personalizado ───────────────────────────────────────────
+        try:
+            customer = Customer.objects.filter(email=user.email).first()
+            if customer and customer.has_active_discount():
+                expiry_str = customer.discount_expiry.strftime('%d/%m/%Y')
+                parts.append(
+                    f"DESCUENTO ACTIVO DEL CLIENTE:\n"
+                    f"  • {customer.discount_percentage}% de descuento vigente hasta {expiry_str}\n"
+                    f"  • Aplica automáticamente al pagar con Efectivo o Tarjeta (NO aplica "
+                    f"en Consumidor Final ni Transferencia bancaria)."
+                )
+            elif customer and customer.discount_percentage and customer.discount_percentage > 0:
+                parts.append(
+                    f"DESCUENTO CONFIGURADO (SIN VIGENCIA):\n"
+                    f"  • Tiene configurado un {customer.discount_percentage}% de descuento, "
+                    f"pero la vigencia ha expirado o no tiene fecha asignada. "
+                    f"Actualmente NO aplica descuento."
+                )
+        except Exception:
+            pass
+
+        # ── Historial de compras ──────────────────────────────────────────────
         try:
             recent = (
                 Sale.objects
@@ -176,17 +200,19 @@ class CustomerContextBuilder:
                 .select_related('payment')
                 .order_by('-sale_date')[:5]
             )
-            if not recent:
-                return "El cliente aún no tiene compras registradas."
-
-            lines = [
-                f"  - Orden #{s.id_sale:06d} | {s.sale_date.strftime('%d/%m/%Y')} "
-                f"| Pago: {s.payment.name if s.payment else 'N/A'} | Total: ${s.total:.2f}"
-                for s in recent
-            ]
-            return "COMPRAS RECIENTES DEL CLIENTE:\n" + "\n".join(lines)
+            if recent:
+                lines = [
+                    f"  - Orden #{s.id_sale:06d} | {s.sale_date.strftime('%d/%m/%Y')} "
+                    f"| Pago: {s.payment.name if s.payment else 'N/A'} | Total: ${s.total:.2f}"
+                    for s in recent
+                ]
+                parts.append("COMPRAS RECIENTES DEL CLIENTE:\n" + "\n".join(lines))
+            else:
+                parts.append("El cliente aún no tiene compras registradas.")
         except Exception as exc:
-            return f"(Error al cargar historial: {exc})"
+            parts.append(f"(Error al cargar historial: {exc})")
+
+        return "\n\n".join(parts) if parts else "Sin información adicional del cliente."
 
 
 class GuestContextBuilder:
