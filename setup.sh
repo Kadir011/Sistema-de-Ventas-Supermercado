@@ -119,7 +119,7 @@ python manage.py migrate
 
 # ── 7. Cargar datos iniciales ─────────────────────────────────────────────────
 echo -e "\n${GREEN}[4/5] Insertando Categorías, Marcas y Métodos de Pago...${NC}"
-TEMP_SQL="$SCRIPT_DIR/temp_init_data.sql"
+TEMP_SQL="temp_init_data.sql"
 
 cat <<SQLEOF > "$TEMP_SQL"
 SET client_encoding = 'UTF8';
@@ -156,7 +156,7 @@ INSERT INTO super_paymentmethod (name) VALUES
 ('Billetera electrónica'), ('Código QR'), ('Cheque'), ('Crédito del local'), ('Vales / cupones'), ('Gift Card');
 SQLEOF
 
-psql -h "$DB_HOST" -p "$DB_PORT" -U "$PG_USER" -d "$DB_NAME" -f "$TEMP_SQL"
+psql -h "$DB_HOST" -p "$DB_PORT" -U "$PG_USER" -d "$DB_NAME" < "$TEMP_SQL"
 
 # ── 8. Limpieza final ─────────────────────────────────────────────────────────
 echo -e "\n${GREEN}[5/5] Finalizando proceso...${NC}"
