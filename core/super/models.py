@@ -7,6 +7,7 @@ from config.utils import get_image
 from django.forms import model_to_dict
 import uuid
 
+
 class Brand(models.Model):
     id_brand = models.AutoField(primary_key=True, verbose_name="ID", blank=False, null=False, unique=True)
     name = models.CharField(max_length=100, verbose_name="Nombre", blank=True, null=True)
@@ -14,17 +15,16 @@ class Brand(models.Model):
     @property
     def id(self):
         return self.id_brand
-    
+
     def __str__(self):
         return f'Marca : {self.name}'
-    
+
     class Meta:
         verbose_name = "Marca"
         verbose_name_plural = "Marcas"
-        ordering = ['id_brand', 'name'] 
-        indexes = [
-            models.Index(fields=['name']),
-        ]
+        ordering = ['id_brand', 'name']
+        indexes = [models.Index(fields=['name'])]
+
 
 class Category(models.Model):
     id_category = models.AutoField(primary_key=True, verbose_name="ID", blank=False, null=False, unique=True)
@@ -33,17 +33,16 @@ class Category(models.Model):
     @property
     def id(self):
         return self.id_category
-    
+
     def __str__(self):
         return f'Categoria : {self.name}'
-    
+
     class Meta:
         verbose_name = "Categoria"
         verbose_name_plural = "Categorias"
-        ordering = ['id_category', 'name'] 
-        indexes = [
-            models.Index(fields=['name']),
-        ]
+        ordering = ['id_category', 'name']
+        indexes = [models.Index(fields=['name'])]
+
 
 class PaymentMethod(models.Model):
     id_payment_method = models.AutoField(primary_key=True, verbose_name="ID", blank=False, null=False, unique=True)
@@ -52,23 +51,22 @@ class PaymentMethod(models.Model):
     @property
     def id(self):
         return self.id_payment_method
-    
+
     def __str__(self):
         return f'Forma de Pago : {self.name}'
-    
+
     class Meta:
         verbose_name = "Forma de Pago"
         verbose_name_plural = "Forma de Pagos"
-        ordering = ['id_payment_method', 'name'] 
-        indexes = [
-            models.Index(fields=['name']),
-        ]
+        ordering = ['id_payment_method', 'name']
+        indexes = [models.Index(fields=['name'])]
+
 
 class Customer(models.Model):
     class GenderChoices(models.IntegerChoices):
         Male = 1, 'Masculino'
         Female = 2, 'Femenino'
-    
+
     id_customer = models.AutoField(primary_key=True, verbose_name="ID", blank=False, null=False, unique=True)
     name = models.CharField(max_length=100, verbose_name="Nombre", blank=True, null=True)
     last_name = models.CharField(max_length=100, verbose_name="Apellido", blank=True, null=True)
@@ -77,38 +75,76 @@ class Customer(models.Model):
     address = models.CharField(max_length=100, verbose_name="Dirección", blank=True, null=True)
     phone = models.CharField(max_length=100, verbose_name="Telefono", blank=True, null=True, unique=True)
     birth_date = models.DateField(verbose_name="Fecha de nacimiento", blank=True, null=True)
-    gender = models.IntegerField(choices=GenderChoices.choices, default=GenderChoices.Male, verbose_name="Genero", blank=True, null=True)
-
+    gender = models.IntegerField(
+        choices=GenderChoices.choices, default=GenderChoices.Male,
+        verbose_name="Genero", blank=True, null=True
+    )
     discount_percentage = models.DecimalField(
-        max_digits=5, 
-        decimal_places=2, 
-        default=Decimal('0.00'), 
+        max_digits=5,
+        decimal_places=2,
+        default=Decimal('0.00'),
         verbose_name="Descuento (%)"
+    )
+    # ── Vigencia del descuento ────────────────────────────────────────────────
+    # Cuando el admin asigna un descuento puede fijar hasta cuándo aplica.
+    # Si está vacío el descuento no tiene vigencia activa (nunca se aplica).
+    # La vista de checkout y la de venta admin verifican esta fecha antes
+    # de aplicar el descuento al total.
+    discount_expiry = models.DateField(
+        blank=True,
+        null=True,
+        verbose_name="Vigencia del descuento",
+        help_text="Fecha límite hasta la que aplica el descuento. "
+                  "Vacío = sin vigencia (no aplica).",
     )
 
     @property
     def id(self):
         return self.id_customer
-    
+
     def get_full_name(self):
         return f'{self.name} {self.last_name}'
-    
+
     def __str__(self):
         return f'Cliente : {self.get_full_name()}'
-    
+
+    # ── Helpers de descuento ──────────────────────────────────────────────────
+
+    def has_active_discount(self) -> bool:
+        """
+        Devuelve True si el cliente tiene un descuento > 0 y la vigencia
+        no ha expirado a la fecha de hoy.
+
+        Regla de negocio:
+        - discount_percentage > 0
+        - discount_expiry no es nulo
+        - discount_expiry >= hoy
+        """
+        if not self.discount_percentage or self.discount_percentage <= 0:
+            return False
+        if not self.discount_expiry:
+            return False
+        return self.discount_expiry >= timezone.localdate()
+
+    def get_active_discount_pct(self) -> Decimal:
+        """Devuelve el porcentaje de descuento si está vigente, o 0."""
+        return self.discount_percentage if self.has_active_discount() else Decimal('0.00')
+
     class Meta:
         verbose_name = "Cliente"
         verbose_name_plural = "Clientes"
-        ordering = ['id_customer', 'name', 'last_name'] 
-        indexes = [models.Index(fields=['name']),
-                   models.Index(fields=['last_name']),
-                   models.Index(fields=['dni']),
-                   models.Index(fields=['email']),
-                   models.Index(fields=['address']),
-                   models.Index(fields=['phone']),
-                   models.Index(fields=['birth_date']),
-                   models.Index(fields=['gender']),
+        ordering = ['id_customer', 'name', 'last_name']
+        indexes = [
+            models.Index(fields=['name']),
+            models.Index(fields=['last_name']),
+            models.Index(fields=['dni']),
+            models.Index(fields=['email']),
+            models.Index(fields=['address']),
+            models.Index(fields=['phone']),
+            models.Index(fields=['birth_date']),
+            models.Index(fields=['gender']),
         ]
+
 
 class Seller(models.Model):
     class GenderChoices(models.IntegerChoices):
@@ -123,31 +159,36 @@ class Seller(models.Model):
     address = models.CharField(max_length=100, verbose_name="Dirección", blank=True, null=True)
     phone = models.CharField(max_length=100, verbose_name="Telefono", blank=True, null=True, unique=True)
     birth_date = models.DateField(verbose_name="Fecha de nacimiento", blank=True, null=True)
-    gender = models.IntegerField(choices=GenderChoices.choices, default=GenderChoices.Male, verbose_name="Genero", blank=True, null=True)
+    gender = models.IntegerField(
+        choices=GenderChoices.choices, default=GenderChoices.Male,
+        verbose_name="Genero", blank=True, null=True
+    )
 
     @property
     def id(self):
         return self.id_seller
-    
+
     def get_full_name(self):
         return f'{self.name} {self.last_name}'
-    
+
     def __str__(self):
         return f'Vendedor : {self.get_full_name()}'
-    
+
     class Meta:
         verbose_name = "Vendedor"
         verbose_name_plural = "Vendedores"
         ordering = ['id_seller', 'name', 'last_name']
-        indexes = [models.Index(fields=['name']),
-                   models.Index(fields=['last_name']),
-                   models.Index(fields=['dni']),
-                   models.Index(fields=['email']),
-                   models.Index(fields=['address']),
-                   models.Index(fields=['phone']),
-                   models.Index(fields=['birth_date']),
-                   models.Index(fields=['gender']),
+        indexes = [
+            models.Index(fields=['name']),
+            models.Index(fields=['last_name']),
+            models.Index(fields=['dni']),
+            models.Index(fields=['email']),
+            models.Index(fields=['address']),
+            models.Index(fields=['phone']),
+            models.Index(fields=['birth_date']),
+            models.Index(fields=['gender']),
         ]
+
 
 class Product(models.Model):
     id_product = models.AutoField(primary_key=True, verbose_name="ID", blank=False, null=False, unique=True)
@@ -160,7 +201,7 @@ class Product(models.Model):
     image = models.ImageField(upload_to='products', verbose_name="Imágen", blank=True, null=True)
     barcode = models.CharField(max_length=100, verbose_name="Código de barras", blank=True, null=True, unique=True)
     production_date = models.DateField(default=timezone.now, verbose_name="Fecha de elaboración", blank=True, null=True)
-    expiration_date = models.DateField(verbose_name="Fecha de vencimiento", blank=True, null=True) 
+    expiration_date = models.DateField(verbose_name="Fecha de vencimiento", blank=True, null=True)
     state = models.BooleanField(default=True, verbose_name="Estado", blank=True, null=True)
 
     @property
@@ -173,28 +214,30 @@ class Product(models.Model):
 
     def get_image_url(self):
         return get_image(self.image)
-    
+
     def __str__(self):
         return f'Producto : {self.name}'
-    
+
     class Meta:
         verbose_name = "Producto"
         verbose_name_plural = "Productos"
-        ordering = ['id_product', 'name'] 
-        indexes = [models.Index(fields=['name']),
-                   models.Index(fields=['brand']),
-                   models.Index(fields=['category']),
-                   models.Index(fields=['description']),
-                   models.Index(fields=['stock']),
-                   models.Index(fields=['barcode']),
-                   models.Index(fields=['production_date']),
-                   models.Index(fields=['expiration_date']),
-                   models.Index(fields=['state']),
+        ordering = ['id_product', 'name']
+        indexes = [
+            models.Index(fields=['name']),
+            models.Index(fields=['brand']),
+            models.Index(fields=['category']),
+            models.Index(fields=['description']),
+            models.Index(fields=['stock']),
+            models.Index(fields=['barcode']),
+            models.Index(fields=['production_date']),
+            models.Index(fields=['expiration_date']),
+            models.Index(fields=['state']),
         ]
         constraints = [
             CheckConstraint(check=Q(stock__gte=0), name='product_stock_non_negative'),
-            CheckConstraint(check=Q(price__gt=0), name='product_price_non_negative')
+            CheckConstraint(check=Q(price__gt=0), name='product_price_non_negative'),
         ]
+
 
 class Sale(models.Model):
     id_sale = models.AutoField(primary_key=True, verbose_name="ID", blank=False, null=False, unique=True)
@@ -203,27 +246,19 @@ class Sale(models.Model):
     seller = models.ForeignKey(Seller, on_delete=models.CASCADE, verbose_name="Vendedor", blank=True, null=True)
     payment = models.ForeignKey(PaymentMethod, on_delete=models.CASCADE, verbose_name="Forma de pago", blank=True, null=True)
     sale_date = models.DateTimeField(
-        default=timezone.now, 
-        verbose_name="Fecha y Hora de venta", 
-        blank=True, 
-        null=True
+        default=timezone.now,
+        verbose_name="Fecha y Hora de venta",
+        blank=True,
+        null=True,
     )
     subtotal = models.DecimalField(max_digits=10, decimal_places=2, default=Decimal('0.00'), verbose_name="Subtotal", blank=True, null=True)
     iva = models.DecimalField(max_digits=10, decimal_places=2, default=Decimal('0.00'), verbose_name="IVA", blank=True, null=True)
     discount = models.DecimalField(max_digits=10, decimal_places=2, default=Decimal('0.00'), verbose_name="Descuento", blank=True, null=True)
     total = models.DecimalField(max_digits=10, decimal_places=2, default=Decimal('0.00'), verbose_name="Total", blank=True, null=True)
-
     amount_received = models.DecimalField(max_digits=10, decimal_places=2, default=Decimal('0.00'), verbose_name="Monto Recibido", blank=True, null=True)
     change = models.DecimalField(max_digits=10, decimal_places=2, default=Decimal('0.00'), verbose_name="Cambio", blank=True, null=True)
-    
     card_number_masked = models.CharField(max_length=50, verbose_name="Número de Tarjeta Censurado", blank=True, null=True)
     transfer_account_masked = models.CharField(max_length=20, verbose_name="Número de Cuenta Censurado", blank=True, null=True)
-
-    # ── Idempotencia ──────────────────────────────────────────────────────────
-    # Clave única generada en el cliente antes de enviar el formulario.
-    # Si llega un segundo request con la misma clave, se devuelve la venta
-    # ya creada sin procesar nada de nuevo (evita ventas duplicadas y doble
-    # descuento de stock por doble submit / recarga / botón "atrás").
     idempotency_key = models.UUIDField(
         unique=True,
         null=True,
@@ -259,6 +294,7 @@ class Sale(models.Model):
             CheckConstraint(check=Q(total__gte=0), name='sale_total_non_negative'),
         ]
 
+
 class SaleDetail(models.Model):
     id_detail = models.AutoField(primary_key=True, verbose_name="ID", blank=False, null=False, unique=True)
     sale = models.ForeignKey(Sale, on_delete=models.CASCADE, verbose_name="Venta", blank=True, null=True)
@@ -285,7 +321,7 @@ class SaleDetail(models.Model):
         constraints = [
             CheckConstraint(check=Q(quantity__gte=1), name='saledetail_quantity_non_negative'),
             CheckConstraint(check=Q(price__gte=0), name='saledetail_price_non_negative'),
-            CheckConstraint(check=Q(subtotal__gte=0), name='saledetail_subtotal_non_negative')
+            CheckConstraint(check=Q(subtotal__gte=0), name='saledetail_subtotal_non_negative'),
         ]
 
 
@@ -293,40 +329,39 @@ class Cart(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, verbose_name="Usuario")
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Fecha de creación")
     updated_at = models.DateTimeField(auto_now=True, verbose_name="Última actualización")
-    
+
     def __str__(self):
         return f'Carrito de {self.user.username}'
-    
+
     def get_total(self):
-        items = self.items.all()
-        total = sum(item.get_subtotal() for item in items)
-        return total
-    
+        return sum(item.get_subtotal() for item in self.items.all())
+
     def get_subtotal(self):
         return self.get_total() / Decimal('1.15')
-    
+
     def get_iva(self):
         return self.get_total() - self.get_subtotal()
-    
+
     def get_item_count(self):
         return self.items.count()
-    
+
     class Meta:
         verbose_name = "Carrito"
         verbose_name_plural = "Carritos"
+
 
 class CartItem(models.Model):
     cart = models.ForeignKey(Cart, on_delete=models.CASCADE, related_name='items', verbose_name="Carrito")
     product = models.ForeignKey(Product, on_delete=models.CASCADE, verbose_name="Producto")
     quantity = models.IntegerField(default=1, verbose_name="Cantidad")
     added_at = models.DateTimeField(auto_now_add=True, verbose_name="Fecha de agregado")
-    
+
     def __str__(self):
         return f'{self.quantity}x {self.product.name}'
-    
+
     def get_subtotal(self):
         return self.product.price * self.quantity
-    
+
     class Meta:
         verbose_name = "Item del Carrito"
         verbose_name_plural = "Items del Carrito"
