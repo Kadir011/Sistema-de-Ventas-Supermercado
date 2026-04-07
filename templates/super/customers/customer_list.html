@@ -1,4 +1,5 @@
 {% extends 'components/base.html' %}
+{% load static %}
 {% block title %}{{ title }}{% endblock %}
 {% block content %}
 <div class="container mx-auto py-8 px-6">
@@ -10,7 +11,8 @@
             <p class="text-gray-500 text-sm mt-1">Gestiona los clientes registrados</p>
         </div>
         <a href="{{ create_url }}"
-           class="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl font-semibold shadow-md transition-all transform hover:-translate-y-0.5">
+           class="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl
+                  font-semibold shadow-md transition-all transform hover:-translate-y-0.5">
             <i class='bx bx-user-plus text-xl'></i> Agregar Cliente
         </a>
     </div>
@@ -39,7 +41,7 @@
                         <td class="py-4 px-5">
                             <div class="flex items-center gap-3">
                                 <div class="w-9 h-9 rounded-full flex items-center justify-center font-bold text-sm text-white flex-shrink-0
-                                    {% if c.gender == 2 %} bg-pink-400 {% else %} bg-blue-500 {% endif %}">
+                                    {% if c.gender == 2 %}bg-pink-400{% else %}bg-blue-500{% endif %}">
                                     {{ c.get_full_name|first|upper }}
                                 </div>
                                 <span class="font-semibold text-gray-800">{{ c.get_full_name }}</span>
@@ -51,7 +53,7 @@
                             <span class="font-mono text-gray-600 bg-gray-100 px-2 py-1 rounded-lg text-xs">{{ c.dni }}</span>
                         </td>
 
-                        <!-- Contacto (email + teléfono) -->
+                        <!-- Contacto -->
                         <td class="py-4 px-5">
                             <div class="flex flex-col gap-1">
                                 <span class="text-gray-700 flex items-center gap-1">
@@ -82,22 +84,59 @@
                         <!-- Género -->
                         <td class="py-4 px-5">
                             {% if c.gender == 1 %}
-                                <span class="inline-flex items-center gap-1 bg-blue-50 text-blue-600 text-xs font-semibold px-2.5 py-1 rounded-full border border-blue-100">
+                                <span class="inline-flex items-center gap-1 bg-blue-50 text-blue-600 text-xs font-semibold
+                                             px-2.5 py-1 rounded-full border border-blue-100">
                                     <i class='bx bx-male'></i> Masculino
                                 </span>
                             {% elif c.gender == 2 %}
-                                <span class="inline-flex items-center gap-1 bg-pink-50 text-pink-600 text-xs font-semibold px-2.5 py-1 rounded-full border border-pink-100">
+                                <span class="inline-flex items-center gap-1 bg-pink-50 text-pink-600 text-xs font-semibold
+                                             px-2.5 py-1 rounded-full border border-pink-100">
                                     <i class='bx bx-female'></i> Femenino
                                 </span>
                             {% endif %}
                         </td>
 
-                        <!-- Descuento -->
+                        <!-- ── Descuento con vigencia ── -->
                         <td class="py-4 px-5">
-                            {% if c.discount_percentage > 0 %}
-                                <span class="inline-flex items-center gap-1 bg-amber-50 text-amber-700 text-xs font-bold px-2.5 py-1 rounded-full border border-amber-100">
-                                    <i class='bx bx-purchase-tag'></i> {{ c.discount_percentage }}%
-                                </span>
+                            {% if c.discount_percentage > 0 and c.discount_expiry %}
+
+                                {% if c.has_active_discount %}
+                                    <!-- Descuento activo y vigente -->
+                                    <div class="flex flex-col gap-1">
+                                        <span class="inline-flex items-center gap-1 bg-green-50 text-green-700 text-xs
+                                                     font-bold px-2.5 py-1 rounded-full border border-green-200">
+                                            <i class='bx bx-badge-check'></i> {{ c.discount_percentage }}% activo
+                                        </span>
+                                        <span class="text-xs text-gray-400 flex items-center gap-1 ml-1">
+                                            <i class='bx bx-calendar-check'></i>
+                                            hasta {{ c.discount_expiry|date:'d/m/Y' }}
+                                        </span>
+                                    </div>
+                                {% else %}
+                                    <!-- Descuento configurado pero expirado -->
+                                    <div class="flex flex-col gap-1">
+                                        <span class="inline-flex items-center gap-1 bg-red-50 text-red-600 text-xs
+                                                     font-bold px-2.5 py-1 rounded-full border border-red-200">
+                                            <i class='bx bx-time-five'></i> {{ c.discount_percentage }}% vencido
+                                        </span>
+                                        <span class="text-xs text-gray-400 flex items-center gap-1 ml-1">
+                                            <i class='bx bx-calendar-x'></i>
+                                            venció {{ c.discount_expiry|date:'d/m/Y' }}
+                                        </span>
+                                    </div>
+                                {% endif %}
+
+                            {% elif c.discount_percentage > 0 %}
+                                <!-- Descuento sin fecha de vigencia (no aplica) -->
+                                <div class="flex flex-col gap-1">
+                                    <span class="inline-flex items-center gap-1 bg-gray-100 text-gray-500 text-xs
+                                                 font-semibold px-2.5 py-1 rounded-full border border-gray-200">
+                                        <i class='bx bx-purchase-tag'></i> {{ c.discount_percentage }}%
+                                    </span>
+                                    <span class="text-xs text-amber-600 flex items-center gap-1 ml-1">
+                                        <i class='bx bx-error-circle'></i> sin vigencia
+                                    </span>
+                                </div>
                             {% else %}
                                 <span class="text-gray-400 text-xs">—</span>
                             {% endif %}
@@ -108,12 +147,14 @@
                             <div class="flex items-center justify-center gap-2">
                                 <a href="{% url 'super:customer_update' c.pk %}"
                                    title="Editar"
-                                   class="flex items-center gap-1 bg-green-50 hover:bg-green-600 text-green-600 hover:text-white px-3 py-1.5 rounded-lg text-xs font-semibold transition-all duration-200">
+                                   class="flex items-center gap-1 bg-green-50 hover:bg-green-600 text-green-600
+                                          hover:text-white px-3 py-1.5 rounded-lg text-xs font-semibold transition-all duration-200">
                                     <i class='bx bx-edit text-base'></i> Editar
                                 </a>
                                 <a href="{% url 'super:customer_delete' c.pk %}"
                                    title="Eliminar"
-                                   class="flex items-center gap-1 bg-red-50 hover:bg-red-600 text-red-600 hover:text-white px-3 py-1.5 rounded-lg text-xs font-semibold transition-all duration-200">
+                                   class="flex items-center gap-1 bg-red-50 hover:bg-red-600 text-red-600
+                                          hover:text-white px-3 py-1.5 rounded-lg text-xs font-semibold transition-all duration-200">
                                     <i class='bx bx-trash text-base'></i> Eliminar
                                 </a>
                             </div>
@@ -128,13 +169,13 @@
         <!-- Footer tabla -->
         <div class="px-5 py-3 bg-gray-50 border-t border-gray-200">
             <p class="text-sm text-gray-500">
-                <span class="font-semibold text-gray-700">{{ customers|length }}</span> cliente{{ customers|length|pluralize }} registrado{{ customers|length|pluralize }}
+                <span class="font-semibold text-gray-700">{{ customers|length }}</span>
+                cliente{{ customers|length|pluralize }} registrado{{ customers|length|pluralize }}
             </p>
         </div>
     </div>
 
     {% else %}
-    <!-- Estado vacío -->
     <div class="text-center py-16 bg-white rounded-2xl shadow-sm border border-gray-100">
         <i class='bx bx-user-x text-7xl text-gray-300 mb-4'></i>
         <h3 class="text-xl font-bold text-gray-600 mb-2">No hay clientes registrados</h3>
