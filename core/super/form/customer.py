@@ -5,7 +5,7 @@ from core.super.models import Customer
 class CustomerForm(ModelForm):
     class Meta:
         model = Customer
-        fields = ['name', 'last_name', 'dni', 'email', 'address', 'phone', 'birth_date', 'gender']
+        fields = ['name', 'last_name', 'dni', 'email', 'address', 'phone', 'birth_date', 'gender', 'discount_percentage']
         widgets = {
             'dni': forms.TextInput(attrs={
                 'class': 'form-control only-numbers', # Clase controlada por JS
@@ -22,6 +22,13 @@ class CustomerForm(ModelForm):
                 'minlength': '10',
                 'pattern': '[0-9]{10}',
                 'autocomplete': 'off'
+            }),
+            'discount_percentage': forms.NumberInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Ej: 10.00',
+                'step': '0.01',
+                'min': '0',
+                'max': '100',
             }),
             'email': forms.EmailInput(attrs={'class': 'form-control', 'placeholder': 'Email'}),
             'address': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Dirección'}),
