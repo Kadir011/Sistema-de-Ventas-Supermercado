@@ -115,21 +115,73 @@
                     </div>
                 </div>
 
-                <!-- Sección de Descuento -->
-                <div class="section-divider"><span>Descuento</span></div>
+                <!-- ══════════════════════════════════════════════════════
+                     SECCIÓN DESCUENTO
+                     Solo aplica a clientes con datos personales (no Consumidor Final).
+                     Válido únicamente para pagos en Efectivo o Tarjeta.
+                ══════════════════════════════════════════════════════ -->
+                <div class="section-divider"><span>Descuento personalizado</span></div>
+
+                <!-- Aviso informativo -->
+                <div class="flex items-start gap-3 rounded-xl px-4 py-3 mb-5 text-sm"
+                     style="background:#fefce8; border:1.5px solid #fde68a; color:#92400e;">
+                    <i class='bx bx-info-circle flex-shrink-0 mt-0.5' style="font-size:1.1rem;"></i>
+                    <div>
+                        El descuento se aplica <strong>solo a clientes identificados</strong> (con datos personales)
+                        y únicamente cuando pagan con <strong>Efectivo o Tarjeta</strong>.
+                        Nunca aplica a Consumidor Final ni a Transferencia bancaria.
+                        El porcentaje se descuenta del total antes de presentar el cobro.
+                    </div>
+                </div>
+
+                <!-- Descuento: porcentaje y vigencia -->
                 <div class="grid-2">
                     <div class="field-group">
                         <label class="field-label">
-                            <i class='bx bx-purchase-tag'></i>Descuento personalizado (%)
+                            <i class='bx bx-purchase-tag'></i>Descuento (%)
                         </label>
                         <input type="number" name="discount_percentage"
+                               id="id_discount_percentage"
                                value="{{ form.instance.discount_percentage|default:'0.00' }}"
                                class="field-input"
                                placeholder="0.00" step="0.01" min="0" max="100">
                         <span class="field-hint">
-                            0.00 = sin descuento · máximo 100%. Se aplica automáticamente en el checkout.
+                            0.00 = sin descuento &middot; máx. 100%
                         </span>
                     </div>
+
+                    <div class="field-group">
+                        <label class="field-label">
+                            <i class='bx bx-calendar-x'></i>Vigente hasta
+                            <span id="discount-expiry-badge"
+                                  class="ml-2 text-xs font-bold px-2 py-0.5 rounded-full hidden"
+                                  style="background:#dcfce7;color:#166534;">
+                                activo
+                            </span>
+                        </label>
+                        <input type="date" name="discount_expiry"
+                               id="id_discount_expiry"
+                               value="{{ form.instance.discount_expiry|default:'' }}"
+                               class="field-input">
+                        <span class="field-hint" id="discount-expiry-hint">
+                            Deja vacío si el cliente no tiene descuento activo.
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Preview dinámico del estado del descuento -->
+                <div id="discount-preview"
+                     class="hidden flex items-center gap-3 rounded-xl px-4 py-3 mt-3 text-sm"
+                     style="background:#f0fdf4; border:1.5px solid #bbf7d0; color:#166534;">
+                    <i class='bx bx-check-shield' style="font-size:1.2rem; flex-shrink:0;"></i>
+                    <span id="discount-preview-text"></span>
+                </div>
+
+                <div id="discount-expired-notice"
+                     class="hidden flex items-center gap-3 rounded-xl px-4 py-3 mt-3 text-sm"
+                     style="background:#fef2f2; border:1.5px solid #fecaca; color:#991b1b;">
+                    <i class='bx bx-error-circle' style="font-size:1.2rem; flex-shrink:0;"></i>
+                    <span>La fecha de vigencia ya venció — el descuento <strong>no</strong> se aplicará hasta que actualices la fecha.</span>
                 </div>
 
                 <!-- Botones -->
@@ -146,4 +198,72 @@
         </div>
     </div>
 </div>
+
+<script>
+(function () {
+    const pctInput    = document.getElementById('id_discount_percentage');
+    const expiryInput = document.getElementById('id_discount_expiry');
+    const badge       = document.getElementById('discount-expiry-badge');
+    const preview     = document.getElementById('discount-preview');
+    const previewText = document.getElementById('discount-preview-text');
+    const expiredNote = document.getElementById('discount-expired-notice');
+    const hint        = document.getElementById('discount-expiry-hint');
+
+    // Sugiere hoy + 2 meses cuando se escribe un descuento > 0 y el campo está vacío
+    pctInput.addEventListener('input', function () {
+        const pct = parseFloat(this.value) || 0;
+        if (pct > 0 && !expiryInput.value) {
+            const d = new Date();
+            d.setMonth(d.getMonth() + 2);
+            expiryInput.value = d.toISOString().slice(0, 10);
+        }
+        updatePreview();
+    });
+
+    expiryInput.addEventListener('input', updatePreview);
+
+    function updatePreview() {
+        const pct    = parseFloat(pctInput.value) || 0;
+        const expiry = expiryInput.value;
+
+        // Ocultar todo primero
+        preview.classList.add('hidden');
+        expiredNote.classList.add('hidden');
+        badge.classList.add('hidden');
+
+        if (pct <= 0 || !expiry) return;
+
+        const expiryDate = new Date(expiry + 'T00:00:00');
+        const today      = new Date(); today.setHours(0, 0, 0, 0);
+
+        const opts = { day: '2-digit', month: '2-digit', year: 'numeric' };
+        const expiryStr = expiryDate.toLocaleDateString('es-EC', opts);
+
+        if (expiryDate >= today) {
+            badge.classList.remove('hidden');
+            badge.textContent = 'activo';
+            badge.style.background = '#dcfce7';
+            badge.style.color = '#166534';
+
+            preview.classList.remove('hidden');
+            preview.style.background = '#f0fdf4';
+            preview.style.borderColor = '#bbf7d0';
+            preview.style.color = '#166534';
+            previewText.innerHTML =
+                `Descuento del <strong>${pct}%</strong> activo hasta el <strong>${expiryStr}</strong>. ` +
+                `Se aplicará automáticamente al finalizar la compra con Efectivo o Tarjeta.`;
+        } else {
+            badge.classList.remove('hidden');
+            badge.textContent = 'vencido';
+            badge.style.background = '#fee2e2';
+            badge.style.color = '#991b1b';
+            expiredNote.classList.remove('hidden');
+        }
+    }
+
+    // Ejecutar al cargar (para edición de cliente existente)
+    updatePreview();
+})();
+</script>
+
 {% endblock %}
