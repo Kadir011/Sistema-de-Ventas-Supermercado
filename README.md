@@ -33,12 +33,13 @@
 ![Builder](https://img.shields.io/badge/Pattern-Builder%2FDirector-10b981?style=flat-square&labelColor=0d1117)
 ![Idempotency](https://img.shields.io/badge/Feature-Idempotency-0ea5e9?style=flat-square&labelColor=0d1117)
 ![CrossBrowser](https://img.shields.io/badge/Feature-Cross--Browser-f97316?style=flat-square&labelColor=0d1117)
+![Discounts](https://img.shields.io/badge/Feature-Discount%20System-16a34a?style=flat-square&labelColor=0d1117)
 
 <br/>
 
 > **Vende · Gestiona · Escala** — Sistema integral con POS, tienda online e IA conversacional
 >
-> *Capa de servicios desacoplada con principios **SOLID**, idempotencia end-to-end y compatibilidad cross-browser — v1.2.0*
+> *Capa de servicios desacoplada con principios **SOLID**, idempotencia end-to-end, sistema de descuentos con vigencia y compatibilidad cross-browser — v1.3.0*
 
 </div>
 
@@ -54,10 +55,17 @@
 - [Arquitectura](#arquitectura)
 - [Principios SOLID aplicados](#principios-solid-aplicados)
 - [Patrones de Diseño](#patrones-de-diseño)
+- [Sistema de Descuentos con Vigencia](#sistema-de-descuentos-con-vigencia)
+  - [Reglas de negocio](#reglas-de-negocio)
+  - [Flujo del descuento](#flujo-del-descuento)
+  - [Estados del descuento](#estados-del-descuento)
 - [Seguridad e Idempotencia](#seguridad-e-idempotencia)
   - [Mecanismos de protección](#mecanismos-de-protección)
   - [Flujo de idempotencia (Checkout)](#flujo-de-idempotencia-checkout)
   - [Operaciones protegidas](#operaciones-protegidas)
+- [Chatbot con IA contextual](#chatbot-con-ia-contextual)
+  - [Contexto por rol](#contexto-por-rol)
+  - [Conocimiento del sistema de descuentos](#conocimiento-del-sistema-de-descuentos)
 - [Compatibilidad Cross-Browser](#compatibilidad-cross-browser)
 - [Sistema de Diseño Frontend](#sistema-de-diseño-frontend)
 - [Módulos del Sistema](#módulos-del-sistema)
@@ -73,6 +81,7 @@
 - [Variables de Entorno](#variables-de-entorno)
 - [Estructura del Proyecto](#estructura-del-proyecto)
 - [Changelog](#changelog)
+  - [v1.3.0 — Sistema de Descuentos + Chatbot Contextual](#v130--sistema-de-descuentos--chatbot-contextual)
   - [v1.2.0 — Diseño Frontend + Auditoría Cross-Browser](#v120--diseño-frontend--auditoría-cross-browser)
   - [v1.1.0 — Arquitectura SOLID + Idempotencia](#v110--arquitectura-solid--idempotencia)
   - [v1.0.0 — Versión inicial funcional](#v100--versión-inicial-funcional)
@@ -84,7 +93,7 @@
 
 **MySupermarket** es una plataforma empresarial de doble propósito que combina un robusto **sistema de punto de venta (POS)** con una experiencia de **e-commerce moderna**. Diseñada para supermercados medianos, unifica inventario, ventas físicas y compras online en un único sistema centralizado, eliminando procesos manuales fragmentados.
 
-El diferenciador principal radica en su **arquitectura desacoplada con SOLID**, un sistema de **idempotencia end-to-end** que elimina ventas duplicadas incluso ante doble clic o fallo de red, integración de **IA conversacional** con acceso al inventario en tiempo real, y un **sistema de diseño frontend consistente** con componentes reutilizables auditados para compatibilidad cross-browser.
+Los diferenciadores principales son su **arquitectura desacoplada con SOLID**, un sistema de **idempotencia end-to-end** que elimina ventas duplicadas incluso ante doble clic o fallo de red, un **sistema de descuentos con vigencia temporal** que el administrador asigna por cliente y que el chatbot conoce en tiempo real, integración de **IA conversacional** con acceso al inventario y datos personalizados por rol, y un **sistema de diseño frontend consistente** con componentes reutilizables auditados para compatibilidad cross-browser.
 
 ---
 
@@ -103,6 +112,7 @@ El diferenciador principal radica en su **arquitectura desacoplada con SOLID**, 
 | ![PostgreSQL](https://img.shields.io/badge/-PostgreSQL-336791?logo=postgresql&logoColor=white&style=flat-square) PostgreSQL | `15+` | Base de datos relacional |
 | ![Gemini](https://img.shields.io/badge/-Gemini_AI-4285F4?logo=google&logoColor=white&style=flat-square) Google GenAI | `1.57.0` | Chatbot conversacional |
 | ![xhtml2pdf](https://img.shields.io/badge/-xhtml2pdf-ef4444?style=flat-square) xhtml2pdf | `0.2.17` | Generación de facturas PDF |
+| ![openpyxl](https://img.shields.io/badge/-openpyxl-217346?style=flat-square) openpyxl | `3.1.5` | Exportación de reportes Excel |
 
 </td>
 <td width="50%" valign="top">
@@ -148,13 +158,16 @@ El diferenciador principal radica en su **arquitectura desacoplada con SOLID**, 
 │  │  PaymentProcessor   ← OCP + Strategy        │                 │
 │  │  IdempotencyService ← Singleton             │                 │
 │  │  ChatContextDirector← Builder + Director    │                 │
+│  │  CustomerContextBuilder ← descuento + hist. │                 │
 │  │  GeminiAIClient     ← DIP (AIClient ABC)    │                 │
 │  └──────┬──────────────────────────────────────┘                 │
 │         │                                                        │
 │  ┌──────▼──────┐  ┌──────────────────────────────────────────┐  │
 │  │   Models    │  │  Idempotency: UUID + UNIQUE constraint   │  │
-│  │ (ORM + BD)  │  │  Concurrencia: select_for_update + F()  │  │
-│  └─────────────┘  └──────────────────────────────────────────┘  │
+│  │ (ORM + BD)  │  │  Descuento: has_active_discount() +      │  │
+│  └─────────────┘  │  discount_expiry DateField               │  │
+│                   │  Concurrencia: select_for_update + F()   │  │
+│                   └──────────────────────────────────────────┘  │
 └───────────────────────────┬──────────────────────────────────────┘
                             │  ORM / Parameterized Queries
 ┌───────────────────────────▼──────────────────────────────────────┐
@@ -165,6 +178,7 @@ El diferenciador principal radica en su **arquitectura desacoplada con SOLID**, 
 ┌───────────────────────────▼──────────────────────────────────────┐
 │                    GOOGLE GEMINI API                              │
 │   Reintentos con backoff exponencial · Contexto dinámico por rol │
+│   Descuento activo del cliente inyectado en el prompt            │
 └──────────────────────────────────────────────────────────────────┘
 ```
 
@@ -174,7 +188,7 @@ El diferenciador principal radica en su **arquitectura desacoplada con SOLID**, 
 
 | Principio | Dónde se aplica |
 |---|---|
-| **S** — Single Responsibility | `CheckoutService`, `StoreContextBuilder`, `SalesContextBuilder` y `ChatContextDirector` tienen una única responsabilidad cada uno. Las vistas son thin controllers que delegan a servicios. |
+| **S** — Single Responsibility | `CheckoutService`, `StoreContextBuilder`, `SalesContextBuilder`, `CustomerContextBuilder` y `ChatContextDirector` tienen una única responsabilidad cada uno. Las vistas son thin controllers que delegan a servicios. |
 | **O** — Open/Closed | `PaymentProcessor` es extensible sin modificar el checkout: agregar un nuevo método de pago solo requiere una nueva clase y registrarla en `PAYMENT_PROCESSORS`. |
 | **L** — Liskov Substitution | `CashPaymentProcessor`, `CardPaymentProcessor` y `TransferPaymentProcessor` implementan `PaymentProcessor` y son intercambiables donde se espere la abstracción. |
 | **I** — Interface Segregation | `AIClient` (ABC) expone solo `generate()`. Las clases concretas no se ven forzadas a implementar métodos que no usan. |
@@ -188,7 +202,57 @@ El diferenciador principal radica en su **arquitectura desacoplada con SOLID**, 
 |---|---|---|
 | 🎯 **Strategy** | `PaymentProcessor` → `CashPaymentProcessor`, `CardPaymentProcessor`, `TransferPaymentProcessor` | Cada método de pago encapsula su lógica de cálculo de monto y cambio sin condiciones en el checkout. |
 | 🔒 **Singleton** | `IdempotencyService` | Una única instancia compartida gestiona la verificación y resolución de claves UUID en toda la aplicación, sin estado duplicado. |
-| 🏗️ **Builder / Director** | `ChatContextDirector` + `StoreContextBuilder` + `SalesContextBuilder` | Ensambla el contexto del chatbot por partes según el rol del usuario, sin que la vista conozca los detalles de construcción. |
+| 🏗️ **Builder / Director** | `ChatContextDirector` + `StoreContextBuilder` + `SalesContextBuilder` + `CustomerContextBuilder` + `GuestContextBuilder` | Ensambla el contexto del chatbot por partes según el rol del usuario — incluyendo ahora el estado activo del descuento personal — sin que la vista conozca los detalles de construcción. |
+
+---
+
+## Sistema de Descuentos con Vigencia
+
+El sistema implementa descuentos personalizados por cliente con **control de vigencia temporal**: el administrador puede asignar un porcentaje de descuento y una fecha de expiración. El sistema verifica en tiempo real si el descuento está activo antes de aplicarlo, tanto en el checkout como en el chatbot.
+
+### Reglas de negocio
+
+| Condición | Resultado |
+|---|---|
+| `discount_percentage > 0` + `discount_expiry >= hoy` + factura personal + pago Efectivo/Tarjeta | ✅ Descuento aplicado |
+| `discount_expiry < hoy` (fecha vencida) | ❌ Descuento no aplicado |
+| `discount_expiry` vacío | ❌ Descuento no aplicado |
+| Factura tipo "Consumidor Final" | ❌ Descuento no aplicado |
+| Método de pago "Transferencia bancaria" | ❌ Descuento no aplicado |
+
+### Flujo del descuento
+
+```
+Admin edita cliente → asigna discount_percentage + discount_expiry
+                                    │
+                        ┌───────────▼───────────┐
+                        │  has_active_discount() │  ← método en Customer model
+                        │  pct > 0              │
+                        │  expiry no nulo        │
+                        │  expiry >= hoy         │
+                        └───────────┬───────────┘
+                                    │
+            ┌───────────────────────┼───────────────────────┐
+            │                       │                       │
+     GET /checkout/         POST /checkout/          Chatbot API
+  Preview descuento       calculate_totals()     CustomerContextBuilder
+  en template HTML        CheckoutService        inyecta estado en prompt
+  (potencial máximo)      valida pago+tipo       Gemini responde con
+                          aplica o no aplica     info personalizada
+```
+
+### Estados del descuento
+
+El modelo `Customer` expone dos helpers que son usados en toda la aplicación — vistas, checkout, template y chatbot — para garantizar coherencia:
+
+```python
+customer.has_active_discount()      # bool — ¿aplica ahora mismo?
+customer.get_active_discount_pct()  # Decimal — porcentaje o 0.00
+```
+
+La lista de clientes en el panel admin muestra visualmente tres estados: **activo** (badge verde con fecha), **vencido** (badge rojo con fecha de vencimiento) y **sin vigencia** (badge gris con aviso).
+
+Al crear o editar un cliente con descuento > 0 el formulario sugiere automáticamente hoy + 2 meses como fecha de vigencia, con un preview en tiempo real que indica si el descuento está activo o ya venció.
 
 ---
 
@@ -239,6 +303,36 @@ Botón deshabilitado en JS al primer clic (defensa en profundidad)
 
 ---
 
+## Chatbot con IA contextual
+
+El chatbot usa **Google Gemini Flash** con contexto dinámico construido por el patrón **Builder/Director**. Cada rol recibe un prompt y un conjunto de datos diferente, ensamblados por `ChatContextDirector` a partir de builders especializados.
+
+### Contexto por rol
+
+| Rol | Datos inyectados en el prompt |
+|---|---|
+| **Admin** | Inventario completo · Resumen de ventas (24h / 7d / 30d) · Ticket promedio · Top 5 productos · Alertas de stock crítico (≤5 uds) · Productos agotados · Últimas 10 ventas con detalle |
+| **Cliente** | Catálogo disponible (stock > 0) · Historial de últimas 5 compras · **Estado del descuento personal** (activo con fecha, vencido, o sin descuento) · Métodos de pago activos |
+| **Visitante** | Totales de catálogo (productos, categorías, marcas) · Métodos de pago · Invitación a registrarse |
+
+### Conocimiento del sistema de descuentos
+
+El chatbot conoce el estado exacto del descuento de cada cliente gracias al `CustomerContextBuilder` actualizado:
+
+```
+Cliente con descuento activo   → bot informa porcentaje, fecha de vigencia
+                                  y condiciones (personal + Efectivo/Tarjeta)
+Cliente con descuento vencido  → bot informa que el descuento no aplica
+                                  y sugiere contactar al administrador
+Cliente sin descuento          → bot no menciona descuentos
+Admin pregunta por descuentos  → bot explica mecánica completa: asignación,
+                                  vigencia, condiciones y cómo renovar
+```
+
+Las acciones rápidas del chatbot están diferenciadas por rol. El admin tiene accesos directos a métricas, alertas de stock y análisis. El cliente tiene accesos a tienda, búsqueda de productos y consulta de su descuento. El visitante tiene accesos a catálogo y proceso de registro.
+
+---
+
 ## Compatibilidad Cross-Browser
 
 Auditoría completa aplicada sobre toda la codebase frontend:
@@ -279,6 +373,8 @@ Todos los formularios y páginas principales siguen un sistema de diseño consis
 
 **Componentes comunes:** Cards con gradiente en header, inputs con focus ring animado, botones con sombra y hover lift, breadcrumbs, grid-2/grid-3 responsive.
 
+**Formulario de descuento:** Preview dinámico en tiempo real con badge de estado (activo/vencido), sugerencia automática de fecha hoy + 2 meses, y aviso informativo con las condiciones de aplicación.
+
 ---
 
 ## Módulos del Sistema
@@ -291,6 +387,8 @@ Todos los formularios y páginas principales siguen un sistema de diseño consis
 - Catálogo público con filtros por categoría, marca y búsqueda
 - Carrito con actualización dinámica y validación de stock
 - Checkout con tipo de factura (Consumidor Final / Datos personales)
+- Descuento personalizado aplicado automáticamente según vigencia y método de pago
+- Preview del descuento en el GET del checkout con recalculo dinámico en JS
 - Métodos de pago: Efectivo, Tarjeta de Crédito/Débito, Transferencia
 - Historial de compras con descarga de facturas PDF
 
@@ -301,7 +399,9 @@ Todos los formularios y páginas principales siguen un sistema de diseño consis
 - Integración con Google Gemini Flash con reintentos automáticos
 - Contexto dinámico con inventario, precios y políticas en tiempo real
 - Respuestas diferenciadas por rol (visitante, cliente, administrador)
-- Admins reciben datos de ventas de últimas 24h/7d/30d
+- **Clientes**: informa su descuento activo, condiciones y fecha de vigencia
+- **Clientes**: avisa si el descuento expiró y sugiere renovarlo con el admin
+- Admins reciben datos de ventas de últimas 24h/7d/30d y pueden gestionar descuentos
 - Historial persistido en `localStorage` por usuario, limpiado al logout
 
 </td>
@@ -309,8 +409,11 @@ Todos los formularios y páginas principales siguen un sistema de diseño consis
 
 ### ⚙️ Panel Administrativo
 - CRUD completo de productos, categorías, marcas, clientes y vendedores
+- **Gestión de descuentos** por cliente con porcentaje y fecha de vigencia
+- Vista de lista con estado del descuento (activo / vencido / sin vigencia)
 - Registro histórico de ventas con búsqueda, filtros y modal de detalle
 - Generación automática de facturas PDF con datos censurados (PCI)
+- Reportes con exportación a Excel (5 hojas: resumen, detalle, productos, categorías, vendedores/clientes)
 - Dashboard con notificaciones de ventas de las últimas 24 horas
 
 </td>
@@ -348,12 +451,15 @@ Todos los formularios y páginas principales siguen un sistema de diseño consis
                   │                      │ transfer_account_masked  │
            ┌──────▼──────┐               │ idempotency_key (UUID) ◄─── UNIQUE
            │  CartItem   │               └───────────────────────────┘
-           │─────────────│    ┌─────────────┐     ┌─────────────┐
-           │ cart (FK)   │    │  Customer   │     │   Seller    │
-           │ product (FK)│    │─────────────│     │─────────────│
-           │ quantity    │    │ dni (unique)│     │ dni (unique)│
-           └─────────────┘    │ discount_%  │     │             │
-                              └─────────────┘     └─────────────┘
+           │─────────────│    ┌──────────────────────┐   ┌─────────────┐
+           │ cart (FK)   │    │       Customer        │   │   Seller    │
+           │ product (FK)│    │──────────────────────│   │─────────────│
+           │ quantity    │    │ dni (unique)          │   │ dni (unique)│
+           └─────────────┘    │ discount_percentage   │   │             │
+                              │ discount_expiry ◄──── │   └─────────────┘
+                              │ has_active_discount()  │
+                              │ get_active_discount_pct│
+                              └──────────────────────┘
 ```
 
 **Constraints de integridad activos en PostgreSQL:**
@@ -468,21 +574,28 @@ django_supermercado/
     │   │   ├── forms/auth.py  # Registro con get_or_create idempotente
     │   │   └── views/auth.py  # Login dual · logout con limpieza localStorage
     │   └── super/              # Módulo principal del negocio
-    │       ├── models.py      # Product · Sale · Cart · SaleDetail · …
+    │       ├── models.py      # Product · Sale · Cart · Customer (descuento+vigencia) · …
     │       ├── services/       # ← Capa de servicios (SOLID + Patrones)
     │       │   ├── ai_client.py           # DIP: AIClient ABC + GeminiAIClient
-    │       │   ├── chat_context.py        # Builder+Director: contexto chatbot
+    │       │   ├── chat_context.py        # Builder+Director: contexto por rol
+    │       │   │                          #   CustomerContextBuilder: descuento activo
     │       │   ├── checkout_service.py    # SRP: orquestación del checkout
+    │       │   │                          #   calculate_totals: valida vigencia descuento
     │       │   ├── idempotency_service.py # Singleton: claves UUID
     │       │   └── payment_processors.py  # OCP + Strategy: procesadores de pago
     │       ├── views/
     │       │   ├── cart.py    # POST correcto · select_for_update + F()
     │       │   ├── sale.py    # UUID idempotency · select_for_update · F()
-    │       │   ├── chatbot.py # Gemini con reintentos · contexto por rol
-    │       │   └── shop.py / product.py / customer.py / seller.py / home.py
-    │       ├── form/          # Formularios Django con validaciones
+    │       │   ├── chatbot.py # Gemini · contexto por rol · prompts de descuento
+    │       │   ├── customer.py # CRUD clientes · gestión de descuentos
+    │       │   └── shop.py / product.py / seller.py / home.py / reports.py
+    │       ├── form/
+    │       │   └── customer.py # CustomerForm: discount_percentage + discount_expiry
     │       └── urls.py        # 25+ rutas del módulo
     ├── templates/             # Templates HTML por módulo
+    │   └── super/customers/
+    │       ├── customer_form.html  # Preview dinámico del descuento en JS
+    │       └── customer_list.html  # Badge de estado (activo/vencido/sin vigencia)
     ├── static/
     │   ├── css/
     │   │   ├── components/    # base.css · home.css · menu.css · about.css
@@ -490,12 +603,13 @@ django_supermercado/
     │   │   ├── seller/        # seller_form.css · seller_delete.css
     │   │   ├── product/       # product_form.css · product_delete.css
     │   │   ├── sale/          # sale_form.css · sale_delete.css
+    │   │   ├── reports/       # reports.css
     │   │   └── security/      # auth_form.css · signup_form.css
     │   └── js/
-    │       ├── checkout.js        # Luhn · validación · data-attributes DOM
+    │       ├── checkout.js        # Luhn · validación · descuento dinámico en JS
     │       ├── sale.js            # Idempotencia UUID · botón anti-doble-clic
     │       ├── scan_barcode.js    # Quagga · votos · EAN-13 · cross-browser
-    │       ├── chatbot.js         # localStorage por usuario · historial
+    │       ├── chatbot.js         # localStorage por usuario · historial · acciones rápidas
     │       ├── barcode_validation.js
     │       ├── expiration_date.js
     │       ├── generate_password.js
@@ -509,10 +623,26 @@ django_supermercado/
 
 ## Changelog
 
+### v1.3.0 — Sistema de Descuentos + Chatbot Contextual
+
+- ✅ **Campo `discount_expiry`** en modelo `Customer`: fecha límite hasta la que aplica el descuento, con migración `0002_customer_discount_expiry`
+- ✅ **Helpers de negocio**: `has_active_discount()` y `get_active_discount_pct()` en el modelo — fuente única de verdad usada por vistas, checkout y chatbot
+- ✅ **CheckoutService**: `calculate_totals()` valida tipo de factura + método de pago + vigencia antes de aplicar descuento; nunca aplica en Consumidor Final ni Transferencia
+- ✅ **Checkout GET**: preview del descuento potencial con recalculo dinámico en JS al cambiar tipo de factura o método de pago
+- ✅ **Anti-doble-clic**: botón de finalizar compra deshabilitado tras el primer clic + protección UUID idempotente en backend
+- ✅ **CustomerForm**: campos `discount_percentage` + `discount_expiry` con sugerencia automática de hoy + 2 meses
+- ✅ **Preview dinámico**: JS en `customer_form.html` muestra badge activo/vencido y descripción del descuento en tiempo real mientras el admin escribe
+- ✅ **Lista de clientes**: tres estados visuales del descuento — activo (verde + fecha), vencido (rojo + fecha), sin vigencia (gris + aviso)
+- ✅ **CustomerContextBuilder**: consulta `has_active_discount()` y construye contexto personalizado para el chatbot con estado exacto del descuento del cliente autenticado
+- ✅ **Prompt de cliente**: instrucciones explícitas sobre cuándo aplica y cuándo no el descuento; el bot informa, no inventa
+- ✅ **Prompt de admin**: punto dedicado a la mecánica de descuentos para responder preguntas de gestión
+- ✅ **Aviso en checkout**: cuando el descuento no aplica (Consumidor Final / Transferencia) se muestra un aviso explicativo al cliente
+- ✅ **Sidebar del checkout**: refleja el descuento y el total final en tiempo real sincronizado con el formulario
+
 ### v1.2.0 — Diseño Frontend + Auditoría Cross-Browser
 
 - ✅ **Sistema de diseño unificado**: Plus Jakarta Sans, paleta por módulo, cards con gradiente, focus states animados
-- ✅ **CSS modular**: 10 archivos CSS separados por módulo (customer, seller, product, sale, security, components)
+- ✅ **CSS modular**: 10 archivos CSS separados por módulo (customer, seller, product, sale, security, components, reports)
 - ✅ **Navbar rediseñado**: cliente (verde) y admin (rojo oscuro), mobile-first con hamburger, user pill, cart badge
 - ✅ **Home page rediseñada**: hero fullscreen, floating cards, stats bar, products section, why-us, CTA bottom
 - ✅ **Formularios rediseñados**: customer, seller, product, sale con sistema de diseño consistente
@@ -524,6 +654,7 @@ django_supermercado/
 - ✅ **Accesibilidad**: `prefers-reduced-motion` en animaciones, placeholder para `input[type=date]` en Safari
 - ✅ **Chatbot mejorado**: limpieza de `localStorage` al logout, clave de storage por usuario/rol
 - ✅ **GeminiAIClient**: reintentos automáticos con backoff exponencial ante errores 503/UNAVAILABLE
+- ✅ **Módulo de Reportes**: vista con filtros avanzados, KPIs, gráficos Chart.js y exportación Excel (5 hojas)
 
 ### v1.1.0 — Arquitectura SOLID + Idempotencia
 
@@ -557,6 +688,6 @@ Full Stack Developer
 
 <br/>
 
-<sub>Built with ❤️ in Guayaquil, Ecuador · Django 5.1.4 · Python 3.10+ · v1.2.0</sub>
+<sub>Built with ❤️ in Guayaquil, Ecuador · Django 5.1.4 · Python 3.10+ · v1.3.0</sub>
 
 </div>
