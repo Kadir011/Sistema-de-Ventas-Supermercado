@@ -1,6 +1,7 @@
 {% extends 'components/base.html' %}
 {% load static %}
 {% block title %}{{ title }}{% endblock %}
+
 {% block content %}
 <div class="container mx-auto py-8 px-4">
     <div class="mb-6">
@@ -12,7 +13,6 @@
     
     <div class="bg-white rounded-lg shadow-lg overflow-hidden">
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 p-8">
-            <!-- Imagen del producto -->
             <div class="space-y-4">
                 <div class="bg-gray-100 rounded-lg overflow-hidden aspect-square flex items-center justify-center p-8">
                     {% if product.image %}
@@ -47,7 +47,6 @@
                 </div>
             </div>
             
-            <!-- Información del producto -->
             <div class="flex flex-col">
                 <div class="flex-1">
                     <div class="mb-4">
@@ -112,54 +111,47 @@
                     {% endif %}
                 </div>
                 
-                <!-- Botones de acción -->
                 <div class="space-y-3 mt-6">
+                {% if user.is_authenticated and user.is_admin_user %}
+                    <!-- El admin no puede agregar al carrito — solo navega de vuelta al panel -->
+                    <a href="{% url 'super:product_list' %}"
+                       class="w-full block bg-gray-200 text-gray-700 text-center py-4 rounded-lg font-bold hover:bg-gray-300 transition-all">
+                        <i class='bx bx-left-arrow-alt'></i> Volver a Productos
+                    </a>
+                    <a href="{% url 'super:menu' %}"
+                       class="w-full block bg-red-50 text-red-700 text-center py-3 rounded-lg font-semibold hover:bg-red-100 transition-all border border-red-200">
+                        <i class='bx bx-grid-alt'></i> Ir al Menú
+                    </a>
+                {% endif %}
+                
+                {% if not user.is_authenticated %}
+                    <!-- Los invitados que solo ingresan a la web no pueden agregar al carrito a menos que se registren -->
                     {% if product.state and product.stock > 0 %}
-                        <div class="flex items-center gap-4 mb-4">
-                            <label class="text-gray-700 font-semibold">Cantidad:</label>
-                            <div class="flex items-center gap-2">
-                                <button type="button" id="btn-decrease"
-                                        class="bg-gray-200 hover:bg-gray-300 w-10 h-10 rounded-full flex items-center justify-center transition-all">
-                                    <i class='bx bx-minus text-xl'></i>
-                                </button>
-                                <input type="number" id="quantity" value="1" min="1" max="{{ product.stock }}"
-                                       class="w-20 text-center border-2 border-gray-300 rounded-lg py-2 font-bold text-lg"
-                                       readonly>
-                                <button type="button" id="btn-increase"
-                                        class="bg-gray-200 hover:bg-gray-300 w-10 h-10 rounded-full flex items-center justify-center transition-all">
-                                    <i class='bx bx-plus text-xl'></i>
-                                </button>
-                            </div>
-                            <span class="text-sm text-gray-600">Disponible: {{ product.stock }}</span>
-                        </div>
-                        
-                        <!--CRÍTICO corregido: data-attributes en lugar de onclick con IDs inline, y la función usa POST con CSRF-->
-                        <button type="button" id="btn-add-cart"
-                                data-product-id="{{ product.id_product }}"
-                                data-max-stock="{{ product.stock }}"
-                                class="w-full bg-green-600 text-white py-4 rounded-lg font-bold text-lg hover:bg-green-700 transition-all flex items-center justify-center gap-2">
-                            <i class='bx bx-cart-add text-2xl'></i> Agregar al Carrito
-                        </button>
+                       <a href="{% url 'security:register' %}" 
+                          class="w-full block bg-green-600 text-white text-center py-4 rounded-lg font-bold text-lg hover:bg-green-700 transition-all flex items-center justify-center gap-2">
+                          <i class='bx bx-user-plus text-2xl'></i> Regístrate para Comprar
+                       </a>
                     {% else %}
                         <button disabled
                                 class="w-full bg-gray-300 text-gray-500 py-4 rounded-lg font-bold text-lg cursor-not-allowed flex items-center justify-center gap-2">
                             <i class='bx bx-x-circle text-2xl'></i> Producto No Disponible
                         </button>
                     {% endif %}
-                    
-                    <a href="{% url 'super:shop' %}" 
+
+                    <a href="{% url 'super:catalog' %}"
                        class="w-full block bg-gray-200 text-gray-700 text-center py-4 rounded-lg font-bold hover:bg-gray-300 transition-all">
-                        <i class='bx bx-left-arrow-alt'></i> Seguir Comprando
+                       <i class='bx bx-left-arrow-alt'></i> Volver al Catálogo
                     </a>
+                {% endif %}
                 </div>
             </div>
         </div>
     </div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
+
 <script>
-/* CRÍTICO corregido: getCsrfToken() y fetch con POST + X-CSRFToken.
-   El método GET no debe usarse para operaciones con side effects. */
 function getCsrfToken() {
     const name = 'csrftoken';
     const cookies = document.cookie.split(';');
@@ -179,41 +171,56 @@ function showNotification(message, type) {
 }
 
 document.addEventListener('DOMContentLoaded', function () {
+    // 1. Lógica del Código de Barras (Prioridad)
+    const barcodeElement = document.getElementById('barcode');
+    const barcodeValue = "{{ product.barcode }}";
+    
+    if (barcodeElement && barcodeValue && typeof JsBarcode !== 'undefined') {
+        try {
+            JsBarcode("#barcode", barcodeValue, {
+                format: "EAN13",
+                lineColor: "#000",
+                width: 2,
+                height: 60,
+                displayValue: true
+            });
+        } catch (e) {
+            console.error("Error generando barcode:", e);
+        }
+    }
+
+    // 2. Lógica del Carrito (Solo si los elementos existen en el DOM)
     const quantityInput = document.getElementById('quantity');
     const btnDecrease   = document.getElementById('btn-decrease');
     const btnIncrease   = document.getElementById('btn-increase');
     const btnAddCart    = document.getElementById('btn-add-cart');
 
-    if (!quantityInput) return;
+    if (quantityInput && btnAddCart) {
+        const maxStock = parseInt(btnAddCart.dataset.maxStock || '0');
 
-    const maxStock = parseInt(btnAddCart?.dataset.maxStock || '0');
+        if (btnDecrease) {
+            btnDecrease.addEventListener('click', () => {
+                const v = parseInt(quantityInput.value);
+                if (v > 1) quantityInput.value = v - 1;
+            });
+        }
 
-    if (btnDecrease) {
-        btnDecrease.addEventListener('click', function () {
-            const v = parseInt(quantityInput.value);
-            if (v > 1) quantityInput.value = v - 1;
-        });
-    }
+        if (btnIncrease) {
+            btnIncrease.addEventListener('click', () => {
+                const v = parseInt(quantityInput.value);
+                if (v < maxStock) quantityInput.value = v + 1;
+            });
+        }
 
-    if (btnIncrease) {
-        btnIncrease.addEventListener('click', function () {
-            const v = parseInt(quantityInput.value);
-            if (v < maxStock) quantityInput.value = v + 1;
-        });
-    }
-
-    if (btnAddCart) {
         btnAddCart.addEventListener('click', function () {
             const productId = this.dataset.productId;
             const quantity  = parseInt(quantityInput.value);
-
-            /* Agregar múltiples veces según la cantidad, secuencialmente */
             let addedCount = 0;
 
             function addNext() {
                 if (addedCount >= quantity) {
-                    updateCartCount();
-                    showNotification(`¡${quantity} producto(s) agregado(s) al carrito!`, 'success');
+                    if(typeof updateCartCount === 'function') updateCartCount();
+                    showNotification(`¡${quantity} producto(s) agregado(s)!`, 'success');
                     return;
                 }
                 fetch(`/carrito/agregar/${productId}/`, {
@@ -229,29 +236,14 @@ document.addEventListener('DOMContentLoaded', function () {
                         addedCount++;
                         addNext();
                     } else {
-                        showNotification(data.error || 'Error al agregar producto', 'error');
+                        showNotification(data.error || 'Error al agregar', 'error');
                     }
                 })
                 .catch(() => showNotification('Error de conexión', 'error'));
             }
-
             addNext();
         });
     }
-
-    /* Código de barras */
-    {% if product.barcode %}
-    const barcodeValue = "{{ product.barcode }}";
-    if (barcodeValue && typeof JsBarcode !== 'undefined') {
-        JsBarcode("#barcode", barcodeValue, {
-            format: "EAN13",
-            lineColor: "#000",
-            width: 2,
-            height: 60,
-            displayValue: true
-        });
-    }
-    {% endif %}
 });
 </script>
-{% endblock %}
+{% endblock %} 
