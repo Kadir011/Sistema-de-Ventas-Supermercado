@@ -1,0 +1,68 @@
+# Entorno virtual
+env/
+venv/
+venv3/
+.venv/
+ENV/
+
+# Cache de Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.py[cod]
+*$py.class
+
+# Base de datos local
+*.db
+*.sqlite3
+*.sqlite3-journal
+
+# Variables de entorno (se pasa en tiempo de ejecución)
+.env
+.env.local
+.env.*.local
+
+# Archivos estáticos y medios generados
+staticfiles/
+media/
+
+# IDEs y editores
+.vscode/
+.idea/
+*.orig
+*.swo
+*.swp
+*~
+.DS_Store
+Thumbs.db
+
+# Git
+.git/
+.gitignore
+.gitattributes
+
+# Docker (no necesitamos incluirlos dentro de la imagen)
+Dockerfile
+docker-compose.yml
+.dockerignore
+
+# Logs
+*.log
+logs/
+/log/
+
+# Tests y scripts locales
+run_tests.py
+**/test_local.py
+
+# Documentación y archivos de solo lectura
+README.md
+*.md
+
+# Archivos temporales
+*.tmp
+*.bak
+.cache/
+tmp/
+temp/ 
