@@ -15,17 +15,9 @@
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 p-8">
             <div class="space-y-4">
                 <div class="bg-gray-100 rounded-lg overflow-hidden aspect-square flex items-center justify-center p-8">
-                    {% if product.image %}
-                        <img src="{{ product.get_image_url }}" 
-                             alt="{{ product.name }}"
-                             class="w-full h-full object-contain"
-                             id="mainImage">
-                    {% else %}
-                        <div class="text-center">
-                            <i class='bx bx-package text-9xl text-gray-400'></i>
-                            <p class="text-gray-500 mt-4">Sin imagen disponible</p>
-                        </div>
-                    {% endif %}
+                    <img src="{{ product.get_image_url }}" 
+                         alt="{{ product.name }}" 
+                         class="w-full h-full object-cover">
                 </div>
                 
                 <div class="grid grid-cols-3 gap-4">

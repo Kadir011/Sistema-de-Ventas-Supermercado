@@ -42,14 +42,10 @@
             {% for p in products %}
             <div class="bg-white rounded-lg shadow-md hover:shadow-xl transition-all overflow-hidden group">
                 <div class="relative h-48 bg-gray-100 overflow-hidden">
-                    {% if p.image %}
-                        <img src="{{ p.get_image_url }}" alt="{{ p.name }}" 
-                             class="w-full h-full object-contain group-hover:scale-110 transition-transform duration-300">
-                    {% else %}
-                        <div class="w-full h-full flex justify-center items-center bg-gray-200 text-gray-400">
-                            <i class='bx bx-package text-6xl'></i>
-                        </div>
-                    {% endif %}
+                    <img src="{{ p.get_image_url }}" 
+                         alt="{{ p.name }}" 
+                         class="w-full h-full object-contain group-hover:scale-110 transition-transform duration-300">
+                         
                     <div class="absolute top-2 right-2 bg-green-600 text-white px-2 py-1 rounded-full text-xs font-bold">
                         Stock: {{ p.stock }}
                     </div>

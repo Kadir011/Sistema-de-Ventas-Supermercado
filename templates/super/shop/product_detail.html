@@ -15,17 +15,10 @@
             <!-- Imagen del producto -->
             <div class="space-y-4">
                 <div class="bg-gray-100 rounded-lg overflow-hidden aspect-square flex items-center justify-center p-8">
-                    {% if product.image %}
-                        <img src="{{ product.get_image_url }}" 
+                    <img src="{{ product.get_image_url }}" 
                              alt="{{ product.name }}"
                              class="w-full h-full object-contain"
                              id="mainImage">
-                    {% else %}
-                        <div class="text-center">
-                            <i class='bx bx-package text-9xl text-gray-400'></i>
-                            <p class="text-gray-500 mt-4">Sin imagen disponible</p>
-                        </div>
-                    {% endif %}
                 </div>
                 
                 <!-- Información adicional -->
