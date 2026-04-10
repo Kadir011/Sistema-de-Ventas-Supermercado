@@ -1,9 +1,8 @@
 from django.conf import settings
 
 def get_image(image):
-    if image:
-        return '{}{}'.format(settings.MEDIA_URL, image)
-    return '/static/img/default.jpg'
-
-
-
+    # Si hay imagen, devuelve su URL oficial (Cloudinary se encarga)
+    if image and hasattr(image, 'url'):
+        return image.url
+    # Si no hay imagen, devuelve la imagen por defecto de tus archivos estáticos
+    return f"{settings.STATIC_URL}img/default.jpg"
