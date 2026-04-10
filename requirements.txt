@@ -98,3 +98,7 @@ et_xmlfile==2.0.0
 
 # ── Utilidades de fecha y hora ─────────────────────────────────
 python-dateutil==2.9.0.post0
+
+# ── Cloudinary ─────────────────────────────────
+cloudinary==1.41.0
+django-cloudinary-storage==0.3.0 
