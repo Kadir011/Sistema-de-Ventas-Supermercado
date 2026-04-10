@@ -16,23 +16,23 @@ document.addEventListener("DOMContentLoaded", () => {
     const userName = (typeof CHATBOT_USER_NAME !== "undefined") ? CHATBOT_USER_NAME : "Invitado";
 
     const STORAGE_PREFIX = `chatbot_${userRole}_${userName.replace(/\s+/g, '_')}`;
-    const KEY_HISTORY    = `${STORAGE_PREFIX}_history`;
-    const KEY_MESSAGES   = `${STORAGE_PREFIX}_messages`;
-    const KEY_WELCOME    = `${STORAGE_PREFIX}_welcome`;
+    const KEY_HISTORY = `${STORAGE_PREFIX}_history`;
+    const KEY_MESSAGES = `${STORAGE_PREFIX}_messages`;
+    const KEY_WELCOME = `${STORAGE_PREFIX}_welcome`;
 
     /* ── Elementos DOM ───────────────────────────────────────── */
-    const chatbotButton    = document.getElementById("chatbot-button");
-    const chatbotModal     = document.getElementById("chatbot-modal");
-    const closeChatbot     = document.getElementById("close-chatbot");
-    const sendMessage      = document.getElementById("send-message");
-    const chatInput        = document.getElementById("chat-input");
+    const chatbotButton = document.getElementById("chatbot-button");
+    const chatbotModal = document.getElementById("chatbot-modal");
+    const closeChatbot = document.getElementById("close-chatbot");
+    const sendMessage = document.getElementById("send-message");
+    const chatInput = document.getElementById("chat-input");
     const messageContainer = document.getElementById("message-container");
 
     if (!chatbotButton || !chatbotModal) return;
 
     /* ── Storage helpers ─────────────────────────────────────── */
     const storageGet = (k) => { try { return localStorage.getItem(k); } catch { return null; } };
-    const storageSet = (k, v) => { try { localStorage.setItem(k, v); } catch {} };
+    const storageSet = (k, v) => { try { localStorage.setItem(k, v); } catch { } };
 
     let conversationHistory = [];
     let welcomeShown = storageGet(KEY_WELCOME) === "true";
@@ -40,7 +40,7 @@ document.addEventListener("DOMContentLoaded", () => {
     try {
         const raw = storageGet(KEY_HISTORY);
         if (raw) conversationHistory = JSON.parse(raw);
-    } catch {}
+    } catch { }
 
     function persistHistory() {
         storageSet(KEY_HISTORY, JSON.stringify(conversationHistory));
@@ -53,7 +53,7 @@ document.addEventListener("DOMContentLoaded", () => {
             msgs.push({ text, sender, type });
             if (msgs.length > 80) msgs.splice(0, msgs.length - 80);
             storageSet(KEY_MESSAGES, JSON.stringify(msgs));
-        } catch {}
+        } catch { }
     }
 
     function restoreMessages() {
@@ -62,49 +62,61 @@ document.addEventListener("DOMContentLoaded", () => {
             if (!raw) return;
             JSON.parse(raw).forEach(({ text, sender, type }) => _renderBubble(text, sender, type));
             scrollToBottom();
-        } catch {}
+        } catch { }
     }
 
     /* ── Configuración de acciones rápidas por rol ───────────── */
     const QUICK_ACTIONS = {
         admin: [
-            { label: "📊 Ventas de hoy",         prompt: "¿Cuántas ventas y cuánto se recaudó hoy?" },
-            { label: "⚠️ Alertas de stock",       prompt: "¿Qué productos tienen stock crítico o están agotados?" },
-            { label: "📈 Resumen ejecutivo",      prompt: "Dame un resumen ejecutivo del negocio" },
+            { label: "📊 Ventas de hoy", prompt: "¿Cuántas ventas y cuánto se recaudó hoy?" },
+            { label: "⚠️ Alertas de stock", prompt: "¿Qué productos tienen stock crítico o están agotados?" },
+            { label: "📈 Resumen ejecutivo", prompt: "Dame un resumen ejecutivo del negocio" },
             { label: "🏆 Top productos (30 días)", prompt: "¿Cuáles son los productos más vendidos este mes?" },
-            { label: "🗂️ Ir a Reportes",          prompt: "Quiero ver los reportes del sistema. ¿Cómo llego?" },
+            { label: "🗂️ Ir a Reportes", prompt: "Quiero ver los reportes del sistema. ¿Cómo llego?" },
             { label: "📦 Productos con poco stock", prompt: "Lista los 5 productos con menos stock disponible" },
         ],
         customer: [
-            { label: "🛒 Ver tienda",             prompt: "¿Cómo entro a la tienda para comprar?" },
-            { label: "🔍 Buscar producto",         prompt: "Ayúdame a buscar un producto" },
-            { label: "💳 Métodos de pago",         prompt: "¿Qué métodos de pago aceptan?" },
-            { label: "📄 Mis compras",             prompt: "¿Cómo veo mis compras anteriores y descargo mis facturas?" },
-            { label: "🏷️ Precios y descuentos",   prompt: "¿Cómo funcionan los descuentos? ¿Mis precios incluyen IVA?" },
-            { label: "📷 Escáner de productos",    prompt: "¿Puedo escanear un código de barras para ver el precio?" },
+            { label: "🛒 Ver tienda", prompt: "¿Cómo entro a la tienda para comprar?" },
+            { label: "🔍 Buscar producto", prompt: "Ayúdame a buscar un producto" },
+            { label: "💳 Métodos de pago", prompt: "¿Qué métodos de pago aceptan?" },
+            { label: "📄 Mis compras", prompt: "¿Cómo veo mis compras anteriores y descargo mis facturas?" },
+            { label: "🏷️ Precios y descuentos", prompt: "¿Cómo funcionan los descuentos? ¿Mis precios incluyen IVA?" },
+            { label: "📷 Escáner de productos", prompt: "¿Puedo escanear un código de barras para ver el precio?" },
         ],
         guest: [
-            { label: "🎁 ¿Qué ofrecen?",          prompt: "¿Qué productos y marcas tienen disponibles?" },
-            { label: "📝 ¿Cómo me registro?",      prompt: "¿Cómo creo una cuenta para comprar?" },
-            { label: "💰 ¿Cómo son los precios?",  prompt: "¿Los precios incluyen IVA? ¿Tienen descuentos?" },
-            { label: "💳 Formas de pago",           prompt: "¿Qué métodos de pago aceptan?" },
-            { label: "📦 Proceso de compra",        prompt: "¿Cómo funciona el proceso de compra?" },
-            { label: "🔒 ¿Es seguro comprar?",      prompt: "¿Es seguro comprar aquí? ¿Protegen mis datos?" },
+            { label: "🎁 ¿Qué ofrecen?", prompt: "¿Qué productos y marcas tienen disponibles?" },
+            { label: "📝 ¿Cómo me registro?", prompt: "¿Cómo creo una cuenta para comprar?" },
+            { label: "💰 ¿Cómo son los precios?", prompt: "¿Los precios incluyen IVA? ¿Tienen descuentos?" },
+            { label: "💳 Formas de pago", prompt: "¿Qué métodos de pago aceptan?" },
+            { label: "📦 Proceso de compra", prompt: "¿Cómo funciona el proceso de compra?" },
+            { label: "🔒 ¿Es seguro comprar?", prompt: "¿Es seguro comprar aquí? ¿Protegen mis datos?" },
         ],
     };
 
     /* ── Resumen ejecutivo por rol ───────────────────────────── */
     async function fetchQuickSummary() {
         try {
-            const res = await fetch('/chatbot/summary/');
+            const csrf = getCookie("csrftoken") || "";
+            const res = await fetch('/chatbot/summary/', {
+                method: 'GET',
+                credentials: 'same-origin',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    ...(csrf ? { 'X-CSRFToken': csrf } : {}),
+                },
+            });
             if (!res.ok) return null;
-            return await res.json();
+            const data = await res.json();
+            // Si el servidor responde como guest pero el rol local es customer/admin,
+            // significa que la sesión no viajó — devolver null para no mostrar nada
+            if (data.role === 'guest' && userRole !== 'guest') return null;
+            return data;
         } catch { return null; }
     }
 
     function buildAdminSummaryHTML(data) {
         const alerts = [];
-        if (data.out_of_stock > 0)    alerts.push(`<span class="alert-chip red">⚠️ ${data.out_of_stock} agotados</span>`);
+        if (data.out_of_stock > 0) alerts.push(`<span class="alert-chip red">⚠️ ${data.out_of_stock} agotados</span>`);
         if (data.low_stock_count > 0) alerts.push(`<span class="alert-chip amber">📦 ${data.low_stock_count} stock crítico</span>`);
 
         return `
@@ -204,7 +216,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 // Resumen ejecutivo para admin y customer
                 if (userRole === 'admin' || userRole === 'customer') {
                     const summary = await fetchQuickSummary();
-                    if (summary && summary.data && Object.keys(summary.data).length) {
+                    if (summary && summary.data && summary.role === userRole && Object.keys(summary.data).length > 0) {
                         const html = userRole === 'admin'
                             ? buildAdminSummaryHTML(summary.data)
                             : buildCustomerSummaryHTML(summary.data);
@@ -281,7 +293,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
             const botReply = data.reply || "No obtuve respuesta.";
 
-            conversationHistory.push({ role: "user",  content: userMessage });
+            conversationHistory.push({ role: "user", content: userMessage });
             conversationHistory.push({ role: "model", content: botReply });
             if (conversationHistory.length > 80) conversationHistory = conversationHistory.slice(-80);
             persistHistory();
@@ -340,9 +352,9 @@ document.addEventListener("DOMContentLoaded", () => {
     function markdownToHtml(text) {
         return text
             .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")
-            .replace(/\*(.*?)\*/g,     "<em>$1</em>")
+            .replace(/\*(.*?)\*/g, "<em>$1</em>")
             .replace(/\n\n/g, "</p><p class='mt-2'>")
-            .replace(/\n/g,   "<br>");
+            .replace(/\n/g, "<br>");
     }
 
     function scrollToBottom() {
