@@ -46,6 +46,8 @@ INSTALLED_APPS = [
     'crispy_forms',
     'crispy_bootstrap5',
     'django_extensions',
+    'cloudinary_storage',
+    'cloudinary',
 
     #apps de usuario
     'core.super',
@@ -138,6 +140,21 @@ TIME_ZONE = 'America/Guayaquil'
 USE_I18N = True
 
 USE_TZ = True
+
+# Configuración de Cloudinary
+CLOUDINARY_STORAGE = {
+    'CLOUDINARY_URL': os.environ.get('CLOUDINARY_URL')
+}
+
+# Configuración de Almacenamiento (Django 5.1)
+STORAGES = {
+    "default": {
+        "BACKEND": "cloudinary_storage.storage.MediaCloudinaryStorage",
+    },
+    "staticfiles": {
+        "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
+    },
+}
 
 
 # Static files (CSS, JavaScript, Images)
