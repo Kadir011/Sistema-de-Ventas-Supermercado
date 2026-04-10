@@ -24,6 +24,7 @@
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-3.x-06B6D4?style=flat-square&logo=tailwindcss&logoColor=white&labelColor=0d1117)](https://tailwindcss.com/)
 [![Gemini AI](https://img.shields.io/badge/Gemini_AI-Flash-4285F4?style=flat-square&logo=google&logoColor=white&labelColor=0d1117)](https://ai.google.dev/)
 [![License](https://img.shields.io/badge/License-MIT-22c55e?style=flat-square&labelColor=0d1117)](.)
+[![Docker](https://img.shields.io/badge/Docker-ready-2496ED?style=flat-square&logo=docker&logoColor=white&labelColor=0d1117)](https://docker.com/)
 
 <br/>
 
@@ -47,57 +48,38 @@
 
 ## Tabla de Contenidos
 
-- [Tabla de Contenidos](#tabla-de-contenidos)
 - [Acerca del Proyecto](#acerca-del-proyecto)
 - [Stack Tecnológico](#stack-tecnológico)
-  - [Backend](#backend)
-  - [Frontend](#frontend)
 - [Arquitectura](#arquitectura)
 - [Principios SOLID aplicados](#principios-solid-aplicados)
 - [Patrones de Diseño](#patrones-de-diseño)
 - [Sistema de Descuentos con Vigencia](#sistema-de-descuentos-con-vigencia)
-  - [Reglas de negocio](#reglas-de-negocio)
-  - [Flujo del descuento](#flujo-del-descuento)
-  - [Estados del descuento](#estados-del-descuento)
 - [Seguridad e Idempotencia](#seguridad-e-idempotencia)
-  - [Mecanismos de protección](#mecanismos-de-protección)
-  - [Flujo de idempotencia (Checkout)](#flujo-de-idempotencia-checkout)
-  - [Operaciones protegidas](#operaciones-protegidas)
 - [Chatbot con IA contextual](#chatbot-con-ia-contextual)
-  - [Contexto por rol](#contexto-por-rol)
-  - [Conocimiento del sistema de descuentos](#conocimiento-del-sistema-de-descuentos)
 - [Compatibilidad Cross-Browser](#compatibilidad-cross-browser)
 - [Sistema de Diseño Frontend](#sistema-de-diseño-frontend)
 - [Módulos del Sistema](#módulos-del-sistema)
-  - [🛒 Tienda Online (Cliente)](#-tienda-online-cliente)
-  - [🤖 Chatbot con IA](#-chatbot-con-ia)
-  - [⚙️ Panel Administrativo](#️-panel-administrativo)
-  - [📷 Escáner EAN-13](#-escáner-ean-13)
 - [Modelos de Datos](#modelos-de-datos)
-- [Instalación](#instalación)
-  - [Requisitos previos](#requisitos-previos)
-  - [Instalación rápida (Linux/Mac)](#instalación-rápida-linuxmac)
-  - [Instalación manual](#instalación-manual)
+- [🐳 Instalación con Docker](#-instalación-con-docker)
+- [🖥️ Instalación Local (setup.sh)](#️-instalación-local-setupsh)
 - [Variables de Entorno](#variables-de-entorno)
 - [Estructura del Proyecto](#estructura-del-proyecto)
 - [Changelog](#changelog)
-  - [v1.3.0 — Sistema de Descuentos + Chatbot Contextual](#v130--sistema-de-descuentos--chatbot-contextual)
-  - [v1.2.0 — Diseño Frontend + Auditoría Cross-Browser](#v120--diseño-frontend--auditoría-cross-browser)
-  - [v1.1.0 — Arquitectura SOLID + Idempotencia](#v110--arquitectura-solid--idempotencia)
-  - [v1.0.0 — Versión inicial funcional](#v100--versión-inicial-funcional)
 - [Desarrollador](#desarrollador)
 
 ---
 
 ## Acerca del Proyecto
 
-**MySupermarket** es una plataforma empresarial de doble propósito que combina un robusto **sistema de punto de venta (POS)** con una experiencia de **e-commerce moderna**. Diseñada para supermercados medianos, unifica inventario, ventas físicas y compras online en un único sistema centralizado, eliminando procesos manuales fragmentados.
+**MySupermarket** es una plataforma empresarial de doble propósito que combina un robusto **sistema de punto de venta (POS)** con una experiencia de **e-commerce moderna**. Diseñada para supermercados medianos, unifica inventario, ventas físicas y compras online en un único sistema centralizado.
 
 Los diferenciadores principales son su **arquitectura desacoplada con SOLID**, un sistema de **idempotencia end-to-end** que elimina ventas duplicadas incluso ante doble clic o fallo de red, un **sistema de descuentos con vigencia temporal** que el administrador asigna por cliente y que el chatbot conoce en tiempo real, integración de **IA conversacional** con acceso al inventario y datos personalizados por rol, y un **sistema de diseño frontend consistente** con componentes reutilizables auditados para compatibilidad cross-browser.
 
 ---
 
 ## Stack Tecnológico
+
+<div align="center">
 
 <table>
 <tr>
@@ -131,6 +113,8 @@ Los diferenciadores principales son su **arquitectura desacoplada con SOLID**, u
 </td>
 </tr>
 </table>
+
+</div>
 
 ---
 
@@ -186,6 +170,8 @@ Los diferenciadores principales son su **arquitectura desacoplada con SOLID**, u
 
 ## Principios SOLID aplicados
 
+<div align="center">
+
 | Principio | Dónde se aplica |
 |---|---|
 | **S** — Single Responsibility | `CheckoutService`, `StoreContextBuilder`, `SalesContextBuilder`, `CustomerContextBuilder` y `ChatContextDirector` tienen una única responsabilidad cada uno. Las vistas son thin controllers que delegan a servicios. |
@@ -194,15 +180,21 @@ Los diferenciadores principales son su **arquitectura desacoplada con SOLID**, u
 | **I** — Interface Segregation | `AIClient` (ABC) expone solo `generate()`. Las clases concretas no se ven forzadas a implementar métodos que no usan. |
 | **D** — Dependency Inversion | `ChatbotProxyView` depende de la abstracción `AIClient`, no de `GeminiAIClient` directamente. Sustituir el proveedor de IA no requiere tocar la vista. |
 
+</div>
+
 ---
 
 ## Patrones de Diseño
+
+<div align="center">
 
 | Patrón | Implementación | Beneficio |
 |---|---|---|
 | 🎯 **Strategy** | `PaymentProcessor` → `CashPaymentProcessor`, `CardPaymentProcessor`, `TransferPaymentProcessor` | Cada método de pago encapsula su lógica de cálculo de monto y cambio sin condiciones en el checkout. |
 | 🔒 **Singleton** | `IdempotencyService` | Una única instancia compartida gestiona la verificación y resolución de claves UUID en toda la aplicación, sin estado duplicado. |
-| 🏗️ **Builder / Director** | `ChatContextDirector` + `StoreContextBuilder` + `SalesContextBuilder` + `CustomerContextBuilder` + `GuestContextBuilder` | Ensambla el contexto del chatbot por partes según el rol del usuario — incluyendo ahora el estado activo del descuento personal — sin que la vista conozca los detalles de construcción. |
+| 🏗️ **Builder / Director** | `ChatContextDirector` + `StoreContextBuilder` + `SalesContextBuilder` + `CustomerContextBuilder` + `GuestContextBuilder` | Ensambla el contexto del chatbot por partes según el rol del usuario — incluyendo el estado activo del descuento personal — sin que la vista conozca los detalles de construcción. |
+
+</div>
 
 ---
 
@@ -212,6 +204,8 @@ El sistema implementa descuentos personalizados por cliente con **control de vig
 
 ### Reglas de negocio
 
+<div align="center">
+
 | Condición | Resultado |
 |---|---|
 | `discount_percentage > 0` + `discount_expiry >= hoy` + factura personal + pago Efectivo/Tarjeta | ✅ Descuento aplicado |
@@ -219,6 +213,8 @@ El sistema implementa descuentos personalizados por cliente con **control de vig
 | `discount_expiry` vacío | ❌ Descuento no aplicado |
 | Factura tipo "Consumidor Final" | ❌ Descuento no aplicado |
 | Método de pago "Transferencia bancaria" | ❌ Descuento no aplicado |
+
+</div>
 
 ### Flujo del descuento
 
@@ -243,7 +239,7 @@ Admin edita cliente → asigna discount_percentage + discount_expiry
 
 ### Estados del descuento
 
-El modelo `Customer` expone dos helpers que son usados en toda la aplicación — vistas, checkout, template y chatbot — para garantizar coherencia:
+El modelo `Customer` expone dos helpers usados en toda la aplicación:
 
 ```python
 customer.has_active_discount()      # bool — ¿aplica ahora mismo?
@@ -252,15 +248,13 @@ customer.get_active_discount_pct()  # Decimal — porcentaje o 0.00
 
 La lista de clientes en el panel admin muestra visualmente tres estados: **activo** (badge verde con fecha), **vencido** (badge rojo con fecha de vencimiento) y **sin vigencia** (badge gris con aviso).
 
-Al crear o editar un cliente con descuento > 0 el formulario sugiere automáticamente hoy + 2 meses como fecha de vigencia, con un preview en tiempo real que indica si el descuento está activo o ya venció.
-
 ---
 
 ## Seguridad e Idempotencia
 
-El sistema implementa **idempotencia end-to-end**: la misma operación puede ejecutarse múltiples veces produciendo siempre el mismo resultado, sin efectos secundarios duplicados.
-
 ### Mecanismos de protección
+
+<div align="center">
 
 | Mecanismo | Descripción |
 |---|---|
@@ -274,7 +268,9 @@ El sistema implementa **idempotencia end-to-end**: la misma operación puede eje
 | 🔒 **select_for_update() + F()** | Bloqueo a nivel de fila e incremento atómico en el carrito y ventas para eliminar race conditions. |
 | 💉 **SQL Injection** | ORM de Django con queries parametrizadas. Sin concatenación de strings SQL. |
 | 🔄 **Reintentos con backoff** | `GeminiAIClient` reintenta hasta 3 veces ante errores 503/UNAVAILABLE con espera exponencial (1.5s → 3s → 6s). |
-| 🧹 **Limpieza de sesión** | El logout borra el historial del chatbot de `localStorage` antes de redirigir, evitando que datos de un usuario queden expuestos a otro. |
+| 🧹 **Limpieza de sesión** | El logout borra el historial del chatbot de `localStorage` antes de redirigir. |
+
+</div>
 
 ### Flujo de idempotencia (Checkout)
 
@@ -291,23 +287,11 @@ POST submit  →  ¿Existe Sale con ese UUID?
 Botón deshabilitado en JS al primer clic (defensa en profundidad)
 ```
 
-### Operaciones protegidas
-
-| Operación | Riesgo sin protección | Mecanismo aplicado |
-|---|---|---|
-| **Checkout cliente** | Doble clic genera dos ventas y descuenta stock dos veces | UUID en campo hidden + constraint UNIQUE en BD + botón deshabilitado en JS |
-| **Crear venta (admin)** | Doble clic en "Guardar" crea ventas duplicadas | UUID en payload JSON + verificación en backend + botón deshabilitado en JS |
-| **Agregar al carrito** | Dos clics rápidos suman +2 en lugar de +1 | `select_for_update()` + `F('quantity') + 1` (atómico en BD) |
-| **Eliminar venta** | Fallo a mitad deja stock inconsistente | `@transaction.atomic` envuelve restauración + eliminación |
-| **Registro de usuario** | Race condition crea dos usuarios con mismo email | `get_or_create` + captura de `IntegrityError` |
-
 ---
 
 ## Chatbot con IA contextual
 
-El chatbot usa **Google Gemini Flash** con contexto dinámico construido por el patrón **Builder/Director**. Cada rol recibe un prompt y un conjunto de datos diferente, ensamblados por `ChatContextDirector` a partir de builders especializados.
-
-### Contexto por rol
+<div align="center">
 
 | Rol | Datos inyectados en el prompt |
 |---|---|
@@ -315,27 +299,13 @@ El chatbot usa **Google Gemini Flash** con contexto dinámico construido por el 
 | **Cliente** | Catálogo disponible (stock > 0) · Historial de últimas 5 compras · **Estado del descuento personal** (activo con fecha, vencido, o sin descuento) · Métodos de pago activos |
 | **Visitante** | Totales de catálogo (productos, categorías, marcas) · Métodos de pago · Invitación a registrarse |
 
-### Conocimiento del sistema de descuentos
-
-El chatbot conoce el estado exacto del descuento de cada cliente gracias al `CustomerContextBuilder` actualizado:
-
-```
-Cliente con descuento activo   → bot informa porcentaje, fecha de vigencia
-                                  y condiciones (personal + Efectivo/Tarjeta)
-Cliente con descuento vencido  → bot informa que el descuento no aplica
-                                  y sugiere contactar al administrador
-Cliente sin descuento          → bot no menciona descuentos
-Admin pregunta por descuentos  → bot explica mecánica completa: asignación,
-                                  vigencia, condiciones y cómo renovar
-```
-
-Las acciones rápidas del chatbot están diferenciadas por rol. El admin tiene accesos directos a métricas, alertas de stock y análisis. El cliente tiene accesos a tienda, búsqueda de productos y consulta de su descuento. El visitante tiene accesos a catálogo y proceso de registro.
+</div>
 
 ---
 
 ## Compatibilidad Cross-Browser
 
-Auditoría completa aplicada sobre toda la codebase frontend:
+<div align="center">
 
 | Categoría | Fix aplicado | Archivo |
 |---|---|---|
@@ -351,15 +321,17 @@ Auditoría completa aplicada sobre toda la codebase frontend:
 | 🔵 **Informativo** | `line-clamp: 2` estándar junto al prefijo webkit | `base.css` |
 | 🔵 **Informativo** | Placeholder en `input[type=date]` para Safari < 14.1 | `product_form.html` |
 
+</div>
+
 ---
 
 ## Sistema de Diseño Frontend
 
-Todos los formularios y páginas principales siguen un sistema de diseño consistente:
-
 **Tipografía:** Plus Jakarta Sans (base) · Syne (títulos) · DM Sans (descripción)
 
 **Paleta por módulo:**
+
+<div align="center">
 
 | Módulo | Color de acento | CSS |
 |---|---|---|
@@ -371,25 +343,24 @@ Todos los formularios y páginas principales siguen un sistema de diseño consis
 | Tienda cliente | Verde (`#14532d`) | navbar |
 | Panel admin | Rojo oscuro (`#991b1b`) | navbar |
 
-**Componentes comunes:** Cards con gradiente en header, inputs con focus ring animado, botones con sombra y hover lift, breadcrumbs, grid-2/grid-3 responsive.
-
-**Formulario de descuento:** Preview dinámico en tiempo real con badge de estado (activo/vencido), sugerencia automática de fecha hoy + 2 meses, y aviso informativo con las condiciones de aplicación.
+</div>
 
 ---
 
 ## Módulos del Sistema
+
+<div align="center">
 
 <table>
 <tr>
 <td width="33%" valign="top">
 
 ### 🛒 Tienda Online (Cliente)
-- Catálogo público con filtros por categoría, marca y búsqueda
+- Catálogo con filtros por categoría, marca y búsqueda
 - Carrito con actualización dinámica y validación de stock
 - Checkout con tipo de factura (Consumidor Final / Datos personales)
 - Descuento personalizado aplicado automáticamente según vigencia y método de pago
-- Preview del descuento en el GET del checkout con recalculo dinámico en JS
-- Métodos de pago: Efectivo, Tarjeta de Crédito/Débito, Transferencia
+- Métodos de pago: Efectivo, Tarjeta, Transferencia
 - Historial de compras con descarga de facturas PDF
 
 </td>
@@ -399,9 +370,7 @@ Todos los formularios y páginas principales siguen un sistema de diseño consis
 - Integración con Google Gemini Flash con reintentos automáticos
 - Contexto dinámico con inventario, precios y políticas en tiempo real
 - Respuestas diferenciadas por rol (visitante, cliente, administrador)
-- **Clientes**: informa su descuento activo, condiciones y fecha de vigencia
-- **Clientes**: avisa si el descuento expiró y sugiere renovarlo con el admin
-- Admins reciben datos de ventas de últimas 24h/7d/30d y pueden gestionar descuentos
+- Informa descuentos activos, condiciones y fecha de vigencia
 - Historial persistido en `localStorage` por usuario, limpiado al logout
 
 </td>
@@ -409,23 +378,23 @@ Todos los formularios y páginas principales siguen un sistema de diseño consis
 
 ### ⚙️ Panel Administrativo
 - CRUD completo de productos, categorías, marcas, clientes y vendedores
-- **Gestión de descuentos** por cliente con porcentaje y fecha de vigencia
-- Vista de lista con estado del descuento (activo / vencido / sin vigencia)
+- Gestión de descuentos por cliente con porcentaje y fecha de vigencia
 - Registro histórico de ventas con búsqueda, filtros y modal de detalle
-- Generación automática de facturas PDF con datos censurados (PCI)
-- Reportes con exportación a Excel (5 hojas: resumen, detalle, productos, categorías, vendedores/clientes)
+- Generación automática de facturas PDF con datos PCI-mascarados
+- Reportes con exportación a Excel (5 hojas)
 - Dashboard con notificaciones de ventas de las últimas 24 horas
 
 </td>
 </tr>
 </table>
 
+</div>
+
 ### 📷 Escáner EAN-13
 
 - Detección vía cámara con **QuaggaJS**
-- **Sistema de votos**: requiere 3 lecturas consistentes del mismo código antes de confirmar
+- **Sistema de votos**: requiere 3 lecturas consistentes antes de confirmar
 - **Validación matemática** del dígito de control (algoritmo EAN-13)
-- Feedback visual progresivo con barra de confirmación en tiempo real
 - Fallbacks cross-browser para Safari iOS, Firefox y cámaras sin modo trasero
 
 ---
@@ -451,18 +420,18 @@ Todos los formularios y páginas principales siguen un sistema de diseño consis
                   │                      │ transfer_account_masked  │
            ┌──────▼──────┐               │ idempotency_key (UUID) ◄─── UNIQUE
            │  CartItem   │               └───────────────────────────┘
-           │─────────────│    ┌──────────────────────┐   ┌─────────────┐
-           │ cart (FK)   │    │       Customer        │   │   Seller    │
-           │ product (FK)│    │──────────────────────│   │─────────────│
-           │ quantity    │    │ dni (unique)          │   │ dni (unique)│
-           └─────────────┘    │ discount_percentage   │   │             │
-                              │ discount_expiry ◄──── │   └─────────────┘
-                              │ has_active_discount()  │
+           └─────────────┘    ┌──────────────────────┐
+                              │       Customer        │
+                              │──────────────────────│
+                              │ dni (unique)          │
+                              │ discount_percentage   │
+                              │ discount_expiry ◄──── │
+                              │ has_active_discount() │
                               │ get_active_discount_pct│
                               └──────────────────────┘
 ```
 
-**Constraints de integridad activos en PostgreSQL:**
+**Constraints activos en PostgreSQL:**
 
 ```sql
 CHECK (stock >= 0)         -- product_stock_non_negative
@@ -472,77 +441,262 @@ CHECK (iva >= 0)           -- sale_iva_non_negative
 CHECK (discount >= 0)      -- sale_discount_non_negative
 CHECK (total >= 0)         -- sale_total_non_negative
 CHECK (quantity >= 1)      -- saledetail_quantity_non_negative
-UNIQUE (idempotency_key)   -- super_sale (null permitido para ventas legacy)
-UNIQUE (cart, product)     -- CartItem (evita duplicados en carrito)
+UNIQUE (idempotency_key)   -- super_sale
+UNIQUE (cart, product)     -- CartItem
 ```
 
 ---
 
-## Instalación
+## 🐳 Instalación con Docker
+
+> **Recomendado para devs que quieren levantar el proyecto en minutos sin instalar dependencias locales.**
+
+### Requisitos previos
+
+- Docker `24+`
+- Docker Compose `v2+` (`docker compose` sin guión)
+- API Key de Google Gemini
+- Cuenta Gmail con Contraseña de Aplicación (para SMTP)
+
+### Pasos
+
+**1. Clonar el repositorio**
+
+```bash
+git clone https://github.com/Kadir011/Sistema-de-Ventas-Supermercado.git
+cd Sistema-de-Ventas-Supermercado
+```
+
+**2. Crear el archivo `.env` en la raíz del proyecto**
+
+```bash
+cp .env.example .env   # si existe, o crearlo manualmente
+```
+
+El `docker-compose.yml` lo toma con `env_file: .env`. Ver la sección [Variables de Entorno](#variables-de-entorno) para el contenido completo.
+
+> ⚠️ `DB_SOCKET` debe ser `db` (nombre del servicio de Compose, **no** `localhost`).
+
+**3. Levantar los servicios**
+
+```bash
+docker compose up --build
+```
+
+Compose levanta dos servicios en orden:
+
+<div align="center">
+
+| Servicio | Imagen | Puerto host | Puerto interno |
+|---|---|---|---|
+| `db` | `postgres:14.10-alpine` | `5433` | `5432` |
+| `web` | Build desde `Dockerfile` | `8000` | `8000` |
+
+</div>
+
+El servicio `web` espera a que `db` pase su healthcheck (`pg_isready`) antes de arrancar. Al iniciar, ejecuta automáticamente:
+
+```
+python manage.py collectstatic --noinput
+python manage.py migrate --noinput
+python manage.py runserver 0.0.0.0:8000
+```
+
+**4. Cargar datos iniciales** (categorías, marcas, métodos de pago)
+
+En otra terminal, con los contenedores corriendo:
+
+```bash
+docker compose exec web python manage.py initial_data
+```
+
+**5. Crear superusuario administrador**
+
+```bash
+docker compose exec web python manage.py createsuperuser
+```
+
+**6. Acceder a la aplicación**
+
+<div align="center">
+
+| Ruta | Descripción |
+|---|---|
+| `http://localhost:8000` | Home — tienda pública |
+| `http://localhost:8000/security/login/` | Login (cliente o admin) |
+| `http://localhost:8000/menu/` | Panel administrador |
+
+</div>
+
+---
+
+### Comandos Docker útiles
+
+```bash
+# Ver logs en tiempo real
+docker compose logs -f web
+
+# Ver solo logs de DB
+docker compose logs -f db
+
+# Detener y eliminar contenedores (conserva volúmenes)
+docker compose down
+
+# Detener y eliminar contenedores + volúmenes (limpia BD)
+docker compose down -v
+
+# Reconstruir solo el servicio web (tras cambios en requirements.txt o Dockerfile)
+docker compose up --build web
+
+# Abrir shell en el contenedor web
+docker compose exec web bash
+
+# Ejecutar migraciones manualmente
+docker compose exec web python manage.py migrate
+
+# Ejecutar tests
+docker compose exec web python manage.py test
+
+# Conectarse a PostgreSQL desde el host
+psql -h localhost -p 5433 -U <DB_USERNAME> -d <DB_DATABASE>
+```
+
+---
+
+### Notas sobre la configuración Docker
+
+El `docker-compose.yml` monta el código fuente como volumen (`- .:/app`), lo que significa que **los cambios en el código se reflejan sin reconstruir la imagen**. Solo necesitas reconstruir (`--build`) si modificás `requirements.txt` o el `Dockerfile`.
+
+Los volúmenes `media_volume` y `static_volume` persisten archivos de media y estáticos entre reinicios. El puerto de PostgreSQL se expone en `5433` (en lugar de `5432`) para evitar conflictos con instancias locales de Postgres que puedas tener corriendo.
+
+---
+
+</div>
+
+---
+
+## 🖥️ Instalación Local (setup.sh)
+
+> **Para devs que prefieren un entorno virtual Python local con PostgreSQL nativo.**
 
 ### Requisitos previos
 
 - Python `3.10+`
-- PostgreSQL `15+`
+- PostgreSQL `15+` instalado y corriendo localmente
+- `psql` disponible en el PATH
 - Cuenta de Google Cloud con API Key de Gemini
-- Cuenta Gmail con Contraseña de Aplicación (para SMTP)
+- Cuenta Gmail con Contraseña de Aplicación (SMTP)
 
-### Instalación rápida (Linux/Mac)
+### Pasos
+
+**1. Clonar el repositorio y crear el entorno virtual**
 
 ```bash
 git clone https://github.com/Kadir011/Sistema-de-Ventas-Supermercado.git
-cd Sistema-de-Ventas-Supermercado/app
+cd Sistema-de-Ventas-Supermercado
+
+python -m venv env
+
+# Linux / Mac
+source env/bin/activate
+
+# Windows (Git Bash)
+source env/Scripts/activate
+
+# Windows (CMD)
+env\Scripts\activate.bat
+```
+
+**2. Instalar dependencias**
+
+```bash
+pip install -r app/requirements.txt
+```
+
+**3. Configurar variables de entorno**
+
+Crear el archivo `app/.env` con el contenido de la sección [Variables de Entorno](#variables-de-entorno).
+
+> ⚠️ Para instalación local, `DB_SOCKET` debe ser `localhost` (o la IP/socket de tu instancia Postgres).
+
+**4. Ejecutar el script de instalación automática**
+
+```bash
+cd app
 chmod +x setup.sh && ./setup.sh
 ```
 
-El script instala dependencias, crea la base de datos, ejecuta migraciones e inserta datos iniciales (65 categorías, 77 marcas, 11 métodos de pago).
+El script hace lo siguiente en orden:
 
-### Instalación manual
+1. Detecta el entorno virtual en múltiples rutas posibles (`../env`, `./env`, `../venv`, `./venv`)
+2. Instala dependencias con `pip`
+3. Solicita credenciales de PostgreSQL interactivamente
+4. Elimina y recrea la base de datos
+5. Ejecuta `makemigrations` y `migrate`
+6. Inserta los datos iniciales (65 categorías, 77 marcas, 11 métodos de pago) vía SQL directo
+
+> **Windows (Git Bash):** Si el script no encuentra el virtualenv automáticamente, pedirá la ruta completa. Ejemplo: `C:/proyecto/env`
+
+**5. Crear superusuario administrador**
 
 ```bash
-# 1. Clonar y activar entorno virtual
-git clone https://github.com/Kadir011/Sistema-de-Ventas-Supermercado.git
-cd Sistema-de-Ventas-Supermercado
-python -m venv env
-source env/bin/activate        # Linux/Mac
-# env\Scripts\activate         # Windows
-
-# 2. Instalar dependencias
-pip install -r app/requirements.txt
-
-# 3. Configurar variables de entorno (ver sección siguiente)
-
-# 4. Ejecutar migraciones
-cd app
-python manage.py makemigrations
-python manage.py migrate
-
-# 5. Crear superusuario
 python manage.py createsuperuser
+```
 
-# 6. Levantar servidor
+**6. Levantar el servidor de desarrollo**
+
+```bash
 python manage.py runserver
 ```
 
-> **Nota Windows (Git Bash):** Si el `setup.sh` no encuentra el entorno virtual automáticamente, te pedirá la ruta completa. Ej: `C:/proyecto/env`
+Acceder en `http://localhost:8000`
+
+---
+
+### Instalación manual paso a paso
+
+Si preferís ejecutar cada paso individualmente sin el script:
+
+```bash
+# Desde /app con el virtualenv activado
+
+# 1. Crear la base de datos
+psql -U postgres -c "CREATE DATABASE my_supermarket;"
+
+# 2. Ejecutar migraciones
+python manage.py makemigrations
+python manage.py migrate
+
+# 3. Cargar datos iniciales
+python manage.py initial_data
+
+# 4. Crear superusuario
+python manage.py createsuperuser
+
+# 5. Levantar servidor
+python manage.py runserver
+```
 
 ---
 
 ## Variables de Entorno
 
-Crear archivo `.env` en `/app/`:
+Contenido del archivo `.env` — colocarlo en:
+- **Docker:** raíz del proyecto (junto al `docker-compose.yml`)
+- **Local:** dentro de `/app/`
 
 ```env
 # ── Base de Datos ─────────────────────────────
+DB_ENGINE=django.db.backends.postgresql
 DB_DATABASE=my_supermarket
 DB_USERNAME=postgres
 DB_PASSWORD=tu_password
-DB_SOCKET=localhost
+DB_SOCKET=localhost       # Docker: usar "db" (nombre del servicio)
 DB_PORT=5432
 
 # ── Email (Gmail SMTP) ─────────────────────────
 EMAIL_HOST_USER=tu_correo@gmail.com
-EMAIL_HOST_PASSWORD=tu_contrasena_de_app
+EMAIL_HOST_PASSWORD=tu_contrasena_de_app   # Contraseña de Aplicación, no la de tu cuenta
 DEFAULT_FROM_EMAIL=tu_correo@gmail.com
 
 # ── Google Gemini AI ───────────────────────────
@@ -554,7 +708,7 @@ DEBUG=True
 ALLOWED_HOSTS=localhost,127.0.0.1
 ```
 
-> ⚠️ El archivo `.env` está en `.gitignore`. Nunca lo subas al repositorio.
+> ⚠️ El archivo `.env` está en `.gitignore` y `.dockerignore`. Nunca lo subas al repositorio.
 
 ---
 
@@ -563,6 +717,10 @@ ALLOWED_HOSTS=localhost,127.0.0.1
 ```
 django_supermercado/
 ├── env/                        # Entorno virtual (ignorado por git)
+├── docker-compose.yml          # Orquestación Docker (db + web)
+├── Dockerfile                  # Imagen Python 3.10-slim para el servicio web
+├── .dockerignore
+├── .env                        # Variables de entorno (no versionado)
 └── app/
     ├── config/                 # Configuración centralizada de Django
     │   ├── settings.py        # Settings · ATOMIC_REQUESTS=True
@@ -578,9 +736,7 @@ django_supermercado/
     │       ├── services/       # ← Capa de servicios (SOLID + Patrones)
     │       │   ├── ai_client.py           # DIP: AIClient ABC + GeminiAIClient
     │       │   ├── chat_context.py        # Builder+Director: contexto por rol
-    │       │   │                          #   CustomerContextBuilder: descuento activo
     │       │   ├── checkout_service.py    # SRP: orquestación del checkout
-    │       │   │                          #   calculate_totals: valida vigencia descuento
     │       │   ├── idempotency_service.py # Singleton: claves UUID
     │       │   └── payment_processors.py  # OCP + Strategy: procesadores de pago
     │       ├── views/
@@ -591,32 +747,16 @@ django_supermercado/
     │       │   └── shop.py / product.py / seller.py / home.py / reports.py
     │       ├── form/
     │       │   └── customer.py # CustomerForm: discount_percentage + discount_expiry
+    │       ├── management/commands/
+    │       │   └── initial_data.py  # Management command: categorías, marcas, pagos
     │       └── urls.py        # 25+ rutas del módulo
     ├── templates/             # Templates HTML por módulo
-    │   └── super/customers/
-    │       ├── customer_form.html  # Preview dinámico del descuento en JS
-    │       └── customer_list.html  # Badge de estado (activo/vencido/sin vigencia)
     ├── static/
-    │   ├── css/
-    │   │   ├── components/    # base.css · home.css · menu.css · about.css
-    │   │   ├── customer/      # customer_form.css · customer_delete.css
-    │   │   ├── seller/        # seller_form.css · seller_delete.css
-    │   │   ├── product/       # product_form.css · product_delete.css
-    │   │   ├── sale/          # sale_form.css · sale_delete.css
-    │   │   ├── reports/       # reports.css
-    │   │   └── security/      # auth_form.css · signup_form.css
-    │   └── js/
-    │       ├── checkout.js        # Luhn · validación · descuento dinámico en JS
-    │       ├── sale.js            # Idempotencia UUID · botón anti-doble-clic
-    │       ├── scan_barcode.js    # Quagga · votos · EAN-13 · cross-browser
-    │       ├── chatbot.js         # localStorage por usuario · historial · acciones rápidas
-    │       ├── barcode_validation.js
-    │       ├── expiration_date.js
-    │       ├── generate_password.js
-    │       └── validations.js
+    │   ├── css/               # CSS modular por módulo (10 archivos)
+    │   └── js/                # checkout.js · sale.js · scan_barcode.js · chatbot.js
     ├── manage.py
     ├── requirements.txt
-    └── setup.sh               # Script de instalación automática
+    └── setup.sh               # Script de instalación automática (local)
 ```
 
 ---
@@ -625,51 +765,40 @@ django_supermercado/
 
 ### v1.3.0 — Sistema de Descuentos + Chatbot Contextual
 
-- ✅ **Campo `discount_expiry`** en modelo `Customer`: fecha límite hasta la que aplica el descuento, con migración `0002_customer_discount_expiry`
-- ✅ **Helpers de negocio**: `has_active_discount()` y `get_active_discount_pct()` en el modelo — fuente única de verdad usada por vistas, checkout y chatbot
-- ✅ **CheckoutService**: `calculate_totals()` valida tipo de factura + método de pago + vigencia antes de aplicar descuento; nunca aplica en Consumidor Final ni Transferencia
-- ✅ **Checkout GET**: preview del descuento potencial con recalculo dinámico en JS al cambiar tipo de factura o método de pago
-- ✅ **Anti-doble-clic**: botón de finalizar compra deshabilitado tras el primer clic + protección UUID idempotente en backend
-- ✅ **CustomerForm**: campos `discount_percentage` + `discount_expiry` con sugerencia automática de hoy + 2 meses
-- ✅ **Preview dinámico**: JS en `customer_form.html` muestra badge activo/vencido y descripción del descuento en tiempo real mientras el admin escribe
-- ✅ **Lista de clientes**: tres estados visuales del descuento — activo (verde + fecha), vencido (rojo + fecha), sin vigencia (gris + aviso)
-- ✅ **CustomerContextBuilder**: consulta `has_active_discount()` y construye contexto personalizado para el chatbot con estado exacto del descuento del cliente autenticado
-- ✅ **Prompt de cliente**: instrucciones explícitas sobre cuándo aplica y cuándo no el descuento; el bot informa, no inventa
-- ✅ **Prompt de admin**: punto dedicado a la mecánica de descuentos para responder preguntas de gestión
-- ✅ **Aviso en checkout**: cuando el descuento no aplica (Consumidor Final / Transferencia) se muestra un aviso explicativo al cliente
-- ✅ **Sidebar del checkout**: refleja el descuento y el total final en tiempo real sincronizado con el formulario
+- ✅ Campo `discount_expiry` en modelo `Customer` con migración `0002_customer_discount_expiry`
+- ✅ Helpers `has_active_discount()` y `get_active_discount_pct()` — fuente única de verdad
+- ✅ `CheckoutService.calculate_totals()` valida tipo de factura + método de pago + vigencia
+- ✅ Preview del descuento en GET del checkout con recalculo dinámico en JS
+- ✅ Anti-doble-clic: botón deshabilitado tras primer clic + UUID idempotente en backend
+- ✅ `CustomerContextBuilder` inyecta estado exacto del descuento en el chatbot
+- ✅ Formulario de cliente: sugerencia automática de hoy + 2 meses como vigencia
+- ✅ Lista de clientes: tres estados visuales del descuento (activo / vencido / sin vigencia)
+- ✅ Aviso en checkout cuando el descuento no aplica por modalidad de compra
 
 ### v1.2.0 — Diseño Frontend + Auditoría Cross-Browser
 
-- ✅ **Sistema de diseño unificado**: Plus Jakarta Sans, paleta por módulo, cards con gradiente, focus states animados
-- ✅ **CSS modular**: 10 archivos CSS separados por módulo (customer, seller, product, sale, security, components, reports)
-- ✅ **Navbar rediseñado**: cliente (verde) y admin (rojo oscuro), mobile-first con hamburger, user pill, cart badge
-- ✅ **Home page rediseñada**: hero fullscreen, floating cards, stats bar, products section, why-us, CTA bottom
-- ✅ **Formularios rediseñados**: customer, seller, product, sale con sistema de diseño consistente
-- ✅ **Delete pages rediseñadas**: customer, seller, product, sale con card centrada y notas contextuales
-- ✅ **Auditoría cross-browser crítica**: `add_to_cart` cambiado de GET a POST con CSRF
-- ✅ **Fix crítico checkout.js**: valores numéricos leídos desde `data-attributes` DOM, no desde template tags en JS estático
-- ✅ **Fix scan_barcode.js**: `hardwareConcurrency` con fallback, constraints avanzados con `try/catch`, fallback a cámara frontal
-- ✅ **Prefijos webkit**: `position: sticky`, `backdrop-filter`, `line-clamp` con fallbacks
-- ✅ **Accesibilidad**: `prefers-reduced-motion` en animaciones, placeholder para `input[type=date]` en Safari
-- ✅ **Chatbot mejorado**: limpieza de `localStorage` al logout, clave de storage por usuario/rol
-- ✅ **GeminiAIClient**: reintentos automáticos con backoff exponencial ante errores 503/UNAVAILABLE
-- ✅ **Módulo de Reportes**: vista con filtros avanzados, KPIs, gráficos Chart.js y exportación Excel (5 hojas)
+- ✅ Sistema de diseño unificado: Plus Jakarta Sans, paleta por módulo, cards con gradiente
+- ✅ CSS modular: 10 archivos CSS separados por módulo
+- ✅ Navbar rediseñado: cliente (verde) y admin (rojo oscuro), mobile-first
+- ✅ Auditoría cross-browser crítica: `add_to_cart` cambiado de GET a POST con CSRF
+- ✅ Fix crítico `checkout.js`: valores numéricos leídos desde `data-attributes` DOM
+- ✅ Fix `scan_barcode.js`: `hardwareConcurrency` con fallback, constraints con `try/catch`
+- ✅ Prefijos webkit: `position: sticky`, `backdrop-filter`, `line-clamp`
+- ✅ `GeminiAIClient`: reintentos automáticos con backoff exponencial ante errores 503
+- ✅ Módulo de Reportes: filtros avanzados, KPIs, gráficos Chart.js y exportación Excel (5 hojas)
 
 ### v1.1.0 — Arquitectura SOLID + Idempotencia
 
-- ✅ **Idempotencia en checkout**: `idempotency_key` UUID con constraint UNIQUE en `Sale`
-- ✅ **Idempotencia en ventas admin**: UUID en payload JSON de `SaleCreateView`
-- ✅ **Race condition en carrito**: `select_for_update()` + `F('quantity') + 1` (atómico en BD)
-- ✅ **Atomicidad en eliminación**: `@transaction.atomic` en `SaleDeleteView`
-- ✅ **Protección cliente**: botón submit deshabilitado tras primer clic
-- ✅ **SRP**: servicios extraídos a `core/super/services/`
-- ✅ **OCP + Strategy**: `PaymentProcessor` extensible sin modificar checkout
-- ✅ **DIP**: `ChatbotProxyView` depende de `AIClient` (abstracción ABC)
-- ✅ **Singleton**: `IdempotencyService` con instancia única compartida
-- ✅ **Builder/Director**: `ChatContextDirector` ensambla contexto por rol
-- ✅ **Setup.sh mejorado**: detección automática del virtualenv en múltiples rutas
-- ✅ **Tests unitarios**: `PaymentProcessor` e `IdempotencyService` cubiertos
+- ✅ Idempotencia en checkout: `idempotency_key` UUID con constraint UNIQUE en `Sale`
+- ✅ Idempotencia en ventas admin: UUID en payload JSON de `SaleCreateView`
+- ✅ Race condition en carrito: `select_for_update()` + `F('quantity') + 1`
+- ✅ Atomicidad en eliminación: `@transaction.atomic` en `SaleDeleteView`
+- ✅ SRP: servicios extraídos a `core/super/services/`
+- ✅ OCP + Strategy: `PaymentProcessor` extensible sin modificar checkout
+- ✅ DIP: `ChatbotProxyView` depende de `AIClient` (abstracción ABC)
+- ✅ Singleton: `IdempotencyService` con instancia única compartida
+- ✅ Builder/Director: `ChatContextDirector` ensambla contexto por rol
+- ✅ Tests unitarios: `PaymentProcessor` e `IdempotencyService` cubiertos
 
 ### v1.0.0 — Versión inicial funcional
 
