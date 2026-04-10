@@ -28,33 +28,33 @@ urlpatterns = [
     path('mis-compras/<int:pk>/', shop.OrderDetailView.as_view(), name='order_detail'),
 
     # ADMIN MENU
-    path('menu/', home.MenuView.as_view(), name='menu'),
+    path('admin/menu/', home.MenuView.as_view(), name='menu'),
 
     # CLIENTES (ADMIN)
-    path('clientes/', customer.CustomerListView.as_view(), name='customer_list'),
-    path('clientes/crear/', customer.CustomerCreateView.as_view(), name='customer_create'),
-    path('clientes/editar/<int:pk>/', customer.CustomerUpdateView.as_view(), name='customer_update'),
-    path('clientes/eliminar/<int:pk>/', customer.CustomerDeleteView.as_view(), name='customer_delete'),
+    path('admin/clientes/', customer.CustomerListView.as_view(), name='customer_list'),
+    path('admin/clientes/crear/', customer.CustomerCreateView.as_view(), name='customer_create'),
+    path('admin/clientes/editar/<int:pk>/', customer.CustomerUpdateView.as_view(), name='customer_update'),
+    path('admin/clientes/eliminar/<int:pk>/', customer.CustomerDeleteView.as_view(), name='customer_delete'),
 
     # VENDEDORES (ADMIN)
-    path('vendedores/', seller.SellerListView.as_view(), name='seller_list'), 
-    path('vendedores/crear/', seller.SellerCreateView.as_view(), name='seller_create'),
-    path('vendedores/editar/<int:pk>/', seller.SellerUpdateView.as_view(), name='seller_update'),
-    path('vendedores/eliminar/<int:pk>/', seller.SellerDeleteView.as_view(), name='seller_delete'),
+    path('admin/vendedores/', seller.SellerListView.as_view(), name='seller_list'), 
+    path('admin/vendedores/crear/', seller.SellerCreateView.as_view(), name='seller_create'),
+    path('admin/vendedores/editar/<int:pk>/', seller.SellerUpdateView.as_view(), name='seller_update'),
+    path('admin/vendedores/eliminar/<int:pk>/', seller.SellerDeleteView.as_view(), name='seller_delete'),
 
     # PRODUCTOS (ADMIN)
-    path('productos/', product.ProductListView.as_view(), name='product_list'),
-    path('productos/crear/', product.ProductCreateView.as_view(), name='product_create'),
-    path('productos/editar/<int:pk>/', product.ProductUpdateView.as_view(), name='product_update'),
-    path('productos/eliminar/<int:pk>/', product.ProductDeleteView.as_view(), name='product_delete'),
+    path('admin/productos/', product.ProductListView.as_view(), name='product_list'),
+    path('admin/productos/crear/', product.ProductCreateView.as_view(), name='product_create'),
+    path('admin/productos/editar/<int:pk>/', product.ProductUpdateView.as_view(), name='product_update'),
+    path('admin/productos/eliminar/<int:pk>/', product.ProductDeleteView.as_view(), name='product_delete'),
     path('productos/<int:pk>/', product.ProductDetailView.as_view(), name='product_detail'),
 
     # VENTAS (ADMIN)
-    path('ventas/', sale.SaleListView.as_view(), name='sale_list'),
-    path('ventas/crear/', sale.SaleCreateView.as_view(), name='sale_create'),
-    path('ventas/editar/<int:pk>/', sale.SaleUpdateView.as_view(), name='sale_update'),
-    path('ventas/eliminar/<int:pk>/', sale.SaleDeleteView.as_view(), name='sale_delete'),
-    path('ventas/<int:pk>', sale.SaleDetailView.as_view(), name='sale_detail'),
+    path('admin/ventas/', sale.SaleListView.as_view(), name='sale_list'),
+    path('admin/ventas/crear/', sale.SaleCreateView.as_view(), name='sale_create'),
+    path('admin/ventas/editar/<int:pk>/', sale.SaleUpdateView.as_view(), name='sale_update'),
+    path('admin/ventas/eliminar/<int:pk>/', sale.SaleDeleteView.as_view(), name='sale_delete'),
+    path('admin/ventas/<int:pk>', sale.SaleDetailView.as_view(), name='sale_detail'),
     path('api/products/', sale.ProductView.as_view(), name='get_products'),
     path('ventas/factura/<int:pk>/', sale.SalePDFView.as_view(), name='sale_pdf'),
     
@@ -66,6 +66,6 @@ urlpatterns = [
     path('chatbot/summary/', chatbot.ChatbotSummaryView.as_view(), name='chatbot_summary'),
     
     # REPORTES (ADMIN)
-    path('reportes/', reports.ReportsView.as_view(), name='reports'),
-    path('reportes/exportar/', reports.ExportReportsExcelView.as_view(), name='export_reports_excel'),
+    path('admin/reportes/', reports.ReportsView.as_view(), name='reports'),
+    path('admin/reportes/exportar/', reports.ExportReportsExcelView.as_view(), name='export_reports_excel'),
 ]
