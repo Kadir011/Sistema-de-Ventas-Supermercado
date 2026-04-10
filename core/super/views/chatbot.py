@@ -235,17 +235,24 @@ class ChatbotSummaryView(View):
     """
 
     def get(self, request):
+        response_data = {'role': 'guest', 'data': {}}
         if not request.user.is_authenticated:
-            return JsonResponse({'role': 'guest', 'data': {}})
+            resp = JsonResponse(response_data)
+            resp['Cache-Control'] = 'no-store, no-cache, must-revalidate'
+            return resp
 
         user = request.user
         if user.is_superuser or getattr(user, 'user_type', '') == 'admin':
-            return JsonResponse({
+            resp = JsonResponse({
                 'role': 'admin',
                 'data': get_admin_quick_summary(),
             })
+            resp['Cache-Control'] = 'no-store, no-cache, must-revalidate'
+            return resp
         else:
-            return JsonResponse({
+            resp = JsonResponse({
                 'role': 'customer',
                 'data': get_customer_quick_summary(user),
             }) 
+            resp['Cache-Control'] = 'no-store, no-cache, must-revalidate'
+            return resp 
