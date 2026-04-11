@@ -1,0 +1,242 @@
+{% extends 'components/base.html' %}
+{% load static %}
+{% block title %}{{ title }}{% endblock %}
+{% block content %}
+
+<link rel="stylesheet" href="{% static 'css/user/user_form.css' %}">
+
+<div class="max-w-2xl mx-auto py-6">
+    <!-- Breadcrumb -->
+    <div class="flex items-center gap-2 text-sm mb-5" style="color: #9ca3af;">
+        <a href="{% url 'super:user_list' %}" class="font-medium transition-colors" style="color:#9ca3af;"
+           onmouseover="this.style.color='#991b1b'" onmouseout="this.style.color='#9ca3af'">Usuarios</a>
+        <i class='bx bx-chevron-right'></i>
+        <span style="color: #374151; font-weight: 600;">{{ title }}</span>
+    </div>
+
+    <div class="form-card">
+        <!-- Header -->
+        <div class="form-header">
+            <div class="form-header-icon">
+                <i class='bx {% if form.instance.pk %}bx-edit{% else %}bx-user-plus{% endif %} text-white text-xl'></i>
+            </div>
+            <div>
+                <h1 class="text-xl font-bold" style="color: #111827;">{{ title }}</h1>
+                <p class="text-sm mt-0.5" style="color: #6b7280;">
+                    {% if form.instance.pk %}Modifica los datos del usuario{% else %}Registra un nuevo usuario en el sistema{% endif %}
+                </p>
+            </div>
+        </div>
+
+        <!-- Body -->
+        <div class="form-body">
+            <form method="post">
+                {% csrf_token %}
+
+                {% if form.non_field_errors %}
+                <div class="mb-4 flex items-start gap-2 rounded-xl px-4 py-3 text-sm"
+                     style="background:#fef2f2;border:1.5px solid #fecaca;color:#991b1b;">
+                    <i class='bx bx-error-circle flex-shrink-0 mt-0.5' style="font-size:1.1rem;"></i>
+                    <div>{% for err in form.non_field_errors %}{{ err }}{% endfor %}</div>
+                </div>
+                {% endif %}
+
+                <!-- Nombre y Apellido -->
+                <div class="grid-2 mb-5">
+                    <div class="field-group">
+                        <label class="field-label"><i class='bx bx-user'></i>Nombre</label>
+                        <input type="text" name="first_name"
+                               value="{{ form.instance.first_name|default:'' }}"
+                               class="field-input {% if form.first_name.errors %}error{% endif %}"
+                               placeholder="Nombre">
+                        {% if form.first_name.errors %}
+                            <span class="field-error"><i class='bx bx-error-circle'></i>{{ form.first_name.errors.0 }}</span>
+                        {% endif %}
+                    </div>
+                    <div class="field-group">
+                        <label class="field-label"><i class='bx bx-user'></i>Apellido</label>
+                        <input type="text" name="last_name"
+                               value="{{ form.instance.last_name|default:'' }}"
+                               class="field-input {% if form.last_name.errors %}error{% endif %}"
+                               placeholder="Apellido">
+                        {% if form.last_name.errors %}
+                            <span class="field-error"><i class='bx bx-error-circle'></i>{{ form.last_name.errors.0 }}</span>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Sección credenciales -->
+                <div class="section-divider"><span>Credenciales de acceso</span></div>
+
+                <div class="grid-2 mb-5">
+                    <div class="field-group">
+                        <label class="field-label"><i class='bx bx-at'></i>Usuario</label>
+                        <input type="text" name="username"
+                               value="{{ form.instance.username|default:'' }}"
+                               class="field-input {% if form.username.errors %}error{% endif %}"
+                               placeholder="nombre_usuario" required autocomplete="username">
+                        {% if form.username.errors %}
+                            <span class="field-error"><i class='bx bx-error-circle'></i>{{ form.username.errors.0 }}</span>
+                        {% endif %}
+                    </div>
+                    <div class="field-group">
+                        <label class="field-label"><i class='bx bx-envelope'></i>Email</label>
+                        <input type="email" name="email"
+                               value="{{ form.instance.email|default:'' }}"
+                               class="field-input {% if form.email.errors %}error{% endif %}"
+                               placeholder="correo@ejemplo.com" required>
+                        {% if form.email.errors %}
+                            <span class="field-error"><i class='bx bx-error-circle'></i>{{ form.email.errors.0 }}</span>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Contraseña -->
+                {% if form.instance.pk %}
+                <!-- Edición: contraseña opcional -->
+                <div class="field-group mb-5">
+                    <label class="field-label"><i class='bx bx-lock-alt'></i>
+                        Nueva contraseña
+                        <span class="ml-1 text-xs font-normal normal-case" style="color:#9ca3af;">(opcional)</span>
+                    </label>
+                    <div class="password-wrap">
+                        <input type="password" name="new_password" id="id_new_password"
+                               class="field-input" placeholder="Dejar vacío para no cambiar"
+                               autocomplete="new-password">
+                        <button type="button" class="toggle-pw" onclick="togglePw('id_new_password','icon_pw')">
+                            <i id="icon_pw" class='bx bx-show'></i>
+                        </button>
+                    </div>
+                    <span class="field-hint">Solo escribe si querés cambiar la contraseña actual.</span>
+                </div>
+                {% else %}
+                <!-- Creación: contraseña obligatoria -->
+                <div class="grid-2 mb-5">
+                    <div class="field-group">
+                        <label class="field-label"><i class='bx bx-lock-alt'></i>Contraseña *</label>
+                        <div class="password-wrap">
+                            <input type="password" name="password1" id="id_password1"
+                                   class="field-input {% if form.password1.errors %}error{% endif %}"
+                                   placeholder="Mínimo 8 caracteres" required autocomplete="new-password">
+                            <button type="button" class="toggle-pw" onclick="togglePw('id_password1','icon1')">
+                                <i id="icon1" class='bx bx-show'></i>
+                            </button>
+                        </div>
+                        {% if form.password1.errors %}
+                            <span class="field-error"><i class='bx bx-error-circle'></i>{{ form.password1.errors.0 }}</span>
+                        {% endif %}
+                    </div>
+                    <div class="field-group">
+                        <label class="field-label"><i class='bx bx-lock-alt'></i>Confirmar *</label>
+                        <div class="password-wrap">
+                            <input type="password" name="password2" id="id_password2"
+                                   class="field-input {% if form.password2.errors %}error{% endif %}"
+                                   placeholder="Repetir contraseña" required autocomplete="new-password">
+                            <button type="button" class="toggle-pw" onclick="togglePw('id_password2','icon2')">
+                                <i id="icon2" class='bx bx-show'></i>
+                            </button>
+                        </div>
+                        {% if form.password2.errors %}
+                            <span class="field-error"><i class='bx bx-error-circle'></i>{{ form.password2.errors.0 }}</span>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Sección rol y estado -->
+                <div class="section-divider"><span>Rol y estado</span></div>
+
+                <div class="grid-2 mb-5">
+                    <div class="field-group">
+                        <label class="field-label"><i class='bx bx-shield-quarter'></i>Tipo de usuario</label>
+                        <select name="user_type" class="field-input" style="cursor:pointer;">
+                            <option value="customer" {% if form.instance.user_type == 'customer' or not form.instance.pk %}selected{% endif %}>
+                                Cliente / Comprador
+                            </option>
+                            <option value="admin" {% if form.instance.user_type == 'admin' %}selected{% endif %}>
+                                Administrador
+                            </option>
+                        </select>
+                        {% if form.user_type.errors %}
+                            <span class="field-error"><i class='bx bx-error-circle'></i>{{ form.user_type.errors.0 }}</span>
+                        {% endif %}
+                    </div>
+                    <div class="field-group">
+                        <label class="field-label"><i class='bx bx-toggle-right'></i>Estado de la cuenta</label>
+                        <select name="is_active" class="field-input" style="cursor:pointer;">
+                            <option value="True" {% if form.instance.is_active or not form.instance.pk %}selected{% endif %}>
+                                Activo
+                            </option>
+                            <option value="False" {% if not form.instance.is_active and form.instance.pk %}selected{% endif %}>
+                                Inactivo
+                            </option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Sección datos adicionales -->
+                <div class="section-divider"><span>Datos adicionales (opcional)</span></div>
+
+                <div class="grid-2 mb-5">
+                    <div class="field-group">
+                        <label class="field-label"><i class='bx bx-phone'></i>Teléfono</label>
+                        <input type="text" name="phone_number"
+                               value="{{ form.instance.phone_number|default:'' }}"
+                               class="field-input only-numbers"
+                               placeholder="10 dígitos" maxlength="10" autocomplete="off">
+                    </div>
+                    <div class="field-group">
+                        <label class="field-label"><i class='bx bx-calendar'></i>Fecha de nacimiento</label>
+                        <input type="date" name="date_of_birth"
+                               value="{{ form.instance.date_of_birth|default:'' }}"
+                               class="field-input">
+                    </div>
+                </div>
+
+                <div class="grid-2 mb-5">
+                    <div class="field-group">
+                        <label class="field-label"><i class='bx bx-map-pin'></i>Dirección</label>
+                        <input type="text" name="address"
+                               value="{{ form.instance.address|default:'' }}"
+                               class="field-input" placeholder="Dirección">
+                    </div>
+                    <div class="field-group">
+                        <label class="field-label"><i class='bx bx-male-female'></i>Género</label>
+                        <select name="gender" class="field-input" style="cursor:pointer;">
+                            <option value="">Seleccionar</option>
+                            <option value="M" {% if form.instance.gender == 'M' %}selected{% endif %}>Masculino</option>
+                            <option value="F" {% if form.instance.gender == 'F' %}selected{% endif %}>Femenino</option>
+                            <option value="O" {% if form.instance.gender == 'O' %}selected{% endif %}>Otro</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Botones -->
+                <div class="flex items-center justify-between mt-8 pt-6" style="border-top: 1px solid #f3f4f6;">
+                    <a href="{{ back_url }}" class="btn-cancel">
+                        <i class='bx bx-arrow-back'></i> Cancelar
+                    </a>
+                    <button type="submit" class="btn-save">
+                        <i class='bx {% if form.instance.pk %}bx-save{% else %}bx-user-check{% endif %}'></i>
+                        {{ grabar }}
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+function togglePw(inputId, iconId) {
+    const inp  = document.getElementById(inputId);
+    const icon = document.getElementById(iconId);
+    if (inp.type === 'password') {
+        inp.type = 'text';
+        icon.className = 'bx bx-hide';
+    } else {
+        inp.type = 'password';
+        icon.className = 'bx bx-show';
+    }
+}
+</script>
+{% endblock %}

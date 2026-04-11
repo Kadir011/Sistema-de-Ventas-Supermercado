@@ -1,0 +1,52 @@
+{% extends 'components/base.html' %}
+{% load static %}
+{% block title %}{{ title }}{% endblock %}
+{% block content %}
+
+<link rel="stylesheet" href="{% static 'css/user/user_form.css' %}">
+
+<div class="delete-wrap">
+  <div class="delete-card">
+    <div class="delete-header">
+      <div class="delete-icon-ring">
+        <i class='bx bx-user-x text-red-500' style="font-size:2rem;"></i>
+      </div>
+      <div class="delete-title">{{ title }}</div>
+      <div class="delete-subtitle">Acción irreversible</div>
+    </div>
+
+    <div class="delete-body">
+      <div class="delete-desc">
+        <i class='bx bx-error-circle'></i>
+        <span>{{ description }}</span>
+      </div>
+
+      <!-- Aviso si el usuario es admin -->
+      {% if object.user_type == 'admin' %}
+      <div class="flex items-start gap-2 rounded-xl px-4 py-3 mb-4 text-sm"
+           style="background:#fffbeb;border:1px solid #fde68a;color:#92400e;">
+        <i class='bx bx-shield-quarter flex-shrink-0 mt-0.5'></i>
+        <span>Este usuario es <strong>administrador</strong>. Asegurate de tener otro admin activo antes de eliminarlo.</span>
+      </div>
+      {% endif %}
+
+      <div class="delete-warning">
+        <i class='bx bx-lock-alt'></i>
+        Esta acción no se puede deshacer
+      </div>
+
+      <form method="post">
+        {% csrf_token %}
+        <button type="submit" class="btn-delete">
+          <i class='bx bx-trash'></i> {{ grabar }}
+        </button>
+      </form>
+
+      <a href="{{ back_url }}" class="btn-cancel-full">
+        <i class='bx bx-arrow-back'></i> Cancelar y volver
+      </a>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
