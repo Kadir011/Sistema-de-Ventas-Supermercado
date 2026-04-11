@@ -6,26 +6,21 @@ import io
 from datetime import date, timedelta
 from decimal import Decimal
 
-from django.contrib.auth.mixins import LoginRequiredMixin
-from django.db.models import Count, Sum, Avg, Q
-from django.http import HttpResponse, JsonResponse
-from django.utils import timezone
+from django.db.models import Count, Sum
+from django.http import HttpResponse
 from django.views.generic import TemplateView
 from django.views import View
 
 from openpyxl import Workbook
 from openpyxl.styles import (
-    Font, PatternFill, Alignment, Border, Side, GradientFill
+    Font, PatternFill, Alignment, Border, Side
 )
 from openpyxl.utils import get_column_letter
-from openpyxl.chart import BarChart, Reference
-from openpyxl.chart.series import DataPoint
 
-from core.super.models import Sale, SaleDetail, Product, Category, Customer, Seller
-
+from core.super.models import Sale, SaleDetail, Customer, Seller
+from core.super.mixins.auth import AdminRequiredMixin
 
 # Helpers
-
 def _parse_date(value, fallback):
     """Convierte string YYYY-MM-DD a date, devuelve fallback si falla."""
     if not value:
@@ -75,7 +70,11 @@ def _apply_filters(request, force_all=False):
 
 # Vista principal
 
-class ReportsView(LoginRequiredMixin, TemplateView):
+class ReportsView(AdminRequiredMixin, TemplateView):
+    """
+    Vista para ver los reportes y estadísticas de ventas con exportación a Excel con filtrado avanzado incluído.
+    """
+    
     template_name = "super/reports/reports.html"
     login_url = "/security/login/"
 
@@ -179,7 +178,9 @@ class ReportsView(LoginRequiredMixin, TemplateView):
 
 # Exportación a Excel
 
-class ExportReportsExcelView(LoginRequiredMixin, View):
+class ExportReportsExcelView(AdminRequiredMixin, View):
+    """Vista para exportar el reporte de ventas a Excel con los mismos filtros aplicados."""
+    
     login_url = "/security/login/"
 
     def get(self, request, *args, **kwargs):
