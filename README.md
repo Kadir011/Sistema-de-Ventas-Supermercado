@@ -1,405 +1,367 @@
 <div align="center">
 
-<table width="100%" cellpadding="0" cellspacing="0" border="0">
-<tr>
-<td align="center" style="background: linear-gradient(135deg, #7f1d1d 0%, #991b1b 60%, #b91c1c 100%); border-radius: 16px; padding: 40px 32px;">
+<br/>
 
-<img src="https://img.shields.io/badge/-%F0%9F%9B%92%20MY%20SUPERMARKET-7f1d1d?style=for-the-badge&labelColor=991b1b&color=b91c1c&logoColor=white" alt="My Supermarket" height="48"/>
+<img src="https://img.shields.io/badge/-%F0%9F%9B%92%20MY%20SUPERMARKET-7f1d1d?style=for-the-badge&labelColor=991b1b&color=b91c1c&logoColor=white" alt="MySupermarket" height="52"/>
 
-<br/><br/>
+<h3>Full-Stack E-Commerce & POS Platform</h3>
 
-**`MySupermarket`** — Plataforma full‑stack de E-Commerce y Punto de Venta para supermercados
+<p>
+  Production Django system shipped with SOLID architecture, end-to-end idempotency,<br/>
+  real-time AI chatbot, and a cross-browser-audited frontend. <strong>Live on Render.</strong>
+</p>
 
-*Django · PostgreSQL · Google Gemini AI · Arquitectura SOLID · Patrones de Diseño*
+<br/>
 
-</td>
-</tr>
-</table>
+[![Live Demo](https://img.shields.io/badge/🌐_Live_Demo-my--supermarket--6l71.onrender.com-b91c1c?style=for-the-badge&labelColor=7f1d1d)](https://my-supermarket-6l71.onrender.com)
 
 <br/>
 
 [![Python](https://img.shields.io/badge/Python-3.10+-3776AB?style=flat-square&logo=python&logoColor=white&labelColor=0d1117)](https://python.org/)
 [![Django](https://img.shields.io/badge/Django-5.1.4-092E20?style=flat-square&logo=django&logoColor=white&labelColor=0d1117)](https://djangoproject.com/)
-[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-15+-336791?style=flat-square&logo=postgresql&logoColor=white&labelColor=0d1117)](https://postgresql.org/)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-Neon-336791?style=flat-square&logo=postgresql&logoColor=white&labelColor=0d1117)](https://neon.tech/)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-3.x-06B6D4?style=flat-square&logo=tailwindcss&logoColor=white&labelColor=0d1117)](https://tailwindcss.com/)
 [![Gemini AI](https://img.shields.io/badge/Gemini_AI-Flash-4285F4?style=flat-square&logo=google&logoColor=white&labelColor=0d1117)](https://ai.google.dev/)
-[![License](https://img.shields.io/badge/License-MIT-22c55e?style=flat-square&labelColor=0d1117)](.)
 [![Docker](https://img.shields.io/badge/Docker-ready-2496ED?style=flat-square&logo=docker&logoColor=white&labelColor=0d1117)](https://docker.com/)
+[![License](https://img.shields.io/badge/License-MIT-22c55e?style=flat-square&labelColor=0d1117)](LICENSE)
 
 <br/>
 
-![SOLID](https://img.shields.io/badge/Architecture-SOLID-6366f1?style=flat-square&labelColor=0d1117)
-![Strategy](https://img.shields.io/badge/Pattern-Strategy-f59e0b?style=flat-square&labelColor=0d1117)
-![Singleton](https://img.shields.io/badge/Pattern-Singleton-ec4899?style=flat-square&labelColor=0d1117)
-![Builder](https://img.shields.io/badge/Pattern-Builder%2FDirector-10b981?style=flat-square&labelColor=0d1117)
-![Idempotency](https://img.shields.io/badge/Feature-Idempotency-0ea5e9?style=flat-square&labelColor=0d1117)
-![CrossBrowser](https://img.shields.io/badge/Feature-Cross--Browser-f97316?style=flat-square&labelColor=0d1117)
-![Discounts](https://img.shields.io/badge/Feature-Discount%20System-16a34a?style=flat-square&labelColor=0d1117)
-
-<br/>
-
-> **Vende · Gestiona · Escala** — Sistema integral con POS, tienda online e IA conversacional
->
-> *Capa de servicios desacoplada con principios **SOLID**, idempotencia end-to-end, sistema de descuentos con vigencia y compatibilidad cross-browser — v1.3.0*
+![SOLID](https://img.shields.io/badge/SOLID_Architecture-6366f1?style=flat-square&labelColor=0d1117)
+![Strategy](https://img.shields.io/badge/Strategy_Pattern-f59e0b?style=flat-square&labelColor=0d1117)
+![Singleton](https://img.shields.io/badge/Singleton_Pattern-ec4899?style=flat-square&labelColor=0d1117)
+![Builder](https://img.shields.io/badge/Builder%2FDirector-10b981?style=flat-square&labelColor=0d1117)
+![Idempotency](https://img.shields.io/badge/End--to--end_Idempotency-0ea5e9?style=flat-square&labelColor=0d1117)
+![Cloudinary](https://img.shields.io/badge/Cloudinary_Media-3448C5?style=flat-square&logo=cloudinary&logoColor=white&labelColor=0d1117)
 
 </div>
 
 ---
 
-## Tabla de Contenidos
+## What this project actually demonstrates
 
-- [Acerca del Proyecto](#acerca-del-proyecto)
-- [Stack Tecnológico](#stack-tecnológico)
-- [Arquitectura](#arquitectura)
-- [Principios SOLID aplicados](#principios-solid-aplicados)
-- [Patrones de Diseño](#patrones-de-diseño)
-- [Sistema de Descuentos con Vigencia](#sistema-de-descuentos-con-vigencia)
-- [Seguridad e Idempotencia](#seguridad-e-idempotencia)
-- [Chatbot con IA contextual](#chatbot-con-ia-contextual)
-- [Compatibilidad Cross-Browser](#compatibilidad-cross-browser)
-- [Sistema de Diseño Frontend](#sistema-de-diseño-frontend)
-- [Módulos del Sistema](#módulos-del-sistema)
-- [Modelos de Datos](#modelos-de-datos)
-- [🐳 Instalación con Docker](#-instalación-con-docker)
-- [🖥️ Instalación Local (setup.sh)](#️-instalación-local-setupsh)
-- [Variables de Entorno](#variables-de-entorno)
-- [Estructura del Proyecto](#estructura-del-proyecto)
+This is not a tutorial project. It's a production-deployed system built from scratch that solves real business problems — dual-mode (POS + e-commerce), personalized discount lifecycle management, race condition prevention, and AI that actually knows your inventory.
+
+The decisions behind it are the interesting part:
+
+- **Why idempotency via UUID instead of just disabling the button?** — The button is a UX hint. The UUID constraint at the DB layer is the guarantee. Both exist. Double-click, network retry, tab duplication — none of them create a duplicate sale.
+- **Why Strategy for payments instead of if/elif?** — Adding a new payment method means writing one class and registering it. The checkout never changes. That's OCP in practice, not in a diagram.
+- **Why Singleton for IdempotencyService?** — One shared instance ensures the same UUID parse and lookup logic everywhere. No state leaks, no re-instantiation overhead per request.
+- **Why Builder/Director for chatbot context?** — The AI receives a completely different payload depending on role. The Director assembles it from specialized builders without the view knowing anything about what goes in.
+
+---
+
+## Table of Contents
+
+- [What this project actually demonstrates](#what-this-project-actually-demonstrates)
+- [Table of Contents](#table-of-contents)
+- [🌐 Live Demo](#-live-demo)
+- [Architecture Overview](#architecture-overview)
+- [Engineering Decisions](#engineering-decisions)
+  - [SOLID in Practice](#solid-in-practice)
+  - [Design Patterns](#design-patterns)
+  - [Idempotency \& Concurrency](#idempotency--concurrency)
+  - [Discount System with Expiry](#discount-system-with-expiry)
+  - [AI Chatbot with Role Context](#ai-chatbot-with-role-context)
+- [Tech Stack](#tech-stack)
+- [Cross-Browser Audit](#cross-browser-audit)
+- [Frontend Design System](#frontend-design-system)
+- [Modules](#modules)
+  - [🛒 Customer Storefront](#-customer-storefront)
+  - [⚙️ Admin Panel](#️-admin-panel)
+  - [🤖 AI Chatbot](#-ai-chatbot)
+  - [📷 EAN-13 Scanner](#-ean-13-scanner)
+  - [📊 Reports](#-reports)
+- [Data Models](#data-models)
+- [🐳 Docker Setup](#-docker-setup)
+- [🖥️ Local Setup](#️-local-setup)
+- [Environment Variables](#environment-variables)
+- [Project Structure](#project-structure)
 - [Changelog](#changelog)
-- [Desarrollador](#desarrollador)
+  - [v1.3.0 — Discount System + Contextual Chatbot](#v130--discount-system--contextual-chatbot)
+  - [v1.2.0 — Frontend Design System + Cross-Browser Audit](#v120--frontend-design-system--cross-browser-audit)
+  - [v1.1.0 — SOLID Architecture + Idempotency](#v110--solid-architecture--idempotency)
+  - [v1.0.0 — Initial release](#v100--initial-release)
+- [Developer](#developer)
 
 ---
 
-## Acerca del Proyecto
+## 🌐 Live Demo
 
-**MySupermarket** es una plataforma empresarial de doble propósito que combina un robusto **sistema de punto de venta (POS)** con una experiencia de **e-commerce moderna**. Diseñada para supermercados medianos, unifica inventario, ventas físicas y compras online en un único sistema centralizado.
+> Deployed on **Render** · PostgreSQL on **Neon** · Media on **Cloudinary** · Static files via **WhiteNoise**
 
-Los diferenciadores principales son su **arquitectura desacoplada con SOLID**, un sistema de **idempotencia end-to-end** que elimina ventas duplicadas incluso ante doble clic o fallo de red, un **sistema de descuentos con vigencia temporal** que el administrador asigna por cliente y que el chatbot conoce en tiempo real, integración de **IA conversacional** con acceso al inventario y datos personalizados por rol, y un **sistema de diseño frontend consistente** con componentes reutilizables auditados para compatibilidad cross-browser.
+**[https://my-supermarket-6l71.onrender.com](https://my-supermarket-6l71.onrender.com)**
 
----
-
-## Stack Tecnológico
-
-<div align="center">
-
-<table>
-<tr>
-<td width="50%" valign="top">
-
-### Backend
-
-| Tecnología | Versión | Propósito |
-|---|---|---|
-| ![Python](https://img.shields.io/badge/-Python-3776AB?logo=python&logoColor=white&style=flat-square) Python | `3.10+` | Lenguaje base |
-| ![Django](https://img.shields.io/badge/-Django-092E20?logo=django&logoColor=white&style=flat-square) Django | `5.1.4` | Web framework |
-| ![PostgreSQL](https://img.shields.io/badge/-PostgreSQL-336791?logo=postgresql&logoColor=white&style=flat-square) PostgreSQL | `15+` | Base de datos relacional |
-| ![Gemini](https://img.shields.io/badge/-Gemini_AI-4285F4?logo=google&logoColor=white&style=flat-square) Google GenAI | `1.57.0` | Chatbot conversacional |
-| ![xhtml2pdf](https://img.shields.io/badge/-xhtml2pdf-ef4444?style=flat-square) xhtml2pdf | `0.2.17` | Generación de facturas PDF |
-| ![openpyxl](https://img.shields.io/badge/-openpyxl-217346?style=flat-square) openpyxl | `3.1.5` | Exportación de reportes Excel |
-
-</td>
-<td width="50%" valign="top">
-
-### Frontend
-
-| Tecnología | Versión | Propósito |
-|---|---|---|
-| ![Tailwind](https://img.shields.io/badge/-Tailwind-06B6D4?logo=tailwindcss&logoColor=white&style=flat-square) Tailwind CSS | `3.x` | Utility-first CSS |
-| ![JS](https://img.shields.io/badge/-JavaScript-F7DF1E?logo=javascript&logoColor=black&style=flat-square) JavaScript | `ES6+` | Lógica del cliente |
-| ![Quagga](https://img.shields.io/badge/-QuaggaJS-6366f1?style=flat-square) QuaggaJS | `0.12.1` | Escáner EAN-13 |
-| ![JsBarcode](https://img.shields.io/badge/-JsBarcode-374151?style=flat-square) JsBarcode | `3.11.5` | Visualización de códigos |
-| ![Boxicons](https://img.shields.io/badge/-Boxicons-f97316?style=flat-square) Boxicons | `2.1.4` | Iconografía |
-| ![Jakarta Sans](https://img.shields.io/badge/-Plus_Jakarta_Sans-8b5cf6?style=flat-square) Plus Jakarta Sans | `—` | Tipografía base |
-
-</td>
-</tr>
-</table>
-
-</div>
+| Path | Description |
+|---|---|
+| `/` | Public homepage |
+| `/security/login/` | Login — customer or admin tabs |
+| `/menu/` | Admin dashboard |
+| `/tienda/` | Customer storefront |
+| `/scan_barcode/` | EAN-13 barcode scanner |
 
 ---
 
-## Arquitectura
+## Architecture Overview
 
 ```
 ┌──────────────────────────────────────────────────────────────────┐
-│                      CLIENTE / BROWSER                           │
+│                         BROWSER                                  │
 │   Tailwind CSS 3.x · JavaScript ES6+ · QuaggaJS (EAN-13)        │
-│   Plus Jakarta Sans · CSS modular por módulo                     │
 └───────────────────────────┬──────────────────────────────────────┘
                             │ HTTP/HTTPS
 ┌───────────────────────────▼──────────────────────────────────────┐
-│                    DJANGO 5.1.4 (Backend)                        │
+│                    DJANGO 5.1.4                                   │
 │                                                                  │
 │  ┌─────────────┐  ┌──────────────┐  ┌──────────────────────┐    │
-│  │    Views    │  │ Middlewares  │  │    URL Routing       │    │
-│  │  (thin)     │  │ CSRF · Auth  │  │   25+ rutas          │    │
+│  │ Thin Views  │  │ Middlewares  │  │    URL Routing       │    │
+│  │             │  │ CSRF · Auth  │  │   25+ routes         │    │
 │  └──────┬──────┘  └──────────────┘  └──────────────────────┘    │
-│         │ delega                                                  │
+│         │ delegates to                                           │
 │  ┌──────▼──────────────────────────────────────┐                 │
-│  │              Capa de Servicios (SOLID)       │                 │
+│  │           Service Layer  (SOLID)             │                 │
 │  │                                             │                 │
-│  │  CheckoutService    ← SRP                   │                 │
-│  │  PaymentProcessor   ← OCP + Strategy        │                 │
-│  │  IdempotencyService ← Singleton             │                 │
-│  │  ChatContextDirector← Builder + Director    │                 │
-│  │  CustomerContextBuilder ← descuento + hist. │                 │
-│  │  GeminiAIClient     ← DIP (AIClient ABC)    │                 │
+│  │  CheckoutService        ← SRP               │                 │
+│  │  PaymentProcessor       ← OCP + Strategy    │                 │
+│  │  IdempotencyService     ← Singleton         │                 │
+│  │  ChatContextDirector    ← Builder/Director  │                 │
+│  │  GeminiAIClient         ← DIP (AIClient ABC)│                 │
 │  └──────┬──────────────────────────────────────┘                 │
 │         │                                                        │
 │  ┌──────▼──────┐  ┌──────────────────────────────────────────┐  │
-│  │   Models    │  │  Idempotency: UUID + UNIQUE constraint   │  │
-│  │ (ORM + BD)  │  │  Descuento: has_active_discount() +      │  │
-│  └─────────────┘  │  discount_expiry DateField               │  │
-│                   │  Concurrencia: select_for_update + F()   │  │
+│  │   ORM       │  │  select_for_update() + F() expressions   │  │
+│  │  Models     │  │  UUID idempotency_key UNIQUE constraint   │  │
+│  └─────────────┘  │  ATOMIC_REQUESTS = True                  │  │
 │                   └──────────────────────────────────────────┘  │
 └───────────────────────────┬──────────────────────────────────────┘
-                            │  ORM / Parameterized Queries
-┌───────────────────────────▼──────────────────────────────────────┐
-│                        POSTGRESQL 15+                            │
-│  ATOMIC_REQUESTS=True · CHECK constraints · UNIQUE idempotency  │
-└──────────────────────────────────────────────────────────────────┘
                             │
-┌───────────────────────────▼──────────────────────────────────────┐
-│                    GOOGLE GEMINI API                              │
-│   Reintentos con backoff exponencial · Contexto dinámico por rol │
-│   Descuento activo del cliente inyectado en el prompt            │
-└──────────────────────────────────────────────────────────────────┘
+              ┌─────────────┴─────────────┐
+              │                           │
+┌─────────────▼──────────┐  ┌────────────▼────────────┐
+│   PostgreSQL (Neon)     │  │   Google Gemini API     │
+│   SSL required          │  │   Exponential backoff   │
+│   CHECK constraints     │  │   Role-aware prompts    │
+└────────────────────────┘  └─────────────────────────┘
 ```
 
 ---
 
-## Principios SOLID aplicados
+## Engineering Decisions
 
-<div align="center">
+### SOLID in Practice
 
-| Principio | Dónde se aplica |
-|---|---|
-| **S** — Single Responsibility | `CheckoutService`, `StoreContextBuilder`, `SalesContextBuilder`, `CustomerContextBuilder` y `ChatContextDirector` tienen una única responsabilidad cada uno. Las vistas son thin controllers que delegan a servicios. |
-| **O** — Open/Closed | `PaymentProcessor` es extensible sin modificar el checkout: agregar un nuevo método de pago solo requiere una nueva clase y registrarla en `PAYMENT_PROCESSORS`. |
-| **L** — Liskov Substitution | `CashPaymentProcessor`, `CardPaymentProcessor` y `TransferPaymentProcessor` implementan `PaymentProcessor` y son intercambiables donde se espere la abstracción. |
-| **I** — Interface Segregation | `AIClient` (ABC) expone solo `generate()`. Las clases concretas no se ven forzadas a implementar métodos que no usan. |
-| **D** — Dependency Inversion | `ChatbotProxyView` depende de la abstracción `AIClient`, no de `GeminiAIClient` directamente. Sustituir el proveedor de IA no requiere tocar la vista. |
+Every principle has a concrete location in the codebase — not aspirational, but verifiable:
 
-</div>
-
----
-
-## Patrones de Diseño
-
-<div align="center">
-
-| Patrón | Implementación | Beneficio |
+| Principle | Where | What it prevents |
 |---|---|---|
-| 🎯 **Strategy** | `PaymentProcessor` → `CashPaymentProcessor`, `CardPaymentProcessor`, `TransferPaymentProcessor` | Cada método de pago encapsula su lógica de cálculo de monto y cambio sin condiciones en el checkout. |
-| 🔒 **Singleton** | `IdempotencyService` | Una única instancia compartida gestiona la verificación y resolución de claves UUID en toda la aplicación, sin estado duplicado. |
-| 🏗️ **Builder / Director** | `ChatContextDirector` + `StoreContextBuilder` + `SalesContextBuilder` + `CustomerContextBuilder` + `GuestContextBuilder` | Ensambla el contexto del chatbot por partes según el rol del usuario — incluyendo el estado activo del descuento personal — sin que la vista conozca los detalles de construcción. |
+| **S** — Single Responsibility | `CheckoutService`, `StoreContextBuilder`, `SalesContextBuilder`, `CustomerContextBuilder`, `ChatContextDirector` | Views that balloon into 200-line functions mixing business logic with HTTP handling |
+| **O** — Open/Closed | `PaymentProcessor` + `PAYMENT_PROCESSORS` registry | Modifying checkout logic to add a new payment method — just add a class |
+| **L** — Liskov Substitution | `CashPaymentProcessor`, `CardPaymentProcessor`, `TransferPaymentProcessor` | Runtime errors when swapping payment implementations |
+| **I** — Interface Segregation | `AIClient(ABC)` exposes only `generate()` | Concrete clients forced to implement irrelevant methods |
+| **D** — Dependency Inversion | `ChatbotProxyView` depends on `AIClient`, not `GeminiAIClient` | Swapping the AI provider requires zero changes to the view |
 
-</div>
+### Design Patterns
 
----
-
-## Sistema de Descuentos con Vigencia
-
-El sistema implementa descuentos personalizados por cliente con **control de vigencia temporal**: el administrador puede asignar un porcentaje de descuento y una fecha de expiración. El sistema verifica en tiempo real si el descuento está activo antes de aplicarlo, tanto en el checkout como en el chatbot.
-
-### Reglas de negocio
-
-<div align="center">
-
-| Condición | Resultado |
-|---|---|
-| `discount_percentage > 0` + `discount_expiry >= hoy` + factura personal + pago Efectivo/Tarjeta | ✅ Descuento aplicado |
-| `discount_expiry < hoy` (fecha vencida) | ❌ Descuento no aplicado |
-| `discount_expiry` vacío | ❌ Descuento no aplicado |
-| Factura tipo "Consumidor Final" | ❌ Descuento no aplicado |
-| Método de pago "Transferencia bancaria" | ❌ Descuento no aplicado |
-
-</div>
-
-### Flujo del descuento
-
-```
-Admin edita cliente → asigna discount_percentage + discount_expiry
-                                    │
-                        ┌───────────▼───────────┐
-                        │  has_active_discount() │  ← método en Customer model
-                        │  pct > 0              │
-                        │  expiry no nulo        │
-                        │  expiry >= hoy         │
-                        └───────────┬───────────┘
-                                    │
-            ┌───────────────────────┼───────────────────────┐
-            │                       │                       │
-     GET /checkout/         POST /checkout/          Chatbot API
-  Preview descuento       calculate_totals()     CustomerContextBuilder
-  en template HTML        CheckoutService        inyecta estado en prompt
-  (potencial máximo)      valida pago+tipo       Gemini responde con
-                          aplica o no aplica     info personalizada
-```
-
-### Estados del descuento
-
-El modelo `Customer` expone dos helpers usados en toda la aplicación:
+**Strategy — Payment processing**
 
 ```python
-customer.has_active_discount()      # bool — ¿aplica ahora mismo?
-customer.get_active_discount_pct()  # Decimal — porcentaje o 0.00
+# Adding a new payment method: write one class, register it. Done.
+class WalletPaymentProcessor(PaymentProcessor):
+    def calculate_received_and_change(self, total, post_data):
+        return total, Decimal('0.00')
+
+PAYMENT_PROCESSORS['billetera electrónica'] = WalletPaymentProcessor()
 ```
 
-La lista de clientes en el panel admin muestra visualmente tres estados: **activo** (badge verde con fecha), **vencido** (badge rojo con fecha de vencimiento) y **sin vigencia** (badge gris con aviso).
+**Singleton — Idempotency service**
+
+```python
+class IdempotencyService:
+    _instance = None
+    def __new__(cls, *args, **kwargs):
+        if cls._instance is None:
+            cls._instance = super().__new__(cls)
+        return cls._instance
+```
+
+One shared instance. Same UUID parse logic everywhere. No hidden state divergence.
+
+**Builder / Director — AI context assembly**
+
+```python
+class ChatContextDirector:
+    def build_for_role(self, role: str, user=None) -> dict:
+        store_ctx = self.store_builder.build()
+        if role == 'admin':
+            return {'store_ctx': store_ctx, 'sales_ctx': self.sales_builder.build(), ...}
+        elif role == 'customer':
+            return {'store_ctx': store_ctx, 'extra_ctx': self.customer_builder.build(user), ...}
+        ...
+```
+
+The view calls `build_for_role()`. It doesn't know whether it's querying sales stats, customer history, or guest totals — that's the Director's job.
 
 ---
 
-## Seguridad e Idempotencia
+### Idempotency & Concurrency
 
-### Mecanismos de protección
+**The problem being solved:** A customer double-clicks "Pay". Two POST requests hit the server within milliseconds. Both read the cart. Both pass validation. Without protection: two `Sale` records, stock decremented twice, two PDF invoices.
 
-<div align="center">
-
-| Mecanismo | Descripción |
-|---|---|
-| 🔑 **Sesión Django** | Autenticación con separación estricta de roles: clientes y administradores usan flujos de login independientes con validación cruzada. |
-| 🛡️ **CSRF** | Activo en todas las peticiones POST, incluyendo AJAX con `X-CSRFToken`. Corregido en `add_to_cart` para usar POST en lugar de GET. |
-| 🔐 **Bcrypt** | Hash de contraseñas con 10 rondas de salt a través del sistema de auth de Django. |
-| 💳 **Validación Luhn** | Verificación matemática del número de tarjeta en tiempo real con feedback visual progresivo. |
-| 🃏 **Enmascaramiento PCI** | Tarjetas y cuentas se almacenan parcialmente enmascaradas (`1234 XXXX XXXX 5678`) — nunca en texto plano. |
-| 🔁 **UUID Idempotency Key** | Generado en el GET del checkout/formulario, viaja en campo hidden y se almacena con constraint `UNIQUE` en la BD. |
-| ⚛️ **Transacciones atómicas** | `ATOMIC_REQUESTS=True` + `@transaction.atomic` en operaciones críticas. |
-| 🔒 **select_for_update() + F()** | Bloqueo a nivel de fila e incremento atómico en el carrito y ventas para eliminar race conditions. |
-| 💉 **SQL Injection** | ORM de Django con queries parametrizadas. Sin concatenación de strings SQL. |
-| 🔄 **Reintentos con backoff** | `GeminiAIClient` reintenta hasta 3 veces ante errores 503/UNAVAILABLE con espera exponencial (1.5s → 3s → 6s). |
-| 🧹 **Limpieza de sesión** | El logout borra el historial del chatbot de `localStorage` antes de redirigir. |
-
-</div>
-
-### Flujo de idempotencia (Checkout)
+**The solution (defense in depth):**
 
 ```
-GET /checkout/  →  Genera UUID  →  uuid en campo hidden del formulario
-       │
-       ▼
-POST submit  →  ¿Existe Sale con ese UUID?
-       │                    │
-       │              SÍ ──►  redirect a venta existente (sin procesar)
-       │              NO ──►  crear venta + guardar UUID + descontar stock
-       │
-       ▼
-Botón deshabilitado en JS al primer clic (defensa en profundidad)
+Client side:   Button disabled on first click
+              ↓
+Transport:     UUID generated on GET, travels in hidden field
+              ↓
+Service layer: IdempotencyService.find_existing(key) → redirect if found
+              ↓
+Database:      UNIQUE constraint on idempotency_key → IntegrityError if race wins
+```
+
+The DB constraint is the actual guarantee. The rest is UX and latency reduction.
+
+**Race conditions on cart updates:**
+
+```python
+# Instead of: item.quantity += 1; item.save()  ← read-modify-write race
+CartItem.objects.filter(pk=cart_item.pk).update(quantity=F('quantity') + 1)
+# The increment happens in a single atomic SQL UPDATE
+```
+
+**Stock decrement on sale creation:**
+
+```python
+with transaction.atomic():
+    product = Product.objects.select_for_update().get(pk=detail['product'])
+    # Row locked until transaction commits — concurrent requests queue behind it
+    Product.objects.filter(pk=product.pk).update(stock=F('stock') - quantity)
 ```
 
 ---
 
-## Chatbot con IA contextual
+### Discount System with Expiry
 
-<div align="center">
+The admin assigns a `discount_percentage` + `discount_expiry` date per customer. The model owns the business logic:
 
-| Rol | Datos inyectados en el prompt |
-|---|---|
-| **Admin** | Inventario completo · Resumen de ventas (24h / 7d / 30d) · Ticket promedio · Top 5 productos · Alertas de stock crítico (≤5 uds) · Productos agotados · Últimas 10 ventas con detalle |
-| **Cliente** | Catálogo disponible (stock > 0) · Historial de últimas 5 compras · **Estado del descuento personal** (activo con fecha, vencido, o sin descuento) · Métodos de pago activos |
-| **Visitante** | Totales de catálogo (productos, categorías, marcas) · Métodos de pago · Invitación a registrarse |
+```python
+def has_active_discount(self) -> bool:
+    if not self.discount_percentage or self.discount_percentage <= 0:
+        return False
+    if not self.discount_expiry:
+        return False
+    return self.discount_expiry >= timezone.localdate()
+```
 
-</div>
+This single method is the source of truth. `CheckoutService`, the chatbot's `CustomerContextBuilder`, and the admin list view all call it — no duplicated date comparison logic anywhere.
 
----
+**Discount eligibility matrix:**
 
-## Compatibilidad Cross-Browser
-
-<div align="center">
-
-| Categoría | Fix aplicado | Archivo |
+| Invoice type | Payment method | Discount applies? |
 |---|---|---|
-| 🔴 **Crítico** | `navigator.hardwareConcurrency` con fallback `\|\| 2` para Safari iOS antiguo | `scan_barcode.js` |
-| 🔴 **Crítico** | Constraints avanzados de cámara movidos a `applyConstraints()` con `try/catch` | `scan_barcode.js` |
-| 🔴 **Crítico** | Fallback a cámara frontal si `OverconstrainedError` en iOS | `scan_barcode.js` |
-| 🔴 **Crítico** | `add_to_cart` cambiado de GET a POST para evitar caché de proxies y cumplir semántica HTTP | `cart.py`, `shop.html` |
-| 🔴 **Crítico** | Valores del checkout leídos desde `data-attributes` DOM, no desde template tags dentro de JS | `checkout.js`, `checkout.html` |
-| 🟡 **Advertencia** | `position: sticky` con prefijo `-webkit-sticky` para Safari < 13 | `base.css` |
-| 🟡 **Advertencia** | `backdrop-filter` con prefijo `-webkit-backdrop-filter` para Firefox < 103 | `base.css` |
-| 🟡 **Advertencia** | Spin buttons ocultos en `readonly` inputs para Safari | `sale_form.css`, `base.css` |
-| 🔵 **Informativo** | `@media (prefers-reduced-motion: reduce)` para animaciones accesibles | `base.css` |
-| 🔵 **Informativo** | `line-clamp: 2` estándar junto al prefijo webkit | `base.css` |
-| 🔵 **Informativo** | Placeholder en `input[type=date]` para Safari < 14.1 | `product_form.html` |
+| Personal data | Cash / Card | ✅ Yes |
+| Personal data | Bank transfer | ❌ No |
+| Consumidor Final | Any | ❌ No |
+| Any | Expired expiry date | ❌ No |
+| Any | Empty expiry date | ❌ No |
+
+---
+
+### AI Chatbot with Role Context
+
+Three completely separate system prompts, assembled at request time from live DB data:
+
+| Role | What the model receives |
+|---|---|
+| **Admin** | Full inventory · Sales summary (24h / 7d / 30d) · Average ticket · Top 5 products · Low-stock alerts (≤5 units) · Last 10 transactions |
+| **Customer** | Available catalog · Last 5 purchases · **Active discount status** (percentage + expiry date) · Active payment methods |
+| **Guest** | Catalog totals · Payment methods · Registration invitation |
+
+The Gemini client retries transient 503 errors with exponential backoff (1.5s → 3s → 6s, max 3 attempts) before surfacing an error to the user.
+
+---
+
+## Tech Stack
+
+<div align="center">
+
+| Layer | Technology | Version | Purpose |
+|---|---|---|---|
+| Language | Python | 3.10+ | Base |
+| Framework | Django | 5.1.4 | Web framework |
+| Database | PostgreSQL (Neon) | 15+ | Relational DB with SSL |
+| AI | Google Gemini Flash | — | Contextual chatbot |
+| Media | Cloudinary | — | Image storage in production |
+| Static files | WhiteNoise | 6.8.2 | Serve statics without CDN |
+| Hosting | Render | — | PaaS deployment |
+| CSS | Tailwind CSS | 3.x | Utility-first styling |
+| PDF | xhtml2pdf | 0.2.17 | Invoice generation |
+| Excel | openpyxl | 3.1.5 | 5-sheet report export |
+| Barcode | QuaggaJS | 0.12.1 | EAN-13 camera scanner |
 
 </div>
 
 ---
 
-## Sistema de Diseño Frontend
+## Cross-Browser Audit
 
-**Tipografía:** Plus Jakarta Sans (base) · Syne (títulos) · DM Sans (descripción)
+Tested across Chrome, Firefox, Safari, and Edge. Critical fixes shipped in v1.2.0:
 
-**Paleta por módulo:**
+| Severity | Issue | Fix | File |
+|---|---|---|---|
+| 🔴 Critical | `navigator.hardwareConcurrency` undefined on Safari iOS | Fallback `\|\| 2` | `scan_barcode.js` |
+| 🔴 Critical | Advanced camera constraints crash on iOS | Moved to `applyConstraints()` with `try/catch` | `scan_barcode.js` |
+| 🔴 Critical | `OverconstrainedError` on iOS — no rear camera | Fallback to front camera | `scan_barcode.js` |
+| 🔴 Critical | `add_to_cart` used GET with side effects | Changed to POST + CSRF | `cart.py`, `shop.html` |
+| 🔴 Critical | Django template tags inside static JS file | Values moved to `data-attributes` on DOM elements | `checkout.js` |
+| 🟡 Warning | `position: sticky` broken on Safari < 13 | Added `-webkit-sticky` prefix | `base.css` |
+| 🟡 Warning | `backdrop-filter` unsupported on Firefox < 103 | Added `-webkit-backdrop-filter` + alpha fallback | `base.css` |
+| 🟡 Warning | Spin buttons on `readonly` number inputs in Safari | Hidden via `-webkit-appearance: none` | `sale_form.css` |
+| 🔵 Info | Missing `prefers-reduced-motion` support | `@media` query disables all animations | `base.css` |
+| 🔵 Info | `line-clamp` vendor prefix missing | Added standard `line-clamp: 2` alongside webkit | `base.css` |
 
-<div align="center">
+---
 
-| Módulo | Color de acento | CSS |
+## Frontend Design System
+
+**Typography:** Plus Jakarta Sans (UI) · Syne (headings) · DM Sans (body copy)
+
+**Color system — module-scoped accents:**
+
+| Module | Accent | Variable |
 |---|---|---|
-| Clientes | Verde (`#16a34a`) | `customer_form.css` |
-| Vendedores | Azul (`#2563eb`) | `seller_form.css` |
-| Productos | Púrpura (`#7c3aed`) | `product_form.css` |
-| Ventas | Cyan (`#0ea5e9`) | `sale_form.css` |
-| Eliminaciones | Rojo (`#dc2626`) | `*_delete.css` |
-| Tienda cliente | Verde (`#14532d`) | navbar |
-| Panel admin | Rojo oscuro (`#991b1b`) | navbar |
+| Customers | Green `#16a34a` | `customer_form.css` |
+| Sellers | Blue `#2563eb` | `seller_form.css` |
+| Products | Purple `#7c3aed` | `product_form.css` |
+| Sales | Cyan `#0ea5e9` | `sale_form.css` |
+| Deletions | Red `#dc2626` | `*_delete.css` |
+| Customer store navbar | Dark green `#14532d` | `base.css` |
+| Admin panel navbar | Dark red `#991b1b` | `base.css` |
 
-</div>
-
----
-
-## Módulos del Sistema
-
-<div align="center">
-
-<table>
-<tr>
-<td width="33%" valign="top">
-
-### 🛒 Tienda Online (Cliente)
-- Catálogo con filtros por categoría, marca y búsqueda
-- Carrito con actualización dinámica y validación de stock
-- Checkout con tipo de factura (Consumidor Final / Datos personales)
-- Descuento personalizado aplicado automáticamente según vigencia y método de pago
-- Métodos de pago: Efectivo, Tarjeta, Transferencia
-- Historial de compras con descarga de facturas PDF
-
-</td>
-<td width="33%" valign="top">
-
-### 🤖 Chatbot con IA
-- Integración con Google Gemini Flash con reintentos automáticos
-- Contexto dinámico con inventario, precios y políticas en tiempo real
-- Respuestas diferenciadas por rol (visitante, cliente, administrador)
-- Informa descuentos activos, condiciones y fecha de vigencia
-- Historial persistido en `localStorage` por usuario, limpiado al logout
-
-</td>
-<td width="33%" valign="top">
-
-### ⚙️ Panel Administrativo
-- CRUD completo de productos, categorías, marcas, clientes y vendedores
-- Gestión de descuentos por cliente con porcentaje y fecha de vigencia
-- Registro histórico de ventas con búsqueda, filtros y modal de detalle
-- Generación automática de facturas PDF con datos PCI-mascarados
-- Reportes con exportación a Excel (5 hojas)
-- Dashboard con notificaciones de ventas de las últimas 24 horas
-
-</td>
-</tr>
-</table>
-
-</div>
-
-### 📷 Escáner EAN-13
-
-- Detección vía cámara con **QuaggaJS**
-- **Sistema de votos**: requiere 3 lecturas consistentes antes de confirmar
-- **Validación matemática** del dígito de control (algoritmo EAN-13)
-- Fallbacks cross-browser para Safari iOS, Firefox y cámaras sin modo trasero
+**10 scoped CSS files** — no global style bleed between modules. Each form carries its own accent color without touching shared styles.
 
 ---
 
-## Modelos de Datos
+## Modules
+
+### 🛒 Customer Storefront
+Category / brand / search filters · Cart with live stock validation · Checkout with invoice type selection (Consumidor Final vs. personal data) · Automatic discount application by payment method and expiry · Cash / Card / Transfer payment flows · Order history with PDF invoice download
+
+### ⚙️ Admin Panel
+Full CRUD: products, categories, brands, customers (with discount management), sellers, users · Sale registry and history · Modal sale detail viewer · PDF invoice generation with PCI-masked card/account numbers · 5-sheet Excel report export with advanced filters · Dashboard with 24h sales notification badge
+
+### 🤖 AI Chatbot
+Role-differentiated system prompts assembled from live DB data · Admin receives sales KPIs and inventory alerts · Customers receive their discount status and purchase history · Guests receive catalog summary and registration invitation · Persistent history in `localStorage` per user, cleared on logout
+
+### 📷 EAN-13 Scanner
+Camera access via QuaggaJS · 3-vote consensus before confirming a read (prevents false positives from reflective packaging) · Mathematical check digit validation · Cross-browser fallbacks for Safari iOS and Firefox
+
+### 📊 Reports
+KPIs: revenue, sales count, average ticket, discounts granted · Daily revenue chart (Chart.js) · Payment method breakdown (doughnut) · Top 15 products by units · Revenue by category with progress bars · Top 5 sellers and customers · Date range quick-selects (7 / 30 / 90 days / this month) · Export to Excel with same filters applied
+
+---
+
+## Data Models
 
 ```
 ┌─────────────┐     ┌─────────────┐     ┌─────────────────┐
@@ -407,416 +369,239 @@ Botón deshabilitado en JS al primer clic (defensa en profundidad)
 └──────┬──────┘     └──────┬──────┘     └────────┬────────┘
        └──────────┬─────────┘                    │
                   │                              │
-           ┌──────▼──────┐               ┌───────▼──────────────────┐
-           │   Product   │               │          Sale             │
-           │─────────────│◄──────────────│──────────────────────────│
-           │ id_product  │  SaleDetail   │ id_sale                  │
-           │ name        │               │ user (FK→User)           │
-           │ price       │               │ customer (FK)            │
-           │ stock       │               │ seller (FK)              │
-           │ barcode     │               │ payment (FK)             │
-           │ state       │               │ subtotal / iva / total   │
-           └──────┬──────┘               │ card_number_masked       │
-                  │                      │ transfer_account_masked  │
-           ┌──────▼──────┐               │ idempotency_key (UUID) ◄─── UNIQUE
-           │  CartItem   │               └───────────────────────────┘
-           └─────────────┘    ┌──────────────────────┐
-                              │       Customer        │
-                              │──────────────────────│
-                              │ dni (unique)          │
-                              │ discount_percentage   │
-                              │ discount_expiry ◄──── │
-                              │ has_active_discount() │
-                              │ get_active_discount_pct│
-                              └──────────────────────┘
+           ┌──────▼──────┐               ┌───────▼──────────────────────────┐
+           │   Product   │               │              Sale                 │
+           │─────────────│◄──────────────│──────────────────────────────────│
+           │ barcode     │  SaleDetail   │ idempotency_key UUID  ← UNIQUE    │
+           │ stock       │               │ card_number_masked                │
+           │ price       │               │ transfer_account_masked           │
+           │ state       │               │ discount                         │
+           └─────────────┘               └───────────────────────────────────┘
+                                                      │
+                                         ┌────────────▼──────────────┐
+                                         │         Customer          │
+                                         │  discount_percentage      │
+                                         │  discount_expiry ◄──date  │
+                                         │  has_active_discount()    │
+                                         │  get_active_discount_pct()│
+                                         └───────────────────────────┘
 ```
 
-**Constraints activos en PostgreSQL:**
+**PostgreSQL constraints enforced at DB level:**
 
 ```sql
-CHECK (stock >= 0)         -- product_stock_non_negative
-CHECK (price > 0)          -- product_price_non_negative
-CHECK (subtotal >= 0)      -- sale_subtotal_non_negative
-CHECK (iva >= 0)           -- sale_iva_non_negative
-CHECK (discount >= 0)      -- sale_discount_non_negative
-CHECK (total >= 0)         -- sale_total_non_negative
-CHECK (quantity >= 1)      -- saledetail_quantity_non_negative
-UNIQUE (idempotency_key)   -- super_sale
-UNIQUE (cart, product)     -- CartItem
+CHECK (stock >= 0)          -- product_stock_non_negative
+CHECK (price > 0)           -- product_price_non_negative
+CHECK (subtotal >= 0)       -- sale_subtotal_non_negative
+CHECK (iva >= 0)            -- sale_iva_non_negative
+CHECK (discount >= 0)       -- sale_discount_non_negative
+CHECK (total >= 0)          -- sale_total_non_negative
+CHECK (quantity >= 1)       -- saledetail_quantity_non_negative
+UNIQUE (idempotency_key)    -- super_sale
+UNIQUE (cart, product)      -- CartItem
 ```
 
 ---
 
-## 🐳 Instalación con Docker
+## 🐳 Docker Setup
 
-> **Recomendado para devs que quieren levantar el proyecto en minutos sin instalar dependencias locales.**
+> **Recommended** — zero dependency installation, up in under 2 minutes.
 
-### Requisitos previos
-
-- Docker `24+`
-- Docker Compose `v2+` (`docker compose` sin guión)
-- API Key de Google Gemini
-- Cuenta Gmail con Contraseña de Aplicación (para SMTP)
-
-### Pasos
-
-**1. Clonar el repositorio**
+**Prerequisites:** Docker 24+, Docker Compose v2+, Gemini API key, Gmail App Password
 
 ```bash
 git clone https://github.com/Kadir011/Sistema-de-Ventas-Supermercado.git
 cd Sistema-de-Ventas-Supermercado
-```
-
-**2. Crear el archivo `.env` en la raíz del proyecto**
-
-```bash
-cp .env.example .env   # si existe, o crearlo manualmente
-```
-
-El `docker-compose.yml` lo toma con `env_file: .env`. Ver la sección [Variables de Entorno](#variables-de-entorno) para el contenido completo.
-
-> ⚠️ `DB_SOCKET` debe ser `db` (nombre del servicio de Compose, **no** `localhost`).
-
-**3. Levantar los servicios**
-
-```bash
+cp .env.example .env   # then fill in your values — see Environment Variables below
 docker compose up --build
 ```
 
-Compose levanta dos servicios en orden:
+Services started:
 
-<div align="center">
+| Service | Image | Host port |
+|---|---|---|
+| `db` | `postgres:14.10-alpine` | `5433` |
+| `web` | Built from `Dockerfile` | `8000` |
 
-| Servicio | Imagen | Puerto host | Puerto interno |
-|---|---|---|---|
-| `db` | `postgres:14.10-alpine` | `5433` | `5432` |
-| `web` | Build desde `Dockerfile` | `8000` | `8000` |
-
-</div>
-
-El servicio `web` espera a que `db` pase su healthcheck (`pg_isready`) antes de arrancar. Al iniciar, ejecuta automáticamente:
-
-```
-python manage.py collectstatic --noinput
-python manage.py migrate --noinput
-python manage.py runserver 0.0.0.0:8000
-```
-
-**4. Cargar datos iniciales** (categorías, marcas, métodos de pago)
-
-En otra terminal, con los contenedores corriendo:
+`web` waits for `db` healthcheck before starting. On launch it runs `collectstatic`, `migrate`, then `runserver`.
 
 ```bash
+# Load seed data (65 categories, 77 brands, 11 payment methods)
 docker compose exec web python manage.py initial_data
-```
 
-**5. Crear superusuario administrador**
-
-```bash
+# Create admin user
 docker compose exec web python manage.py createsuperuser
 ```
 
-**6. Acceder a la aplicación**
-
-<div align="center">
-
-| Ruta | Descripción |
-|---|---|
-| `http://localhost:8000` | Home — tienda pública |
-| `http://localhost:8000/security/login/` | Login (cliente o admin) |
-| `http://localhost:8000/menu/` | Panel administrador |
-
-</div>
-
----
-
-### Comandos Docker útiles
+**Useful commands:**
 
 ```bash
-# Ver logs en tiempo real
-docker compose logs -f web
-
-# Ver solo logs de DB
-docker compose logs -f db
-
-# Detener y eliminar contenedores (conserva volúmenes)
-docker compose down
-
-# Detener y eliminar contenedores + volúmenes (limpia BD)
-docker compose down -v
-
-# Reconstruir solo el servicio web (tras cambios en requirements.txt o Dockerfile)
-docker compose up --build web
-
-# Abrir shell en el contenedor web
-docker compose exec web bash
-
-# Ejecutar migraciones manualmente
-docker compose exec web python manage.py migrate
-
-# Ejecutar tests
+docker compose logs -f web          # tail logs
+docker compose down -v              # stop + wipe volumes (clean DB)
+docker compose up --build web       # rebuild after requirements changes
 docker compose exec web python manage.py test
-
-# Conectarse a PostgreSQL desde el host
-psql -h localhost -p 5433 -U <DB_USERNAME> -d <DB_DATABASE>
 ```
 
----
-
-### Notas sobre la configuración Docker
-
-El `docker-compose.yml` monta el código fuente como volumen (`- .:/app`), lo que significa que **los cambios en el código se reflejan sin reconstruir la imagen**. Solo necesitas reconstruir (`--build`) si modificás `requirements.txt` o el `Dockerfile`.
-
-Los volúmenes `media_volume` y `static_volume` persisten archivos de media y estáticos entre reinicios. El puerto de PostgreSQL se expone en `5433` (en lugar de `5432`) para evitar conflictos con instancias locales de Postgres que puedas tener corriendo.
+> ℹ️ Source is bind-mounted as a volume — code changes reflect immediately without rebuild. Only `requirements.txt` or `Dockerfile` changes need `--build`.
 
 ---
 
-</div>
+## 🖥️ Local Setup
 
----
-
-## 🖥️ Instalación Local (setup.sh)
-
-> **Para devs que prefieren un entorno virtual Python local con PostgreSQL nativo.**
-
-### Requisitos previos
-
-- Python `3.10+`
-- PostgreSQL `15+` instalado y corriendo localmente
-- `psql` disponible en el PATH
-- Cuenta de Google Cloud con API Key de Gemini
-- Cuenta Gmail con Contraseña de Aplicación (SMTP)
-
-### Pasos
-
-**1. Clonar el repositorio y crear el entorno virtual**
+**Prerequisites:** Python 3.10+, PostgreSQL 15+, `psql` in PATH
 
 ```bash
 git clone https://github.com/Kadir011/Sistema-de-Ventas-Supermercado.git
 cd Sistema-de-Ventas-Supermercado
 
 python -m venv env
+source env/bin/activate          # Linux / macOS
+# env\Scripts\activate.bat       # Windows CMD
+# source env/Scripts/activate    # Windows Git Bash
 
-# Linux / Mac
-source env/bin/activate
-
-# Windows (Git Bash)
-source env/Scripts/activate
-
-# Windows (CMD)
-env\Scripts\activate.bat
-```
-
-**2. Instalar dependencias**
-
-```bash
 pip install -r app/requirements.txt
 ```
 
-**3. Configurar variables de entorno**
-
-Crear el archivo `app/.env` con el contenido de la sección [Variables de Entorno](#variables-de-entorno).
-
-> ⚠️ Para instalación local, `DB_SOCKET` debe ser `localhost` (o la IP/socket de tu instancia Postgres).
-
-**4. Ejecutar el script de instalación automática**
+Copy `.env` into `app/` (see [Environment Variables](#environment-variables) — use `DB_SOCKET=localhost`), then:
 
 ```bash
 cd app
-chmod +x setup.sh && ./setup.sh
-```
-
-El script hace lo siguiente en orden:
-
-1. Detecta el entorno virtual en múltiples rutas posibles (`../env`, `./env`, `../venv`, `./venv`)
-2. Instala dependencias con `pip`
-3. Solicita credenciales de PostgreSQL interactivamente
-4. Elimina y recrea la base de datos
-5. Ejecuta `makemigrations` y `migrate`
-6. Inserta los datos iniciales (65 categorías, 77 marcas, 11 métodos de pago) vía SQL directo
-
-> **Windows (Git Bash):** Si el script no encuentra el virtualenv automáticamente, pedirá la ruta completa. Ejemplo: `C:/proyecto/env`
-
-**5. Crear superusuario administrador**
-
-```bash
+chmod +x setup.sh && ./setup.sh   # creates DB, runs migrations, loads seed data
 python manage.py createsuperuser
-```
-
-**6. Levantar el servidor de desarrollo**
-
-```bash
 python manage.py runserver
 ```
 
-Acceder en `http://localhost:8000`
-
----
-
-### Instalación manual paso a paso
-
-Si preferís ejecutar cada paso individualmente sin el script:
+**Manual steps (without the script):**
 
 ```bash
-# Desde /app con el virtualenv activado
-
-# 1. Crear la base de datos
 psql -U postgres -c "CREATE DATABASE my_supermarket;"
-
-# 2. Ejecutar migraciones
-python manage.py makemigrations
 python manage.py migrate
-
-# 3. Cargar datos iniciales
 python manage.py initial_data
-
-# 4. Crear superusuario
 python manage.py createsuperuser
-
-# 5. Levantar servidor
 python manage.py runserver
 ```
 
 ---
 
-## Variables de Entorno
+## Environment Variables
 
-Contenido del archivo `.env` — colocarlo en:
-- **Docker:** raíz del proyecto (junto al `docker-compose.yml`)
-- **Local:** dentro de `/app/`
+Place in project root for Docker, or in `/app/` for local setup.
 
 ```env
-# ── Base de Datos ─────────────────────────────
+# ── Database ───────────────────────────────────
 DB_ENGINE=django.db.backends.postgresql
 DB_DATABASE=my_supermarket
 DB_USERNAME=postgres
-DB_PASSWORD=tu_password
-DB_SOCKET=localhost       # Docker: usar "db" (nombre del servicio)
+DB_PASSWORD=your_password
+DB_SOCKET=localhost          # Docker: use "db"
 DB_PORT=5432
 
 # ── Email (Gmail SMTP) ─────────────────────────
-EMAIL_HOST_USER=tu_correo@gmail.com
-EMAIL_HOST_PASSWORD=tu_contrasena_de_app   # Contraseña de Aplicación, no la de tu cuenta
-DEFAULT_FROM_EMAIL=tu_correo@gmail.com
+EMAIL_HOST_USER=you@gmail.com
+EMAIL_HOST_PASSWORD=your_app_password   # App Password, not account password
+DEFAULT_FROM_EMAIL=you@gmail.com
 
 # ── Google Gemini AI ───────────────────────────
-GEMINI_API_KEY=tu_api_key_de_gemini
+GEMINI_API_KEY=your_api_key
 
 # ── Django ────────────────────────────────────
-SECRET_KEY=tu_secret_key_django
+SECRET_KEY=your_secret_key
 DEBUG=True
 ALLOWED_HOSTS=localhost,127.0.0.1
+
+# ── Cloudinary (production media) ─────────────
+CLOUDINARY_URL=cloudinary://key:secret@cloud_name
 ```
 
-> ⚠️ El archivo `.env` está en `.gitignore` y `.dockerignore`. Nunca lo subas al repositorio.
+> ⚠️ `.env` is listed in both `.gitignore` and `.dockerignore`. Never commit it.
 
 ---
 
-## Estructura del Proyecto
+## Project Structure
 
 ```
 django_supermercado/
-├── env/                        # Entorno virtual (ignorado por git)
-├── docker-compose.yml          # Orquestación Docker (db + web)
-├── Dockerfile                  # Imagen Python 3.10-slim para el servicio web
-├── .dockerignore
-├── .env                        # Variables de entorno (no versionado)
+├── docker-compose.yml
+├── Dockerfile
 └── app/
-    ├── config/                 # Configuración centralizada de Django
-    │   ├── settings.py        # Settings · ATOMIC_REQUESTS=True
-    │   ├── urls.py            # Rutas principales
-    │   └── wsgi.py / asgi.py
+    ├── config/
+    │   ├── settings.py          # ATOMIC_REQUESTS=True, Cloudinary, WhiteNoise
+    │   └── urls.py
     ├── core/
-    │   ├── security/           # Módulo de autenticación
-    │   │   ├── models.py      # User (AbstractUser) con user_type
-    │   │   ├── forms/auth.py  # Registro con get_or_create idempotente
-    │   │   └── views/auth.py  # Login dual · logout con limpieza localStorage
-    │   └── super/              # Módulo principal del negocio
-    │       ├── models.py      # Product · Sale · Cart · Customer (descuento+vigencia) · …
-    │       ├── services/       # ← Capa de servicios (SOLID + Patrones)
+    │   ├── security/            # Custom AbstractUser with user_type field
+    │   │   ├── models.py
+    │   │   └── views/auth.py    # Dual-tab login, logout with localStorage cleanup
+    │   └── super/
+    │       ├── models.py        # All domain models with DB constraints
+    │       ├── services/        # ← The interesting part
     │       │   ├── ai_client.py           # DIP: AIClient ABC + GeminiAIClient
-    │       │   ├── chat_context.py        # Builder+Director: contexto por rol
-    │       │   ├── checkout_service.py    # SRP: orquestación del checkout
-    │       │   ├── idempotency_service.py # Singleton: claves UUID
-    │       │   └── payment_processors.py  # OCP + Strategy: procesadores de pago
-    │       ├── views/
-    │       │   ├── cart.py    # POST correcto · select_for_update + F()
-    │       │   ├── sale.py    # UUID idempotency · select_for_update · F()
-    │       │   ├── chatbot.py # Gemini · contexto por rol · prompts de descuento
-    │       │   ├── customer.py # CRUD clientes · gestión de descuentos
-    │       │   └── shop.py / product.py / seller.py / home.py / reports.py
+    │       │   ├── chat_context.py        # Builder/Director pattern
+    │       │   ├── checkout_service.py    # SRP: checkout orchestration
+    │       │   ├── idempotency_service.py # Singleton
+    │       │   └── payment_processors.py  # Strategy pattern
+    │       ├── views/           # Thin controllers — delegate to services
     │       ├── form/
-    │       │   └── customer.py # CustomerForm: discount_percentage + discount_expiry
-    │       ├── management/commands/
-    │       │   └── initial_data.py  # Management command: categorías, marcas, pagos
-    │       └── urls.py        # 25+ rutas del módulo
-    ├── templates/             # Templates HTML por módulo
+    │       └── urls.py          # 25+ routes
+    ├── templates/
     ├── static/
-    │   ├── css/               # CSS modular por módulo (10 archivos)
-    │   └── js/                # checkout.js · sale.js · scan_barcode.js · chatbot.js
-    ├── manage.py
+    │   ├── css/                 # 10 scoped CSS files
+    │   └── js/                  # checkout.js · sale.js · scan_barcode.js · chatbot.js
     ├── requirements.txt
-    └── setup.sh               # Script de instalación automática (local)
+    └── setup.sh
 ```
 
 ---
 
 ## Changelog
 
-### v1.3.0 — Sistema de Descuentos + Chatbot Contextual
+### v1.3.0 — Discount System + Contextual Chatbot
+- `discount_expiry` DateField on `Customer` with migration `0002`
+- `has_active_discount()` and `get_active_discount_pct()` — single source of truth
+- `CheckoutService.calculate_totals()` validates invoice type + payment method + expiry before applying discount
+- Discount preview on checkout GET; JS recalculates on payment method change
+- `CustomerContextBuilder` injects exact discount state into chatbot prompt
+- Admin customer list: three visual states — active (green), expired (red), no expiry (gray)
+- Customer form: auto-suggest today + 2 months as default expiry
 
-- ✅ Campo `discount_expiry` en modelo `Customer` con migración `0002_customer_discount_expiry`
-- ✅ Helpers `has_active_discount()` y `get_active_discount_pct()` — fuente única de verdad
-- ✅ `CheckoutService.calculate_totals()` valida tipo de factura + método de pago + vigencia
-- ✅ Preview del descuento en GET del checkout con recalculo dinámico en JS
-- ✅ Anti-doble-clic: botón deshabilitado tras primer clic + UUID idempotente en backend
-- ✅ `CustomerContextBuilder` inyecta estado exacto del descuento en el chatbot
-- ✅ Formulario de cliente: sugerencia automática de hoy + 2 meses como vigencia
-- ✅ Lista de clientes: tres estados visuales del descuento (activo / vencido / sin vigencia)
-- ✅ Aviso en checkout cuando el descuento no aplica por modalidad de compra
+### v1.2.0 — Frontend Design System + Cross-Browser Audit
+- Unified design system: Plus Jakarta Sans, per-module color palette, gradient cards
+- 10 scoped CSS files, one per module
+- Navbar redesign: customer (green) and admin (dark red), mobile-first
+- Critical cross-browser fixes: `add_to_cart` POST, `checkout.js` data-attributes, QuaggaJS iOS fallbacks
+- `GeminiAIClient` with exponential backoff on 503 errors
+- Reports module: advanced filters, Chart.js charts, Excel export (5 sheets)
 
-### v1.2.0 — Diseño Frontend + Auditoría Cross-Browser
+### v1.1.0 — SOLID Architecture + Idempotency
+- `idempotency_key` UUID with UNIQUE constraint on `Sale`
+- `select_for_update()` + `F()` expressions on cart and admin sale views
+- Service layer extraction: `CheckoutService`, `PaymentProcessor`, `IdempotencyService`
+- Strategy pattern for payment processors
+- Builder/Director for chatbot context assembly
+- Unit tests for `PaymentProcessor` and `IdempotencyService`
 
-- ✅ Sistema de diseño unificado: Plus Jakarta Sans, paleta por módulo, cards con gradiente
-- ✅ CSS modular: 10 archivos CSS separados por módulo
-- ✅ Navbar rediseñado: cliente (verde) y admin (rojo oscuro), mobile-first
-- ✅ Auditoría cross-browser crítica: `add_to_cart` cambiado de GET a POST con CSRF
-- ✅ Fix crítico `checkout.js`: valores numéricos leídos desde `data-attributes` DOM
-- ✅ Fix `scan_barcode.js`: `hardwareConcurrency` con fallback, constraints con `try/catch`
-- ✅ Prefijos webkit: `position: sticky`, `backdrop-filter`, `line-clamp`
-- ✅ `GeminiAIClient`: reintentos automáticos con backoff exponencial ante errores 503
-- ✅ Módulo de Reportes: filtros avanzados, KPIs, gráficos Chart.js y exportación Excel (5 hojas)
-
-### v1.1.0 — Arquitectura SOLID + Idempotencia
-
-- ✅ Idempotencia en checkout: `idempotency_key` UUID con constraint UNIQUE en `Sale`
-- ✅ Idempotencia en ventas admin: UUID en payload JSON de `SaleCreateView`
-- ✅ Race condition en carrito: `select_for_update()` + `F('quantity') + 1`
-- ✅ Atomicidad en eliminación: `@transaction.atomic` en `SaleDeleteView`
-- ✅ SRP: servicios extraídos a `core/super/services/`
-- ✅ OCP + Strategy: `PaymentProcessor` extensible sin modificar checkout
-- ✅ DIP: `ChatbotProxyView` depende de `AIClient` (abstracción ABC)
-- ✅ Singleton: `IdempotencyService` con instancia única compartida
-- ✅ Builder/Director: `ChatContextDirector` ensambla contexto por rol
-- ✅ Tests unitarios: `PaymentProcessor` e `IdempotencyService` cubiertos
-
-### v1.0.0 — Versión inicial funcional
+### v1.0.0 — Initial release
 
 ---
 
-## Desarrollador
+## Developer
 
 <div align="center">
 
 **Kadir Barquet Bravo**
-Full Stack Developer
+
+Full Stack Developer — Guayaquil, Ecuador
+
+*Available for remote opportunities*
+
+<br/>
 
 [![LinkedIn](https://img.shields.io/badge/LinkedIn-kadir--barquet--bravo-0A66C2?style=for-the-badge&logo=linkedin&logoColor=white)](https://www.linkedin.com/in/kadir-barquet-bravo/)
 [![GitHub](https://img.shields.io/badge/GitHub-Kadir011-181717?style=for-the-badge&logo=github&logoColor=white)](https://github.com/Kadir011)
 [![Email](https://img.shields.io/badge/Email-barquetbravokadir%40gmail.com-EA4335?style=for-the-badge&logo=gmail&logoColor=white)](mailto:barquetbravokadir@gmail.com)
+[![Live](https://img.shields.io/badge/Live_Demo-my--supermarket-b91c1c?style=for-the-badge&logo=render&logoColor=white)](https://my-supermarket-6l71.onrender.com)
 
 <br/>
 
-<sub>Built with ❤️ in Guayaquil, Ecuador · Django 5.1.4 · Python 3.10+ · v1.3.0</sub>
+<sub>Django 5.1.4 · Python 3.10+ · PostgreSQL (Neon) · Cloudinary · Render · v1.3.0</sub>
 
 </div>
