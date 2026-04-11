@@ -1,11 +1,18 @@
+"""
+Vistas para que el admin gestione los productos
+"""
+
 from django.views.generic import ListView, CreateView, UpdateView, DeleteView, DetailView
 from django.urls import reverse_lazy
 from django.db.models import Q
 from core.super.models import Product
 from core.super.form.product import ProductForm
 from django.contrib.auth.mixins import LoginRequiredMixin
+from core.super.mixins.auth import AdminRequiredMixin
 
-class ProductListView(ListView):
+class ProductListView(AdminRequiredMixin, ListView):
+    """Vista para listar los productos"""
+    
     model = Product
     template_name = 'super/products/product_list.html'
     context_object_name = 'products'
@@ -26,7 +33,9 @@ class ProductListView(ListView):
         context['create_url'] = reverse_lazy('super:product_create')
         return context
     
-class ProductCreateView(CreateView):
+class ProductCreateView(AdminRequiredMixin, CreateView):
+    """Vista para crear un nuevo producto"""
+    
     model = Product
     form_class = ProductForm
     template_name = 'super/products/product_form.html'
@@ -39,7 +48,9 @@ class ProductCreateView(CreateView):
         context['back_url'] = self.success_url
         return context
     
-class ProductUpdateView(UpdateView):
+class ProductUpdateView(AdminRequiredMixin, UpdateView):
+    """Vista para editar un producto existente"""
+    
     model = Product
     form_class = ProductForm
     template_name = 'super/products/product_form.html'
@@ -52,7 +63,9 @@ class ProductUpdateView(UpdateView):
         context['back_url'] = self.success_url
         return context
 
-class ProductDeleteView(DeleteView):
+class ProductDeleteView(AdminRequiredMixin, DeleteView):
+    """Vista para eliminar un producto"""
+    
     model = Product
     template_name = 'super/products/product_delete.html'
     success_url = reverse_lazy('super:product_list')
@@ -66,6 +79,8 @@ class ProductDeleteView(DeleteView):
         return context
 
 class ProductDetailView(DetailView, LoginRequiredMixin):
+    """Vista para ver el detalle de un producto (Visitantes y Admin)"""
+    
     model = Product
     template_name = 'super/products/product_detail.html'
     context_object_name = 'product'
@@ -74,6 +89,4 @@ class ProductDetailView(DetailView, LoginRequiredMixin):
         context = super().get_context_data(**kwargs)
         context['title'] = f'Producto: {self.object.name}'
         context['back_url'] = reverse_lazy('super:product_list')
-        return context
-    
-
+        return context 
