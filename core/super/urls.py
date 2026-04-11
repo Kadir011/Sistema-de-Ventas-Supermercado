@@ -1,6 +1,6 @@
 from django.urls import path 
 from core.super.views import customer, product, seller, sale, scan_barcode, shop, cart, chatbot, reports
-from core.super.views import home
+from core.super.views import home, user
 
 app_name = 'super'
 
@@ -68,4 +68,10 @@ urlpatterns = [
     # REPORTES (ADMIN)
     path('admin/reportes/', reports.ReportsView.as_view(), name='reports'),
     path('admin/reportes/exportar/', reports.ExportReportsExcelView.as_view(), name='export_reports_excel'),
-]
+    
+    # USUARIOS (ADMIN)
+    path('admin/usuarios/', user.UserListView.as_view(), name='user_list'),
+    path('admin/usuarios/crear/', user.UserCreateView.as_view(), name='user_create'),
+    path('admin/usuarios/editar/<int:pk>/', user.UserUpdateView.as_view(), name='user_update'),
+    path('admin/usuarios/eliminar/<int:pk>/', user.UserDeleteView.as_view(), name='user_delete'),
+] 
