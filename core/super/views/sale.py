@@ -1,3 +1,7 @@
+"""
+Vistas para que el admin gestiona las ventas realizadas por las compras de productos
+"""
+
 import json
 import uuid
 from django.shortcuts import get_object_or_404
@@ -17,9 +21,12 @@ from django.http import HttpResponse
 from django.template.loader import get_template
 from django.shortcuts import render
 from xhtml2pdf import pisa
+from core.super.mixins.auth import AdminRequiredMixin
+from django.contrib.auth.mixins import LoginRequiredMixin
 
-
-class SaleListView(ListView):
+class SaleListView(AdminRequiredMixin, ListView):
+    """Vista para listar las ventas realizadas, con búsqueda y paginación"""
+    
     model = Sale
     template_name = 'super/sales/sale_list.html'
     context_object_name = 'sales'
@@ -47,7 +54,9 @@ class SaleListView(ListView):
         return context
 
 
-class SaleCreateView(CreateView):
+class SaleCreateView(AdminRequiredMixin, CreateView):
+    """Vista para crear una nueva venta"""
+    
     model = Sale
     form_class = SaleForm
     template_name = 'super/sales/sale_form.html'
@@ -142,7 +151,9 @@ class SaleCreateView(CreateView):
             return JsonResponse({'success': False, 'error': f'Error al procesar la venta: {str(e)}'}, status=500)
 
 
-class SaleUpdateView(UpdateView):
+class SaleUpdateView(AdminRequiredMixin, UpdateView):
+    """Vista para editar una venta existente"""
+    
     model = Sale
     form_class = SaleForm
     template_name = 'super/sales/sale_form.html'
@@ -272,7 +283,9 @@ class SaleUpdateView(UpdateView):
             return JsonResponse({'success': False, 'error': f'Error al procesar la venta: {str(e)}'}, status=500)
 
 
-class SaleDeleteView(DeleteView):
+class SaleDeleteView(AdminRequiredMixin, DeleteView):
+    """Vista para eliminar una venta. Antes de eliminar, restaura el stock de los productos involucrados."""
+    
     model = Sale
     template_name = 'super/sales/sale_delete.html'
     success_url = reverse_lazy('super:sale_list')
@@ -305,7 +318,11 @@ class SaleDeleteView(DeleteView):
 
 
 @method_decorator(require_http_methods(["GET"]), name='dispatch')
-class ProductView(View):
+class ProductView(AdminRequiredMixin, View):
+    """
+    Vista para obtener los productos en formato JSON para la visualización en el frontend desde el formulario de ventas. 
+    """
+    
     def get(self, request, *args, **kwargs):
         try:
             products = Product.objects.filter(state=True, stock__gt=0)
@@ -323,10 +340,19 @@ class ProductView(View):
             return JsonResponse({'error': str(e)}, status=500)
 
 
-class SalePDFView(View):
+class SalePDFView(LoginRequiredMixin, View):
+    """
+    Vista para generar un PDF de la factura de una venta específica. Solo el admin o el usuario que realizó la compra pueden acceder.
+    """
+    
     def get(self, request, *args, **kwargs):
         try:
             sale = get_object_or_404(Sale, pk=self.kwargs['pk'])
+
+            # Si NO es administrador, Y la venta no le pertenece al usuario actual, lo bloqueamos.
+            if not request.user.is_superuser and sale.user != request.user:
+                return HttpResponse('No tienes permiso para ver la factura de otra persona.', status=403)
+
             details = SaleDetail.objects.filter(sale=sale)
             context = {
                 'sale': sale,
@@ -351,7 +377,9 @@ class SalePDFView(View):
             return HttpResponse(f'Error: {str(e)}', status=500)
 
 
-class SaleDetailView(DetailView):
+class SaleDetailView(AdminRequiredMixin, DetailView):
+    """Vista para ver el detalle de una venta (Solo Admin)."""
+    
     model = Sale
     template_name = 'super/sales/sale_detail.html'
 
@@ -371,4 +399,4 @@ class SaleDetailView(DetailView):
             }
             return render(request, self.template_name, context)
         except Exception as e:
-            return HttpResponse(f'Error: {str(e)}')
+            return HttpResponse(f'Error: {str(e)}') 
