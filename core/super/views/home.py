@@ -1,15 +1,21 @@
+"""
+Vistas de componentes base o principales.
+"""
+
 from django.shortcuts import render, redirect
 from django.views.generic import TemplateView, ListView, View
 from core.super.models import Product, Category, Brand, Sale
-from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models import Q
 from django.contrib import messages
 from django.core.mail import EmailMultiAlternatives
 from django.conf import settings
 from django.utils import timezone
 from datetime import timedelta
+from core.super.mixins.auth import AdminRequiredMixin
 
 class HomeView(TemplateView):
+    """ Vista principal de la página principal o HomePage. """
+    
     template_name = 'components/home.html'
 
     def get_context_data(self, **kwargs):
@@ -17,7 +23,11 @@ class HomeView(TemplateView):
         context['title'] = 'My Supermarket'
         return context
     
-class MenuView(LoginRequiredMixin, TemplateView):
+class MenuView(AdminRequiredMixin, TemplateView):
+    """
+    Vista de menú o panel de admin incluyendo el notificador de ventas realizadas en tiempo real. 
+    """
+    
     template_name = 'components/menu.html'
     login_url = '/security/auth/login'
 
@@ -32,9 +42,16 @@ class MenuView(LoginRequiredMixin, TemplateView):
         return context
 
 class AboutView(TemplateView):
+    """
+    Vista de la página de información sobre nosotros o AboutPage. 
+    """
     template_name = 'components/about.html'
 
 class ContactView(View):
+    """ 
+    Vista de la página de contacto o ContactPage, con formulario de contacto y envío de correo electrónico. 
+    """
+    
     template_name = 'components/contact.html'
 
     def get(self, request, *args, **kwargs):
@@ -209,6 +226,10 @@ class ContactView(View):
 
 
 class ProductCatalogView(ListView):
+    """ 
+    Vista de catálogo de productos con filtros por categoría, marca y búsqueda por nombre o descripción.
+    """
+    
     model = Product 
     template_name = 'super/catalog/catalog.html'
     context_object_name = 'products' 
