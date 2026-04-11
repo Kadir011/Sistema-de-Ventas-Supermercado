@@ -30,8 +30,11 @@ COPY . .
 # Crear directorios de medios y archivos estáticos
 RUN mkdir -p /app/media /app/staticfiles
 
+# Recolectar archivos estáticos para producción (WhiteNoise)
+RUN python manage.py collectstatic --noinput
+
 # Exponer el puerto de Django
 EXPOSE 8000
 
-# Comando de inicio: recolectar estáticos y arrancar el servidor
-CMD ["sh", "-c", "python manage.py collectstatic --noinput && python manage.py migrate --noinput && python manage.py runserver 0.0.0.0:8000"] 
+# Comando de inicio: Aplicar migraciones pendientes y arrancar el servidor
+CMD ["sh", "-c", "python manage.py migrate --noinput && python manage.py runserver 0.0.0.0:8000"]

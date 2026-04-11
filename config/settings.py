@@ -66,6 +66,7 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'crum.CurrentRequestUserMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
 ]
 
 # Configuración del modelo de usuario personalizado
