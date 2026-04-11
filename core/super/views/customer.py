@@ -1,10 +1,17 @@
+"""
+Vistas para que el admin gestione los clientes
+"""
+
 from django.views.generic import ListView, CreateView, UpdateView, DeleteView
 from django.urls import reverse_lazy
 from django.db.models import Q
 from core.super.models import Customer
 from core.super.form.customer import CustomerForm
+from core.super.mixins.auth import AdminRequiredMixin
 
-class CustomerListView(ListView):
+class CustomerListView(AdminRequiredMixin, ListView):
+    """Vista para listar los clientes"""
+    
     model = Customer
     template_name = 'super/customers/customer_list.html'
     context_object_name = 'customers'
@@ -27,7 +34,9 @@ class CustomerListView(ListView):
         context['create_url'] = reverse_lazy('super:customer_create')
         return context
 
-class CustomerCreateView(CreateView):
+class CustomerCreateView(AdminRequiredMixin, CreateView):
+    """Vista para crear un cliente"""
+    
     model = Customer
     form_class = CustomerForm
     template_name = 'super/customers/customer_form.html'
@@ -40,7 +49,9 @@ class CustomerCreateView(CreateView):
         context['back_url'] = self.success_url
         return context
     
-class CustomerUpdateView(UpdateView):
+class CustomerUpdateView(AdminRequiredMixin, UpdateView):
+    """Vista para editar un cliente"""
+    
     model = Customer
     form_class = CustomerForm
     template_name = 'super/customers/customer_form.html'
@@ -53,7 +64,9 @@ class CustomerUpdateView(UpdateView):
         context['back_url'] = self.success_url
         return context
 
-class CustomerDeleteView(DeleteView):
+class CustomerDeleteView(AdminRequiredMixin, DeleteView):
+    """Vista para eliminar un cliente"""
+    
     model = Customer
     template_name = 'super/customers/customer_delete.html'
     success_url = reverse_lazy('super:customer_list')
@@ -64,6 +77,4 @@ class CustomerDeleteView(DeleteView):
         context['grabar'] = 'Eliminar Cliente'
         context['description'] = f'¿Está seguro de eliminar el cliente {self.object.get_full_name()}?'
         context['back_url'] = self.success_url
-        return context
-    
-
+        return context 
