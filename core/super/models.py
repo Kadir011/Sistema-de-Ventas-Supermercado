@@ -192,8 +192,8 @@ class Seller(models.Model):
 
 class Product(models.Model):
     id_product = models.AutoField(primary_key=True, verbose_name="ID", blank=False, null=False, unique=True)
-    brand = models.ForeignKey(Brand, on_delete=models.CASCADE, verbose_name="Marca", blank=True, null=True)
-    category = models.ForeignKey(Category, on_delete=models.CASCADE, verbose_name="Categoria", blank=True, null=True)
+    brand = models.ForeignKey(Brand, on_delete=models.SET_NULL, verbose_name="Marca", blank=True, null=True)
+    category = models.ForeignKey(Category, on_delete=models.SET_NULL, verbose_name="Categoria", blank=True, null=True)
     name = models.CharField(max_length=100, verbose_name="Nombre", blank=True, null=True)
     description = models.TextField(verbose_name="Descripción", blank=True, null=True)
     price = models.DecimalField(max_digits=10, decimal_places=2, default=Decimal('0.00'), verbose_name="Precio", blank=True, null=True)
@@ -241,10 +241,10 @@ class Product(models.Model):
 
 class Sale(models.Model):
     id_sale = models.AutoField(primary_key=True, verbose_name="ID", blank=False, null=False, unique=True)
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, verbose_name="Usuario que compró", null=True, blank=True)
-    customer = models.ForeignKey(Customer, on_delete=models.CASCADE, verbose_name="Cliente", blank=True, null=True)
-    seller = models.ForeignKey(Seller, on_delete=models.CASCADE, verbose_name="Vendedor", blank=True, null=True)
-    payment = models.ForeignKey(PaymentMethod, on_delete=models.CASCADE, verbose_name="Forma de pago", blank=True, null=True)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, verbose_name="Usuario que compró", null=True, blank=True)
+    customer = models.ForeignKey(Customer, on_delete=models.SET_NULL, verbose_name="Cliente", blank=True, null=True)
+    seller = models.ForeignKey(Seller, on_delete=models.SET_NULL, verbose_name="Vendedor", blank=True, null=True)
+    payment = models.ForeignKey(PaymentMethod, on_delete=models.SET_NULL, verbose_name="Forma de pago", blank=True, null=True)
     sale_date = models.DateTimeField(
         default=timezone.now,
         verbose_name="Fecha y Hora de venta",
@@ -298,7 +298,7 @@ class Sale(models.Model):
 class SaleDetail(models.Model):
     id_detail = models.AutoField(primary_key=True, verbose_name="ID", blank=False, null=False, unique=True)
     sale = models.ForeignKey(Sale, on_delete=models.CASCADE, verbose_name="Venta", blank=True, null=True)
-    product = models.ForeignKey(Product, on_delete=models.CASCADE, verbose_name="Producto", blank=True, null=True)
+    product = models.ForeignKey(Product, on_delete=models.SET_NULL, verbose_name="Producto", blank=True, null=True)
     quantity = models.IntegerField(default=1, verbose_name="Cantidad", blank=True, null=True)
     price = models.DecimalField(max_digits=10, decimal_places=2, default=Decimal('0.00'), verbose_name="Precio", blank=True, null=True)
     subtotal = models.DecimalField(max_digits=10, decimal_places=2, default=Decimal('0.00'), verbose_name="Subtotal", blank=True, null=True)
