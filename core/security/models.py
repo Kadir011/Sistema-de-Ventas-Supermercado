@@ -46,6 +46,10 @@ class User(AbstractUser):
         return self.user_type == 'customer'
 
     def save(self, *args, **kwargs):
+        # Si el usuario tiene permisos de superusuario, forzamos su tipo a 'admin'
+        if self.is_superuser:
+            self.user_type = 'admin'
+            
         # Django ya maneja el hashing en create_user, createsuperuser 
         # y en los formularios AuthenticationForm/UserCreationForm.
         super().save(*args, **kwargs)
