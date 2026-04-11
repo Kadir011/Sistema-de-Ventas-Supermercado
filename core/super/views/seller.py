@@ -1,10 +1,17 @@
+"""
+Vistas para que el admin gestione los vendedores
+"""
+
 from django.views.generic import ListView, CreateView, UpdateView, DeleteView
 from django.urls import reverse_lazy
 from django.db.models import Q
 from core.super.models import Seller
 from core.super.form.seller import SellerForm
+from core.super.mixins.auth import AdminRequiredMixin
 
-class SellerListView(ListView):
+class SellerListView(AdminRequiredMixin, ListView):
+    """Vista para listar los vendedores"""
+    
     model = Seller 
     template_name = 'super/sellers/seller_list.html' 
     context_object_name = 'sellers'
@@ -26,7 +33,9 @@ class SellerListView(ListView):
         context['create_url'] = reverse_lazy('super:seller_create') 
         return context 
     
-class SellerCreateView(CreateView):
+class SellerCreateView(AdminRequiredMixin, CreateView):
+    """Vista para crear un vendedor"""
+    
     model = Seller
     form_class = SellerForm 
     template_name = 'super/sellers/seller_form.html' 
@@ -39,7 +48,9 @@ class SellerCreateView(CreateView):
         context['back_url'] = self.success_url 
         return context 
     
-class SellerUpdateView(UpdateView):
+class SellerUpdateView(AdminRequiredMixin, UpdateView):
+    """Vista para editar un vendedor"""
+    
     model = Seller 
     form_class = SellerForm
     template_name = 'super/sellers/seller_form.html'
@@ -52,7 +63,9 @@ class SellerUpdateView(UpdateView):
         context['back_url'] = self.success_url 
         return context 
 
-class SellerDeleteView(DeleteView):
+class SellerDeleteView(AdminRequiredMixin, DeleteView):
+    """Vista para eliminar un vendedor"""
+    
     model = Seller
     template_name = 'super/sellers/seller_delete.html'
     success_url = reverse_lazy('super:seller_list')
@@ -63,7 +76,4 @@ class SellerDeleteView(DeleteView):
         context['grabar'] = 'Eliminar Vendedor'
         context['description'] = f'¿Está seguro de eliminar el vendedor {self.object.get_full_name()}?'
         context['back_url'] = self.success_url
-        return context
-
-
-
+        return context 
