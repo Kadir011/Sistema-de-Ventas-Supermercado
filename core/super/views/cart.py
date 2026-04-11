@@ -1,3 +1,7 @@
+"""
+Vistas para el carrito de compras y el proceso de compra.
+"""
+
 from django.shortcuts import redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -6,11 +10,10 @@ from django.http import JsonResponse
 from django.contrib import messages
 from django.db import transaction
 from django.db.models import F
-from django.utils import timezone
 import decimal
 import uuid
 from decimal import Decimal
-from core.super.models import Cart, CartItem, Product, Sale, SaleDetail, Customer, PaymentMethod, Seller
+from core.super.models import Cart, CartItem, Product, Customer, PaymentMethod
 from core.super.services.checkout_service import CheckoutService
 from core.super.services.payment_processors import get_processor
 from core.super.services.idempotency_service import IdempotencyService
@@ -18,6 +21,7 @@ from core.super.services.idempotency_service import IdempotencyService
 
 @login_required
 def add_to_cart(request, product_id):
+    """Agrega un producto al carrito del usuario."""
     product = get_object_or_404(Product, pk=product_id, state=True)
  
     if product.stock <= 0:
@@ -43,6 +47,7 @@ def add_to_cart(request, product_id):
 
 @login_required
 def update_cart_item(request, item_id):
+    """Actualiza la cantidad de un producto en el carrito."""
     if request.method == 'POST':
         cart_item = get_object_or_404(CartItem, pk=item_id, cart__user=request.user)
         quantity = int(request.POST.get('quantity', 1))
@@ -60,6 +65,7 @@ def update_cart_item(request, item_id):
  
 @login_required
 def remove_from_cart(request, item_id):
+    """Elimina un producto del carrito del usuario."""
     cart_item = get_object_or_404(CartItem, pk=item_id, cart__user=request.user)
     product_name = cart_item.product.name
     cart_item.delete()
@@ -69,6 +75,7 @@ def remove_from_cart(request, item_id):
  
 @login_required
 def cart_count(request):
+    """Devuelve el número de productos en el carrito del usuario."""
     try:
         cart = Cart.objects.get(user=request.user)
         count = cart.get_item_count()
@@ -78,6 +85,7 @@ def cart_count(request):
  
  
 class CartView(LoginRequiredMixin, TemplateView):
+    """Vista de carrito de compras."""
     template_name = 'super/shop/cart.html'
     login_url = '/security/login/'
  
@@ -102,6 +110,7 @@ class CartView(LoginRequiredMixin, TemplateView):
  
  
 class CheckoutView(LoginRequiredMixin, TemplateView):
+    """Vista de proceso de compra."""
     template_name = 'super/shop/checkout.html'
     login_url = '/security/login/'
  

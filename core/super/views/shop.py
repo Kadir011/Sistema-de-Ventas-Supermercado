@@ -1,9 +1,14 @@
+"""
+Vistas para la tienda, detalles de productos y gestión de órdenes.
+"""
+
 from django.views.generic import ListView, DetailView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models import Q
 from core.super.models import Product, Category, Brand, Sale, SaleDetail
 
 class ShopView(LoginRequiredMixin, ListView):
+    """Vista de la tienda con listado de productos."""
     model = Product
     template_name = 'super/shop/shop.html'
     context_object_name = 'products'
@@ -41,6 +46,7 @@ class ShopView(LoginRequiredMixin, ListView):
 
 
 class ProductDetailCustomerView(LoginRequiredMixin, DetailView):
+    """Vista de detalles de un producto para el cliente."""
     model = Product
     template_name = 'super/shop/product_detail.html'
     context_object_name = 'product'
@@ -53,6 +59,7 @@ class ProductDetailCustomerView(LoginRequiredMixin, DetailView):
 
 
 class MyOrdersView(LoginRequiredMixin, ListView):
+    """Vista de mis órdenes con detalles de cada órden."""
     model = Sale
     template_name = 'super/shop/my_orders.html'
     context_object_name = 'orders'
@@ -69,6 +76,7 @@ class MyOrdersView(LoginRequiredMixin, ListView):
         return context
 
 class OrderDetailView(LoginRequiredMixin, DetailView):
+    """Vista de detalles de una orden específica."""
     model = Sale
     template_name = 'super/shop/order_detail.html'
     context_object_name = 'order'
@@ -82,4 +90,4 @@ class OrderDetailView(LoginRequiredMixin, DetailView):
         context = super().get_context_data(**kwargs)
         context['title'] = f'Orden #{self.object.id_sale}'
         context['details'] = SaleDetail.objects.filter(sale=self.object)
-        return context
+        return context 

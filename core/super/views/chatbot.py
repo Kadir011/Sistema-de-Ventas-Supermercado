@@ -1,3 +1,7 @@
+"""
+Vistas relacionadas con el chatbot de atención al usuario.
+"""
+
 import json
 from django.conf import settings
 from django.http import JsonResponse
@@ -17,6 +21,7 @@ from core.super.services.ai_client import GeminiAIClient
 # ─────────────────────────────────────────────────────────────────
 
 def _build_admin_prompt(user_name: str, ctx: dict) -> str:
+    """Construye el prompt para el asistente administrativo, con contexto de ventas, inventario y navegación del panel."""
     return f"""Eres el asistente de gestión de 'My Supermarket', panel de administración.
 Estás atendiendo al administrador: {user_name}.
 
@@ -63,6 +68,7 @@ Eres un analista de negocio inteligente. Puedes:
 
 
 def _build_customer_prompt(user_name: str, ctx: dict) -> str:
+    """Construye el prompt para el asistente de compras, con contexto de ventas, inventario y navegación del panel."""
     return f"""Eres el asistente de compras de 'My Supermarket', tienda online en Guayaquil.
 Estás atendiendo al cliente: {user_name}.
 
@@ -109,6 +115,7 @@ Ayudas al cliente a:
 
 
 def _build_guest_prompt(ctx: dict) -> str:
+    """Construye el prompt para el asistente de bienvenida, con contexto de ventas, inventario y navegación del panel."""
     return f"""Eres el asistente de bienvenida de 'My Supermarket', tienda online en Guayaquil.
 Estás atendiendo a un visitante que aún NO tiene cuenta.
 
@@ -150,6 +157,7 @@ class ChatbotProxyView(View):
     """
     POST /chatbot/api/
     Body JSON: { "message": "...", "history": [...] }
+    View principal del chatbot, que recibe mensajes de usuario y devuelve respuestas.
     """
 
     def __init__(self, ai_client=None, **kwargs):

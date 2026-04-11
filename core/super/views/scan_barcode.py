@@ -1,3 +1,7 @@
+"""
+Vista para escanear códigos de barras y buscar productos en el inventario.
+"""
+
 import logging
 from core.super.models import Product
 from django.http import JsonResponse
@@ -7,6 +11,7 @@ from django.views.generic import TemplateView
 logger = logging.getLogger(__name__)
 
 class ScannerTemplate(TemplateView):
+    """Vista para escanear códigos de barras y buscar productos en el inventario."""
     template_name = 'super/products/scan_barcode.html'
 
     def get_context_data(self, **kwargs):
