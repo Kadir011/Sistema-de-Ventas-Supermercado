@@ -59,6 +59,7 @@ CRISPY_TEMPLATE_PACK = 'bootstrap5'
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -66,8 +67,7 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'crum.CurrentRequestUserMiddleware',
-    'whitenoise.middleware.WhiteNoiseMiddleware',
-]
+] 
 
 # Configuración del modelo de usuario personalizado
 AUTH_USER_MODEL = 'security.User'
@@ -188,3 +188,9 @@ DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL')
 
 # Configuración de Google Gemini
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+
+# Seguridad para permitir formularios POST en Render
+CSRF_TRUSTED_ORIGINS = [
+    'https://my-supermarket-6l71.onrender.com',
+    'https://*.onrender.com',
+] 
