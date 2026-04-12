@@ -24,8 +24,22 @@ class CustomerRegistrationForm(forms.ModelForm):
     def clean_dni(self):
         dni = self.cleaned_data.get('dni')
         if Customer.objects.filter(dni=dni).exists():
-            raise forms.ValidationError('Ya existe un cliente registrado con esta cédula.')
+            raise forms.ValidationError('Esta cédula ya está registrada.')
         return dni
+    
+    def clean_email(self):
+        email = self.cleaned_data.get('email')
+        # Buscamos duplicados tanto en User como en Customer
+        if User.objects.filter(email=email).exists() or Customer.objects.filter(email=email).exists():
+            raise forms.ValidationError('Este email ya está registrado.')
+        return email
+    
+    def clean_phone_number(self):
+        phone = self.cleaned_data.get('phone_number')
+        if phone:
+            if User.objects.filter(phone_number=phone).exists() or Customer.objects.filter(phone=phone).exists():
+                raise forms.ValidationError('Este número de teléfono ya está registrado.')
+        return phone
     
     def save(self, commit=True):
         user = super().save(commit=False)

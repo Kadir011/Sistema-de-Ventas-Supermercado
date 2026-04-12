@@ -47,7 +47,36 @@ class CustomerForm(ModelForm):
             'address': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Dirección'}),
             'birth_date': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
         }
-
+        
+    def clean_dni(self):
+        dni = self.cleaned_data.get('dni')
+        qs = Customer.objects.filter(dni=dni)
+        if self.instance.pk:
+            qs = qs.exclude(pk=self.instance.pk)
+        if qs.exists():
+            raise forms.ValidationError('Esta cédula ya está registrada.')
+        return dni
+    
+    def clean_email(self):
+        email = self.cleaned_data.get('email')
+        if email:
+            qs = Customer.objects.filter(email=email)
+            if self.instance.pk:
+                qs = qs.exclude(pk=self.instance.pk)
+            if qs.exists():
+                raise forms.ValidationError('Este email ya está registrado.')
+        return email
+    
+    def clean_phone(self):
+        phone = self.cleaned_data.get('phone')
+        if phone:
+            qs = Customer.objects.filter(phone=phone)
+            if self.instance.pk:
+                qs = qs.exclude(pk=self.instance.pk)
+            if qs.exists():
+                raise forms.ValidationError('Este número de teléfono ya existe.')
+        return phone
+    
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         # Si es un nuevo cliente y no hay valor inicial para discount_expiry,

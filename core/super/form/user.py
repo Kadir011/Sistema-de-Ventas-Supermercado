@@ -25,6 +25,25 @@ class UserCreateForm(forms.ModelForm):
         if p1 and p2 and p1 != p2:
             raise forms.ValidationError('Las contraseñas no coinciden.')
         return p2
+    
+    def clean_email(self):
+        email = self.cleaned_data.get('email')
+        qs = User.objects.filter(email=email)
+        if self.instance.pk:  # Si estamos editando, excluimos al usuario actual
+            qs = qs.exclude(pk=self.instance.pk)
+        if qs.exists():
+            raise forms.ValidationError('Este email ya está registrado.')
+        return email
+    
+    def clean_phone_number(self):
+        phone = self.cleaned_data.get('phone_number')
+        if phone:
+            qs = User.objects.filter(phone_number=phone)
+            if self.instance.pk:
+                qs = qs.exclude(pk=self.instance.pk)
+            if qs.exists():
+                raise forms.ValidationError('Este número de teléfono ya existe.')
+        return phone
  
     def save(self, commit=True):
         user = super().save(commit=False)
@@ -51,6 +70,25 @@ class UserUpdateForm(forms.ModelForm):
             'user_type', 'phone_number', 'address',
             'date_of_birth', 'gender', 'is_active',
         ]
+        
+    def clean_email(self):
+        email = self.cleaned_data.get('email')
+        qs = User.objects.filter(email=email)
+        if self.instance.pk:  # Si estamos editando, excluimos al usuario actual
+            qs = qs.exclude(pk=self.instance.pk)
+        if qs.exists():
+            raise forms.ValidationError('Este email ya está registrado.')
+        return email
+    
+    def clean_phone_number(self):
+        phone = self.cleaned_data.get('phone_number')
+        if phone:
+            qs = User.objects.filter(phone_number=phone)
+            if self.instance.pk:
+                qs = qs.exclude(pk=self.instance.pk)
+            if qs.exists():
+                raise forms.ValidationError('Este número de teléfono ya existe.')
+        return phone
  
     def save(self, commit=True):
         user = super().save(commit=False)
@@ -59,4 +97,4 @@ class UserUpdateForm(forms.ModelForm):
             user.set_password(new_pw)
         if commit:
             user.save()
-        return user
+        return user 
