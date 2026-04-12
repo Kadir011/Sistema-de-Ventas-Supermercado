@@ -45,8 +45,8 @@ class GeminiAIClient(AIClient):
                     contents=contents,
                     config=self._types.GenerateContentConfig(
                         system_instruction=system_prompt,
-                        temperature=0.6,
-                        max_output_tokens=1500,
+                        temperature=0.4,
+                        max_output_tokens=1000,
                     ),
                 )
                 return response.text or 'Lo siento, no pude generar una respuesta.'
