@@ -70,7 +70,8 @@
                 <div class="grid-2 mb-5">
                     <div class="field-group">
                         <label class="field-label"><i class='bx bx-dollar'></i>Precio (USD)</label>
-                        <input type="number" name="price" value="{{ form.instance.price|default:'' }}"
+                        <!-- Se mantiene el mismo precio ingresado al momento de editar el producto o caso contrario en 0.00 -->
+                        <input type="number" name="price" value="{{ form.instance.price|default:'0.00' }}"
                                class="field-input {% if form.price.errors %}error{% endif %}"
                                placeholder="0.00" step="0.01" min="0.01" required>
                         {% if form.price.errors %}<span class="field-error"><i class='bx bx-error-circle'></i>{{ form.price.errors.0 }}</span>{% endif %}
@@ -133,7 +134,7 @@
                         <!--INFORMATIVO corregido: placeholder y pattern para Safari < 14.1
                            que no renderiza el date picker nativo.-->
                         <input type="date" name="production_date" id="id_production_date"
-                               value="{{ form.instance.production_date|default:'' }}"
+                               value="{{ form.instance.production_date|date:'Y-m-d' }}"
                                class="field-input"
                                placeholder="AAAA-MM-DD"
                                pattern="\d{4}-\d{2}-\d{2}"
@@ -143,7 +144,7 @@
                     <div class="field-group">
                         <label class="field-label"><i class='bx bx-calendar-x'></i>Fecha de vencimiento</label>
                         <input type="date" name="expiration_date" id="id_expiration_date"
-                               value="{{ form.instance.expiration_date|default:'' }}"
+                               value="{{ form.instance.expiration_date|date:'Y-m-d' }}"
                                class="field-input"
                                placeholder="AAAA-MM-DD"
                                pattern="\d{4}-\d{2}-\d{2}"

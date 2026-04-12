@@ -11,6 +11,13 @@ class ProfileInfoForm(forms.ModelForm):
             'first_name', 'last_name', 'email',
             'phone_number', 'address', 'date_of_birth', 'gender',
         ]
+        # Forzar el formato estándar para inputs tipo date
+        widgets = {
+            'date_of_birth': forms.DateInput(
+                format='%Y-%m-%d', 
+                attrs={'type': 'date'}
+            ),
+        }
 
     def clean_email(self):
         email = self.cleaned_data.get('email')

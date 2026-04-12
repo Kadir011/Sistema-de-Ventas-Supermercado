@@ -18,8 +18,8 @@ class ProductForm(ModelForm):
             'category': forms.Select(attrs={'class': 'form-control'}),
             'stock': forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'Stock'}),
             'price': forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'Precio'}),
-            'production_date': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
-            'expiration_date': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
+            'production_date': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}, format='%Y-%m-%d'),
+            'expiration_date': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}, format='%Y-%m-%d'),
             
             # Configuración específica para Barcode EAN-13
             'barcode': forms.TextInput(attrs={

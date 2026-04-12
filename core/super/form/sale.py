@@ -8,7 +8,7 @@ class SaleForm(ModelForm):
         model = Sale
         fields = ['customer', 'seller', 'sale_date', 'payment', 'subtotal', 'iva', 'discount', 'total']
         widgets = {
-            'sale_date': forms.DateInput(attrs={'type': 'date'}), 
+            'sale_date': forms.DateInput(attrs={'type': 'date'}, format='%Y-%m-%d'), 
             'subtotal': forms.NumberInput(attrs={'readonly': 'readonly'}),
             'iva': forms.NumberInput(attrs={'readonly': 'readonly'}),
             'discount': forms.NumberInput(attrs={'min': '0', 'step': '0.01'}),
@@ -27,13 +27,4 @@ class SaleDetailForm(ModelForm):
             'quantity': forms.NumberInput(attrs={'min': '1'}),
             'price': forms.NumberInput(attrs={'readonly': 'readonly'}),
             'subtotal': forms.NumberInput(attrs={'readonly': 'readonly'}),
-        }
-
-
-
-
-
-
-
-
-
+        } 

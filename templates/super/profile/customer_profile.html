@@ -7,10 +7,8 @@
 
 <div class="profile-page--customer max-w-2xl mx-auto py-6">
 
-    <!-- ═══ HERO ═══ -->
     <div class="profile-hero">
 
-        <!-- Avatar con botón de cambio -->
         <div class="profile-avatar-wrap">
             <img src="{{ request.user.get_image_url }}"
                  alt="Foto de perfil"
@@ -20,7 +18,6 @@
             <form method="post" enctype="multipart/form-data" id="avatar-form">
                 {% csrf_token %}
                 <input type="hidden" name="action" value="update_avatar">
-                <!-- Input file oculto; el label actúa como botón -->
                 <input type="file"
                        name="image"
                        id="avatar-file-input"
@@ -32,14 +29,21 @@
             </form>
         </div>
 
-        <!-- Datos del usuario -->
+        <div id="avatar-actions" style="display: none; justify-content: center; gap: 10px; position: relative; z-index: 2; margin-top: -5px; margin-bottom: 5px;">
+            <button type="submit" form="avatar-form" class="profile-btn-save" style="padding: 6px 16px; font-size: 0.8rem; border-radius: 8px;">
+                <i class='bx bx-check'></i> Guardar
+            </button>
+            <button type="button" id="cancel-avatar" style="padding: 6px 16px; font-size: 0.8rem; border-radius: 8px; background: rgba(255,255,255,0.15); color: #fff; border: 1px solid rgba(255,255,255,0.3); cursor: pointer; transition: 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.25)'" onmouseout="this.style.background='rgba(255,255,255,0.15)'">
+                <i class='bx bx-x'></i> Cancelar
+            </button>
+        </div>
+
         <p class="profile-hero-name">{{ request.user.get_full_name|default:request.user.username }}</p>
         <p class="profile-hero-email">{{ request.user.email }}</p>
         <span class="profile-hero-role">
             <i class='bx bx-user'></i> {{ role_label }}
         </span>
 
-        <!-- Estadísticas -->
         <div class="profile-hero-stats">
             <div class="profile-hero-stat">
                 <div class="profile-hero-stat-num">{{ total_orders }}</div>
@@ -52,10 +56,8 @@
         </div>
     </div>
 
-    <!-- ═══ CARD DE FORMULARIOS ═══ -->
     <div class="profile-card">
 
-        <!-- Tabs -->
         <div class="profile-tabs">
             <button type="button"
                     class="profile-tab-btn {% if active_tab != 'password' %}active{% endif %}"
@@ -71,7 +73,6 @@
             </button>
         </div>
 
-        <!-- ── Tab: Mis Datos ── -->
         <div class="profile-tab-pane {% if active_tab != 'password' %}active{% endif %}" id="pane-info">
 
             {% if messages %}
@@ -91,7 +92,6 @@
                 <input type="hidden" name="action" value="update_info">
 
                 <div class="profile-grid-2">
-                    <!-- Nombre -->
                     <div class="profile-field">
                         <label class="profile-label">Nombre</label>
                         <input type="text" name="first_name"
@@ -103,7 +103,6 @@
                         {% endif %}
                     </div>
 
-                    <!-- Apellido -->
                     <div class="profile-field">
                         <label class="profile-label">Apellido</label>
                         <input type="text" name="last_name"
@@ -116,7 +115,6 @@
                     </div>
                 </div>
 
-                <!-- Email -->
                 <div class="profile-field">
                     <label class="profile-label">Dirección de correo electrónico</label>
                     <input type="email" name="email"
@@ -128,7 +126,6 @@
                     {% endif %}
                 </div>
 
-                <!-- Teléfono -->
                 <div class="profile-field">
                     <label class="profile-label">Phone number</label>
                     <input type="text" name="phone_number"
@@ -140,7 +137,6 @@
                 <div class="profile-section-divider"><span>Datos adicionales</span></div>
 
                 <div class="profile-grid-2">
-                    <!-- Dirección -->
                     <div class="profile-field">
                         <label class="profile-label">Dirección</label>
                         <input type="text" name="address"
@@ -149,15 +145,13 @@
                                placeholder="Tu dirección">
                     </div>
 
-                    <!-- Fecha de nacimiento -->
                     <div class="profile-field">
                         <label class="profile-label">Fecha de nacimiento</label>
                         <input type="date" name="date_of_birth"
-                               value="{{ info_form.instance.date_of_birth|default:'' }}"
+                               value="{{ info_form.instance.date_of_birth|date:'Y-m-d' }}"
                                class="profile-input">
                     </div>
 
-                    <!-- Género -->
                     <div class="profile-field">
                         <label class="profile-label">Género</label>
                         <select name="gender" class="profile-input" style="cursor:pointer;">
@@ -177,7 +171,6 @@
             </form>
         </div>
 
-        <!-- ── Tab: Seguridad ── -->
         <div class="profile-tab-pane {% if active_tab == 'password' %}active{% endif %}" id="pane-security">
 
             {% if messages %}
@@ -201,7 +194,6 @@
                 {% csrf_token %}
                 <input type="hidden" name="action" value="update_password">
 
-                <!-- Contraseña actual -->
                 <div class="profile-field">
                     <label class="profile-label">Contraseña actual</label>
                     <div class="profile-password-wrap">
@@ -218,7 +210,6 @@
                     {% endif %}
                 </div>
 
-                <!-- Nueva contraseña -->
                 <div class="profile-field">
                     <label class="profile-label">Nueva contraseña</label>
                     <div class="profile-password-wrap">
@@ -235,7 +226,6 @@
                     {% endif %}
                 </div>
 
-                <!-- Confirmar nueva contraseña -->
                 <div class="profile-field">
                     <label class="profile-label">Confirmar nueva contraseña</label>
                     <div class="profile-password-wrap">
@@ -260,14 +250,35 @@
             </form>
         </div>
 
-    </div><!-- /.profile-card -->
-</div><!-- /.profile-page -->
+    </div></div><script>
+/* Lógica de Preview del Avatar */
+const fileInput = document.getElementById('avatar-file-input');
+const avatarImg = document.getElementById('profile-avatar-img');
+const avatarActions = document.getElementById('avatar-actions');
+const cancelBtn = document.getElementById('cancel-avatar');
 
-<script>
-/* Auto-submit avatar */
-document.getElementById('avatar-file-input').addEventListener('change', function() {
-    if (this.files.length > 0) document.getElementById('avatar-form').submit();
-});
+if (fileInput && avatarImg) {
+    const originalSrc = avatarImg.src; // Guardamos la foto original
+
+    fileInput.addEventListener('change', function() {
+        if (this.files && this.files.length > 0) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                avatarImg.src = e.target.result; // Previsualizar
+                avatarActions.style.display = 'flex'; // Mostrar botones de guardar/cancelar
+            }
+            reader.readAsDataURL(this.files[0]);
+        }
+    });
+
+    if (cancelBtn) {
+        cancelBtn.addEventListener('click', function() {
+            fileInput.value = ''; // Limpiar el archivo subido
+            avatarImg.src = originalSrc; // Devolver a la normalidad
+            avatarActions.style.display = 'none'; // Ocultar botones
+        });
+    }
+}
 
 /* Tab switcher */
 function switchTab(tab) {

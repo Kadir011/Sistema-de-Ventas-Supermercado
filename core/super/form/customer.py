@@ -45,7 +45,7 @@ class CustomerForm(ModelForm):
             }),
             'email': forms.EmailInput(attrs={'class': 'form-control', 'placeholder': 'Email'}),
             'address': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Dirección'}),
-            'birth_date': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
+            'birth_date': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}, format='%Y-%m-%d'),
         }
         
     def clean_dni(self):

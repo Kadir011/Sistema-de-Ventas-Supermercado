@@ -1,16 +1,14 @@
 {% extends "components/base.html" %}
 {% load static %}
-{% block title %}{{ title }} — Admin{% endblock %}
+{% block title %}{{ title }} - Administrador{% endblock %}
 
 {% block content %}
 <link rel="stylesheet" href="{% static 'css/components/profile.css' %}">
 
 <div class="profile-page--admin max-w-2xl mx-auto py-6">
 
-    <!-- ═══ HERO ═══ -->
     <div class="profile-hero">
 
-        <!-- Avatar con botón de cambio -->
         <div class="profile-avatar-wrap">
             <img src="{{ request.user.get_image_url }}"
                  alt="Foto de perfil"
@@ -31,41 +29,46 @@
             </form>
         </div>
 
-        <!-- Datos del usuario -->
+        <div id="avatar-actions" style="display: none; justify-content: center; gap: 10px; position: relative; z-index: 2; margin-top: -5px; margin-bottom: 5px;">
+            <button type="submit" form="avatar-form" class="profile-btn-save" style="padding: 6px 16px; font-size: 0.8rem; border-radius: 8px;">
+                <i class='bx bx-check'></i> Guardar
+            </button>
+            <button type="button" id="cancel-avatar" style="padding: 6px 16px; font-size: 0.8rem; border-radius: 8px; background: rgba(255,255,255,0.15); color: #fff; border: 1px solid rgba(255,255,255,0.3); cursor: pointer; transition: 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.25)'" onmouseout="this.style.background='rgba(255,255,255,0.15)'">
+                <i class='bx bx-x'></i> Cancelar
+            </button>
+        </div>
+
         <p class="profile-hero-name">{{ request.user.get_full_name|default:request.user.username }}</p>
+        <p class="profile-hero-email">{{ request.user.email }}</p>
         <span class="profile-hero-role">
             <i class='bx bx-shield-quarter'></i> {{ role_label }}
         </span>
 
-        <!-- Estadística -->
         <div class="profile-hero-stats">
             <div class="profile-hero-stat">
                 <div class="profile-hero-stat-num">{{ total_sales }}</div>
-                <div class="profile-hero-stat-label">Ventas Globales Registradas</div>
+                <div class="profile-hero-stat-label">Ventas Globales</div>
             </div>
         </div>
     </div>
 
-    <!-- ═══ CARD DE FORMULARIOS ═══ -->
     <div class="profile-card">
 
-        <!-- Tabs -->
         <div class="profile-tabs">
             <button type="button"
                     class="profile-tab-btn {% if active_tab != 'password' %}active{% endif %}"
                     id="tab-info"
                     onclick="switchTab('info')">
-                <i class='bx bx-cog'></i> Datos del Sistema
+                <i class='bx bx-user-edit'></i> Datos del Sistema
             </button>
             <button type="button"
                     class="profile-tab-btn {% if active_tab == 'password' %}active{% endif %}"
                     id="tab-security"
                     onclick="switchTab('security')">
-                <i class='bx bx-lock-alt'></i> Seguridad
+                <i class='bx bx-shield-alt-2'></i> Seguridad
             </button>
         </div>
 
-        <!-- ── Tab: Datos del Sistema ── -->
         <div class="profile-tab-pane {% if active_tab != 'password' %}active{% endif %}" id="pane-info">
 
             {% if messages %}
@@ -85,76 +88,57 @@
                 <input type="hidden" name="action" value="update_info">
 
                 <div class="profile-grid-2">
-                    <!-- Nombre -->
                     <div class="profile-field">
                         <label class="profile-label">Nombre</label>
                         <input type="text" name="first_name"
                                value="{{ info_form.instance.first_name|default:'' }}"
-                               class="profile-input {% if info_form.first_name.errors %}error{% endif %}"
-                               placeholder="Tu nombre">
-                        {% if info_form.first_name.errors %}
-                        <span class="profile-field-error"><i class='bx bx-error-circle'></i>{{ info_form.first_name.errors.0 }}</span>
-                        {% endif %}
+                               class="profile-input {% if info_form.first_name.errors %}error{% endif %}">
                     </div>
-
-                    <!-- Apellido -->
                     <div class="profile-field">
-                        <label class="profile-label">Apellidos</label>
+                        <label class="profile-label">Apellido</label>
                         <input type="text" name="last_name"
                                value="{{ info_form.instance.last_name|default:'' }}"
-                               class="profile-input {% if info_form.last_name.errors %}error{% endif %}"
-                               placeholder="Tu apellido">
-                        {% if info_form.last_name.errors %}
-                        <span class="profile-field-error"><i class='bx bx-error-circle'></i>{{ info_form.last_name.errors.0 }}</span>
-                        {% endif %}
+                               class="profile-input {% if info_form.last_name.errors %}error{% endif %}">
                     </div>
                 </div>
 
-                <!-- Email -->
                 <div class="profile-field">
-                    <label class="profile-label">Dirección de correo electrónico</label>
+                    <label class="profile-label">Correo electrónico</label>
                     <input type="email" name="email"
                            value="{{ info_form.instance.email|default:'' }}"
-                           class="profile-input {% if info_form.email.errors %}error{% endif %}"
-                           placeholder="correo@ejemplo.com">
+                           class="profile-input {% if info_form.email.errors %}error{% endif %}">
                     {% if info_form.email.errors %}
                     <span class="profile-field-error"><i class='bx bx-error-circle'></i>{{ info_form.email.errors.0 }}</span>
                     {% endif %}
                 </div>
 
-                <!-- Teléfono -->
                 <div class="profile-field">
-                    <label class="profile-label">Phone number</label>
+                    <label class="profile-label">Teléfono</label>
                     <input type="text" name="phone_number"
                            value="{{ info_form.instance.phone_number|default:'' }}"
-                           class="profile-input"
-                           placeholder="0999999999" maxlength="10">
+                           class="profile-input" maxlength="10">
                 </div>
 
                 <div class="profile-section-divider"><span>Datos adicionales</span></div>
 
                 <div class="profile-grid-2">
-                    <!-- Dirección -->
                     <div class="profile-field">
                         <label class="profile-label">Dirección</label>
                         <input type="text" name="address"
                                value="{{ info_form.instance.address|default:'' }}"
-                               class="profile-input"
-                               placeholder="Tu dirección">
+                               class="profile-input">
                     </div>
-
-                    <!-- Fecha de nacimiento -->
+                    
                     <div class="profile-field">
                         <label class="profile-label">Fecha de nacimiento</label>
                         <input type="date" name="date_of_birth"
-                               value="{{ info_form.instance.date_of_birth|default:'' }}"
+                               value="{{ info_form.instance.date_of_birth|date:'Y-m-d' }}"
                                class="profile-input">
                     </div>
 
-                    <!-- Género -->
                     <div class="profile-field">
                         <label class="profile-label">Género</label>
-                        <select name="gender" class="profile-input" style="cursor:pointer;">
+                        <select name="gender" class="profile-input">
                             <option value="">Seleccionar</option>
                             <option value="M" {% if info_form.instance.gender == 'M' %}selected{% endif %}>Masculino</option>
                             <option value="F" {% if info_form.instance.gender == 'F' %}selected{% endif %}>Femenino</option>
@@ -171,26 +155,7 @@
             </form>
         </div>
 
-        <!-- ── Tab: Seguridad ── -->
         <div class="profile-tab-pane {% if active_tab == 'password' %}active{% endif %}" id="pane-security">
-
-            {% if messages %}
-                {% for message in messages %}
-                <div class="profile-alert
-                    {% if message.tags == 'error' %}profile-alert--error
-                    {% elif message.tags == 'success' %}profile-alert--success
-                    {% else %}profile-alert--info{% endif %}">
-                    <i class='bx {% if message.tags == "error" %}bx-error-circle{% elif message.tags == "success" %}bx-check-circle{% else %}bx-info-circle{% endif %}'></i>
-                    {{ message }}
-                </div>
-                {% endfor %}
-            {% endif %}
-
-            <div class="profile-info-box">
-                <i class='bx bx-shield-alt-2'></i>
-                Contraseña del administrador. Usa una contraseña única y segura de mínimo 8 caracteres.
-            </div>
-
             <form method="post">
                 {% csrf_token %}
                 <input type="hidden" name="action" value="update_password">
@@ -199,9 +164,7 @@
                     <label class="profile-label">Contraseña actual</label>
                     <div class="profile-password-wrap">
                         <input type="password" name="current_password" id="pw-current"
-                               class="profile-input {% if password_form.current_password.errors %}error{% endif %}"
-                               placeholder="Tu contraseña actual"
-                               autocomplete="current-password">
+                               class="profile-input {% if password_form.current_password.errors %}error{% endif %}">
                         <button type="button" class="profile-toggle-pw" onclick="togglePw('pw-current','icon-current')">
                             <i id="icon-current" class='bx bx-show'></i>
                         </button>
@@ -215,25 +178,18 @@
                     <label class="profile-label">Nueva contraseña</label>
                     <div class="profile-password-wrap">
                         <input type="password" name="new_password1" id="pw-new1"
-                               class="profile-input {% if password_form.new_password1.errors %}error{% endif %}"
-                               placeholder="Mínimo 8 caracteres"
-                               autocomplete="new-password">
+                               class="profile-input {% if password_form.new_password1.errors %}error{% endif %}">
                         <button type="button" class="profile-toggle-pw" onclick="togglePw('pw-new1','icon-new1')">
                             <i id="icon-new1" class='bx bx-show'></i>
                         </button>
                     </div>
-                    {% if password_form.new_password1.errors %}
-                    <span class="profile-field-error"><i class='bx bx-error-circle'></i>{{ password_form.new_password1.errors.0 }}</span>
-                    {% endif %}
                 </div>
 
                 <div class="profile-field">
-                    <label class="profile-label">Confirmar nueva contraseña</label>
+                    <label class="profile-label">Confirmar contraseña</label>
                     <div class="profile-password-wrap">
                         <input type="password" name="new_password2" id="pw-new2"
-                               class="profile-input {% if password_form.new_password2.errors %}error{% endif %}"
-                               placeholder="Repite la contraseña"
-                               autocomplete="new-password">
+                               class="profile-input {% if password_form.new_password2.errors %}error{% endif %}">
                         <button type="button" class="profile-toggle-pw" onclick="togglePw('pw-new2','icon-new2')">
                             <i id="icon-new2" class='bx bx-show'></i>
                         </button>
@@ -245,20 +201,46 @@
 
                 <div class="profile-form-footer">
                     <button type="submit" class="profile-btn-save">
-                        <i class='bx bx-key'></i> Actualizar contraseña
+                        <i class='bx bx-key'></i> Cambiar contraseña
                     </button>
                 </div>
             </form>
         </div>
 
-    </div><!-- /.profile-card -->
-</div><!-- /.profile-page -->
+    </div>
+</div>
 
 <script>
-document.getElementById('avatar-file-input').addEventListener('change', function() {
-    if (this.files.length > 0) document.getElementById('avatar-form').submit();
-});
+/* Lógica de Preview del Avatar */
+const fileInput = document.getElementById('avatar-file-input');
+const avatarImg = document.getElementById('profile-avatar-img');
+const avatarActions = document.getElementById('avatar-actions');
+const cancelBtn = document.getElementById('cancel-avatar');
 
+if (fileInput && avatarImg) {
+    const originalSrc = avatarImg.src;
+
+    fileInput.addEventListener('change', function() {
+        if (this.files && this.files.length > 0) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                avatarImg.src = e.target.result;
+                avatarActions.style.display = 'flex';
+            }
+            reader.readAsDataURL(this.files[0]);
+        }
+    });
+
+    if (cancelBtn) {
+        cancelBtn.addEventListener('click', function() {
+            fileInput.value = '';
+            avatarImg.src = originalSrc;
+            avatarActions.style.display = 'none';
+        });
+    }
+}
+
+/* Tab switcher */
 function switchTab(tab) {
     document.querySelectorAll('.profile-tab-btn').forEach(b => b.classList.remove('active'));
     document.querySelectorAll('.profile-tab-pane').forEach(p => p.classList.remove('active'));
@@ -266,6 +248,7 @@ function switchTab(tab) {
     document.getElementById('pane-' + tab).classList.add('active');
 }
 
+/* Toggle contraseña */
 function togglePw(inputId, iconId) {
     const inp  = document.getElementById(inputId);
     const icon = document.getElementById(iconId);

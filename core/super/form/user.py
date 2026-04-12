@@ -18,6 +18,13 @@ class UserCreateForm(forms.ModelForm):
             'user_type', 'phone_number', 'address',
             'date_of_birth', 'gender', 'is_active',
         ]
+        
+        widgets = {
+            'date_of_birth': forms.DateInput(
+                format='%Y-%m-%d', 
+                attrs={'type': 'date'}
+            ),
+        }
  
     def clean_password2(self):
         p1 = self.cleaned_data.get('password1')

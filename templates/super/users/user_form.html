@@ -188,7 +188,7 @@
                     <div class="field-group">
                         <label class="field-label"><i class='bx bx-calendar'></i>Fecha de nacimiento</label>
                         <input type="date" name="date_of_birth"
-                               value="{{ form.instance.date_of_birth|default:'' }}"
+                               value="{{ form.instance.date_of_birth|date:'Y-m-d' }}"
                                class="field-input">
                     </div>
                 </div>

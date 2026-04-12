@@ -102,7 +102,7 @@
                 <div class="grid-2">
                     <div class="field-group">
                         <label class="field-label"><i class='bx bx-calendar'></i>Fecha de nacimiento</label>
-                        <input type="date" name="birth_date" value="{{ form.instance.birth_date|default:'' }}"
+                        <input type="date" name="birth_date" value="{{ form.instance.birth_date|date:'Y-m-d' }}"
                                class="field-input">
                     </div>
                     <div class="field-group">
