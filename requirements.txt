@@ -105,3 +105,7 @@ django-cloudinary-storage==0.3.0
 
 # ── Servidor estático (Producción) ───────────────────────────────
 whitenoise==6.8.2 
+
+# ── Servidor de aplicaciones (Producción) ─────────────────────────
+gunicorn==25.3.0
+packaging==26.0
