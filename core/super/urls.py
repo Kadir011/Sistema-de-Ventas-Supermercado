@@ -1,6 +1,6 @@
 from django.urls import path 
 from core.super.views import customer, product, seller, sale, scan_barcode, shop, cart, chatbot, reports
-from core.super.views import home, user
+from core.super.views import home, user, profile
 
 app_name = 'super'
 
@@ -74,4 +74,8 @@ urlpatterns = [
     path('admin/usuarios/crear/', user.UserCreateView.as_view(), name='user_create'),
     path('admin/usuarios/editar/<int:pk>/', user.UserUpdateView.as_view(), name='user_update'),
     path('admin/usuarios/eliminar/<int:pk>/', user.UserDeleteView.as_view(), name='user_delete'),
+    
+    # PERFILES
+    path('profile/', profile.CustomerProfileView.as_view(), name='customer_profile'),
+    path('admin/profile/', profile.AdminProfileView.as_view(), name='admin_profile'),
 ] 
