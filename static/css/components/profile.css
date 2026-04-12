@@ -1,96 +1,488 @@
-/* ==========================================================================
-   ESTILOS COMPARTIDOS PARA PERFILES (ADMIN Y CLIENTE)
-   ========================================================================== */
+/* ══════════════════════════════════════════════════════════════
+   PERFILES — customer_profile.html + admin_profile.html
+   Sistema de diseño MySupermarket v1.3.0
+   Tipografía: Plus Jakarta Sans (heredada del base)
+   Cliente → verde #16a34a  |  Admin → rojo #991b1b
+══════════════════════════════════════════════════════════════ */
 
-/* 1. Contenedor de la foto de perfil y botón de cámara */
-.avatar-container {
+/* ── Variables de acento por rol ── */
+.profile-page--customer {
+    --accent:        #16a34a;
+    --accent-dark:   #15803d;
+    --accent-light:  #dcfce7;
+    --accent-border: #bbf7d0;
+    --accent-text:   #166534;
+    --tab-active:    #16a34a;
+    --btn-gradient:  linear-gradient(135deg, #16a34a, #15803d);
+    --btn-shadow:    rgba(22, 163, 74, 0.3);
+    --hero-gradient: linear-gradient(135deg, #14532d 0%, #166534 50%, #15803d 100%);
+}
+
+.profile-page--admin {
+    --accent:        #b91c1c;
+    --accent-dark:   #991b1b;
+    --accent-light:  #fee2e2;
+    --accent-border: #fecaca;
+    --accent-text:   #991b1b;
+    --tab-active:    #b91c1c;
+    --btn-gradient:  linear-gradient(135deg, #991b1b, #b91c1c);
+    --btn-shadow:    rgba(185, 28, 28, 0.3);
+    --hero-gradient: linear-gradient(135deg, #7f1d1d 0%, #991b1b 55%, #b91c1c 100%);
+}
+
+/* ══════════════════════════════════════════════════════════════
+   HERO BANNER
+══════════════════════════════════════════════════════════════ */
+.profile-hero {
+    background: var(--hero-gradient);
+    border-radius: 20px;
+    padding: 36px 40px;
+    position: relative;
+    overflow: hidden;
+    margin-bottom: 32px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 16px;
+}
+
+.profile-hero::before {
+    content: '';
+    position: absolute;
+    top: -50px; right: -50px;
+    width: 200px; height: 200px;
+    background: rgba(255,255,255,0.06);
+    border-radius: 50%;
+}
+
+.profile-hero::after {
+    content: '';
+    position: absolute;
+    bottom: -60px; left: 10%;
+    width: 180px; height: 180px;
+    background: rgba(255,255,255,0.04);
+    border-radius: 50%;
+}
+
+/* ── Avatar ── */
+.profile-avatar-wrap {
     position: relative;
     display: inline-block;
-    margin-bottom: 1.5rem;
+    z-index: 1;
 }
 
-.avatar-image {
-    width: 150px;
-    height: 150px;
+.profile-avatar {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
     object-fit: cover;
-    border-radius: 50%;
-    border: 4px solid #ffffff;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    background-color: #ffffff;
+    border: 4px solid rgba(255,255,255,0.25);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.25);
+    background: rgba(255,255,255,0.1);
+    display: block;
 }
 
-/* Ocultar el feo input de tipo "file" original de Django */
-.hidden-file-input input[type="file"] {
-    display: none !important;
-}
-
-/* Estilizar el label para que actúe como botón de cámara */
-.camera-btn {
+.profile-avatar-btn {
     position: absolute;
-    bottom: 5px;
-    right: 5px;
-    background-color: var(--bs-primary, #0d6efd);
-    color: white;
-    width: 40px;
-    height: 40px;
+    bottom: 2px;
+    right: 2px;
+    width: 32px;
+    height: 32px;
     border-radius: 50%;
+    background: var(--btn-gradient);
+    border: 2px solid rgba(255,255,255,0.6);
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.2);
-    transition: transform 0.2s ease, background-color 0.2s ease;
-    border: 2px solid white;
+    transition: all 0.2s;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.3);
 }
 
-.camera-btn:hover {
+.profile-avatar-btn:hover {
     transform: scale(1.1);
-    background-color: #0b5ed7; /* Primary darker */
+    box-shadow: 0 4px 16px rgba(0,0,0,0.4);
 }
 
-/* 2. Forzar el estilo Bootstrap en los campos de Django de forma nativa */
-.django-form-field input:not([type="file"]):not([type="checkbox"]):not([type="radio"]),
-.django-form-field select,
-.django-form-field textarea {
-    display: block;
+.profile-avatar-btn i {
+    font-size: 0.9rem;
+    color: #fff;
+    pointer-events: none;
+}
+
+/* Ocultar el input file real */
+.profile-avatar-file {
+    display: none !important;
+}
+
+/* ── Nombre y rol ── */
+.profile-hero-name {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 1.4rem;
+    font-weight: 800;
+    color: #fff;
+    letter-spacing: -0.01em;
+    line-height: 1.2;
+    position: relative;
+    z-index: 1;
+    margin: 0;
+}
+
+.profile-hero-email {
+    font-size: 0.85rem;
+    color: rgba(255,255,255,0.65);
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    position: relative;
+    z-index: 1;
+    margin: 0;
+}
+
+.profile-hero-role {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.7);
+    background: rgba(255,255,255,0.1);
+    border: 1px solid rgba(255,255,255,0.2);
+    padding: 4px 12px;
+    border-radius: 9999px;
+    position: relative;
+    z-index: 1;
+}
+
+/* ── Stats en el hero ── */
+.profile-hero-stats {
+    display: flex;
+    gap: 32px;
+    justify-content: center;
+    position: relative;
+    z-index: 1;
+    padding-top: 12px;
+    border-top: 1px solid rgba(255,255,255,0.12);
     width: 100%;
-    padding: 0.5rem 0.75rem;
-    font-size: 1rem;
-    font-weight: 400;
-    line-height: 1.5;
-    color: #212529;
-    background-color: #fff;
-    background-clip: padding-box;
-    border: 1px solid #ced4da;
-    border-radius: 0.375rem;
-    transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+    max-width: 360px;
 }
 
-.django-form-field input:focus,
-.django-form-field select:focus,
-.django-form-field textarea:focus {
-    color: #212529;
-    background-color: #fff;
-    border-color: #86b7fe;
-    outline: 0;
-    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+.profile-hero-stat {
+    text-align: center;
 }
 
-/* 3. Pestañas de Navegación Personalizadas */
-.profile-tabs .nav-link {
-    color: #6c757d;
+.profile-hero-stat-num {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: #fff;
+    line-height: 1;
+}
+
+.profile-hero-stat-label {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 0.68rem;
     font-weight: 600;
+    color: rgba(255,255,255,0.5);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-top: 3px;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   CARD PRINCIPAL
+══════════════════════════════════════════════════════════════ */
+.profile-card {
+    background: #fff;
+    border-radius: 20px;
+    border: 1px solid #e5e7eb;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.06);
+    overflow: hidden;
+}
+
+/* ── Tabs ── */
+.profile-tabs {
+    display: flex;
+    border-bottom: 1px solid #f3f4f6;
+    background: #fafafa;
+}
+
+.profile-tab-btn {
+    flex: 1;
+    padding: 14px 12px;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 0.875rem;
+    font-weight: 600;
+    cursor: pointer;
     border: none;
+    background: transparent;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
     border-bottom: 2px solid transparent;
-    transition: all 0.3s ease;
+    color: #9ca3af;
 }
 
-.profile-tabs .nav-link:hover {
-    border-color: #e9ecef;
+.profile-tab-btn:hover {
+    color: #374151;
+    background: #f3f4f6;
 }
 
-.profile-tabs .nav-link.active {
-    color: var(--bs-primary, #0d6efd);
-    background-color: transparent;
-    border-color: var(--bs-primary, #0d6efd);
+.profile-tab-btn.active {
+    color: var(--accent);
+    border-bottom-color: var(--accent);
+    background: #fff;
+}
+
+.profile-tab-btn i {
+    font-size: 1.1rem;
+}
+
+/* ── Panes ── */
+.profile-tab-pane {
+    display: none;
+    padding: 28px 32px 32px;
+    animation: fadeIn 0.2s ease-out;
+}
+
+.profile-tab-pane.active {
+    display: block;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(6px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ══════════════════════════════════════════════════════════════
+   CAMPOS DEL FORMULARIO
+══════════════════════════════════════════════════════════════ */
+.profile-grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 18px;
+}
+
+@media (max-width: 640px) {
+    .profile-grid-2 { grid-template-columns: 1fr; }
+    .profile-hero { padding: 28px 24px; }
+    .profile-tab-pane { padding: 20px 20px 24px; }
+}
+
+.profile-field {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    margin-bottom: 16px;
+}
+
+.profile-field:last-of-type {
+    margin-bottom: 0;
+}
+
+.profile-label {
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: #374151;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+}
+
+.profile-input {
+    width: 100%;
+    padding: 10px 14px;
+    border: 1.5px solid #e5e7eb;
+    border-radius: 10px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: #111827;
+    background: #f9fafb;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    transition: all 0.2s;
+    outline: none;
+}
+
+.profile-input:focus {
+    border-color: var(--accent);
+    background: #fff;
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 15%, transparent);
+}
+
+.profile-input.error {
+    border-color: #ef4444;
+    background: #fff5f5;
+}
+
+.profile-field-error {
+    font-size: 0.75rem;
+    color: #ef4444;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+}
+
+.profile-section-divider {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 20px 0 16px;
+}
+
+.profile-section-divider span {
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: #9ca3af;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    white-space: nowrap;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+}
+
+.profile-section-divider::before,
+.profile-section-divider::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: #f3f4f6;
+}
+
+/* ── Password toggle ── */
+.profile-password-wrap {
+    position: relative;
+}
+
+.profile-password-wrap .profile-input {
+    padding-right: 44px;
+}
+
+.profile-toggle-pw {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: #9ca3af;
+    font-size: 1.1rem;
+    transition: color 0.2s;
+    padding: 2px;
+}
+
+.profile-toggle-pw:hover { color: #6b7280; }
+
+/* ── Info box seguridad ── */
+.profile-info-box {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    background: var(--accent-light);
+    border: 1px solid var(--accent-border);
+    border-radius: 10px;
+    padding: 12px 16px;
+    margin-bottom: 20px;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 0.82rem;
+    color: var(--accent-text);
+    line-height: 1.5;
+}
+
+.profile-info-box i {
+    font-size: 1.1rem;
+    flex-shrink: 0;
+    margin-top: 1px;
+}
+
+/* ── Botones ── */
+.profile-btn-save {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 11px 28px;
+    border-radius: 12px;
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: #fff;
+    background: var(--btn-gradient);
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s;
+    box-shadow: 0 4px 12px var(--btn-shadow);
+    font-family: 'Plus Jakarta Sans', sans-serif;
+}
+
+.profile-btn-save:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 18px var(--btn-shadow);
+    filter: brightness(1.05);
+}
+
+.profile-btn-cancel {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 11px 22px;
+    border-radius: 12px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #6b7280;
+    background: #f3f4f6;
+    border: 1.5px solid #e5e7eb;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-decoration: none;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+}
+
+.profile-btn-cancel:hover {
+    background: #e5e7eb;
+    color: #374151;
+}
+
+/* ── Footer del form ── */
+.profile-form-footer {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 10px;
+    padding-top: 20px;
+    margin-top: 8px;
+    border-top: 1px solid #f3f4f6;
+}
+
+/* ── Alertas de mensaje ── */
+.profile-alert {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 12px 16px;
+    border-radius: 10px;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 0.85rem;
+    margin-bottom: 20px;
+}
+
+.profile-alert--success {
+    background: #f0fdf4;
+    color: #166534;
+    border: 1px solid #bbf7d0;
+}
+
+.profile-alert--error {
+    background: #fef2f2;
+    color: #991b1b;
+    border: 1px solid #fecaca;
+}
+
+.profile-alert--info {
+    background: #eff6ff;
+    color: #1d4ed8;
+    border: 1px solid #bfdbfe;
 }

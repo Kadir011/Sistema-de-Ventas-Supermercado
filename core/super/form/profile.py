@@ -34,13 +34,6 @@ class ProfileAvatarForm(forms.ModelForm):
     class Meta:
         model = User
         fields = ['image']
-        widgets = {
-            'image': forms.FileInput(attrs={
-                'accept': 'image/*',
-                'class': 'hidden',
-                'id': 'avatar-file-input',
-            })
-        }
 
 
 class ProfilePasswordForm(forms.Form):
@@ -49,8 +42,6 @@ class ProfilePasswordForm(forms.Form):
     current_password = forms.CharField(
         label='Contraseña actual',
         widget=forms.PasswordInput(attrs={
-            'class': 'field-input',
-            'placeholder': 'Tu contraseña actual',
             'autocomplete': 'current-password',
         }),
     )
@@ -58,17 +49,12 @@ class ProfilePasswordForm(forms.Form):
         label='Nueva contraseña',
         min_length=8,
         widget=forms.PasswordInput(attrs={
-            'class': 'field-input',
-            'placeholder': 'Mínimo 8 caracteres',
             'autocomplete': 'new-password',
-            'id': 'id_new_password1',
         }),
     )
     new_password2 = forms.CharField(
         label='Confirmar nueva contraseña',
         widget=forms.PasswordInput(attrs={
-            'class': 'field-input',
-            'placeholder': 'Repite la contraseña',
             'autocomplete': 'new-password',
         }),
     )
@@ -92,7 +78,6 @@ class ProfilePasswordForm(forms.Form):
         return cleaned
 
     def save(self):
-        # Usamos el usuario que guardamos en el __init__
         self.user.set_password(self.cleaned_data['new_password1'])
         self.user.save()
         return self.user
