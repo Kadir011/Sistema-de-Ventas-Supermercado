@@ -1,5 +1,5 @@
 from django.db import models
-from config.utils import get_image
+from django.conf import settings
 from django.contrib.auth.models import AbstractUser, Group
 from django.utils.translation import gettext_lazy as _
 
@@ -37,7 +37,9 @@ class User(AbstractUser):
         return self.groups.all()
 
     def get_image_url(self):
-        return get_image(self.image)
+        if self.image and hasattr(self.image, 'url'):
+            return self.image.url
+        return f"{settings.STATIC_URL}img/default_user.jpg"
     
     def is_admin_user(self):
         return self.user_type == 'admin' or self.is_superuser
