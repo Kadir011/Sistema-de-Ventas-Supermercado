@@ -1,0 +1,130 @@
+{% extends "components/base.html" %}
+{% load static %}
+
+{% block content %}
+<link rel="stylesheet" href="{% static 'css/components/profile.css' %}">
+
+<div class="container-fluid py-4">
+    <h2 class="mb-4" style="color: #991b1b;"><i class="fas fa-user-cog me-2"></i>{{ title }}</h2>
+    
+    <div class="row">
+        <div class="col-md-4 mb-4">
+            <div class="card shadow-sm border-0 text-center">
+                <div class="card-body py-5">
+                    
+                    <div class="avatar-container">
+                        <img src="{{ request.user.get_image_url }}" class="avatar-image" alt="Foto de admin">
+                        
+                        <form method="post" enctype="multipart/form-data" id="avatar-form" class="hidden-file-input">
+                            {% csrf_token %}
+                            <input type="hidden" name="action" value="update_avatar">
+                            {{ avatar_form.image }}
+                            <label for="{{ avatar_form.image.id_for_label }}" class="camera-btn" style="background-color: #dc2626;" title="Cambiar foto">
+                                <i class="fas fa-camera"></i>
+                            </label>
+                        </form>
+                    </div>
+
+                    <h4 class="fw-bold mb-0">{{ request.user.get_full_name|default:request.user.username }}</h4>
+                    <p class="text-muted mb-4">{{ role_label }}</p>
+                    <hr>
+                    <div class="px-3 text-center">
+                        <h2 class="mb-0" style="color: #991b1b;">{{ total_sales }}</h2>
+                        <small class="text-muted text-uppercase fw-bold">Ventas Globales Registradas</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-8">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-white border-bottom p-0">
+                    <ul class="nav nav-tabs profile-tabs w-100" id="profileTabs" role="tablist">
+                        <li class="nav-item flex-fill text-center" role="presentation">
+                            <button class="nav-link w-100 py-3 {% if active_tab != 'password' %}active{% endif %}" id="info-tab" data-bs-toggle="tab" data-bs-target="#info-pane" type="button" role="tab" style="{% if active_tab != 'password' %}color: #dc2626; border-color: #dc2626;{% endif %}">
+                                <i class="fas fa-id-card me-1"></i> Datos del Sistema
+                            </button>
+                        </li>
+                        <li class="nav-item flex-fill text-center" role="presentation">
+                            <button class="nav-link w-100 py-3 {% if active_tab == 'password' %}active{% endif %}" id="security-tab" data-bs-toggle="tab" data-bs-target="#security-pane" type="button" role="tab" style="{% if active_tab == 'password' %}color: #dc2626; border-color: #dc2626;{% endif %}">
+                                <i class="fas fa-shield-alt me-1"></i> Seguridad
+                            </button>
+                        </li>
+                    </ul>
+                </div>
+                
+                <div class="card-body p-4">
+                    {% if messages %}
+                        {% for message in messages %}
+                            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                                {{ message }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+
+                    <div class="tab-content">
+                        <div class="tab-pane fade {% if active_tab != 'password' %}show active{% endif %}" id="info-pane">
+                            <form method="post">
+                                {% csrf_token %}
+                                <input type="hidden" name="action" value="update_info">
+                                <div class="row g-3">
+                                    {% for field in info_form %}
+                                    <div class="col-md-6 django-form-field">
+                                        <label class="form-label text-muted small fw-bold">{{ field.label }}</label>
+                                        {{ field }}
+                                        {% if field.errors %}
+                                            <div class="text-danger mt-1" style="font-size: 0.8rem;"><i class="fas fa-exclamation-circle me-1"></i>{{ field.errors.0 }}</div>
+                                        {% endif %}
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                                <div class="mt-4 text-end">
+                                    <button type="submit" class="btn text-white px-4" style="background-color: #b91c1c;">
+                                        <i class="fas fa-save me-2"></i>Guardar Cambios
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                        
+                        <div class="tab-pane fade {% if active_tab == 'password' %}show active{% endif %}" id="security-pane">
+                            <form method="post">
+                                {% csrf_token %}
+                                <input type="hidden" name="action" value="update_password">
+                                <div class="row g-3">
+                                    {% for field in password_form %}
+                                    <div class="col-12 django-form-field">
+                                        <label class="form-label text-muted small fw-bold">{{ field.label }}</label>
+                                        {{ field }}
+                                        {% if field.errors %}
+                                            <div class="text-danger mt-1" style="font-size: 0.8rem;"><i class="fas fa-exclamation-circle me-1"></i>{{ field.errors.0 }}</div>
+                                        {% endif %}
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                                <div class="mt-4 text-end">
+                                    <button type="submit" class="btn btn-dark fw-bold px-4">
+                                        <i class="fas fa-key me-2"></i>Actualizar Contraseña
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Auto-subida de imagen
+    const fileInput = document.querySelector('input[type="file"][name="image"]');
+    if (fileInput) {
+        fileInput.addEventListener('change', function() {
+            if (this.files.length > 0) {
+                document.getElementById('avatar-form').submit();
+            }
+        });
+    }
+</script>
+{% endblock %}
