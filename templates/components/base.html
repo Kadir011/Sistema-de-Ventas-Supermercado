@@ -37,15 +37,11 @@
 </head>
 <body class="bg-gray-100 leading-normal tracking-normal flex flex-col min-h-screen">
 
-    <!-- ═══════════════════════════════════════════
-         NAVBAR ADMINISTRADOR
-    ═══════════════════════════════════════════ -->
     {% if user.is_authenticated and user.is_admin_user %}
     <nav class="nav-admin sticky top-0 z-50" style="background: linear-gradient(135deg, #7f1d1d 0%, #991b1b 60%, #b91c1c 100%); box-shadow: 0 2px 20px rgba(0,0,0,0.25);">
         <div class="max-w-7xl mx-auto px-4 sm:px-6">
             <div class="flex items-center justify-between h-16">
 
-                <!-- Logo -->
                 <a href="{% url 'super:menu' %}" class="flex items-center gap-2.5 group flex-shrink-0">
                     <div class="w-8 h-8 rounded-lg flex items-center justify-center" style="background: rgba(255,255,255,0.15);">
                         <i class='bx bxs-dashboard text-white text-lg'></i>
@@ -55,12 +51,10 @@
                     </span>
                 </a>
 
-                <!-- Hamburger (mobile) -->
                 <button id="mobile-menu-btn" class="md:hidden flex items-center justify-center w-9 h-9 rounded-lg text-white transition-all" style="background: rgba(255,255,255,0.1);">
                     <i class='bx bx-menu text-2xl' id="hamburger-icon"></i>
                 </button>
 
-                <!-- Links DESKTOP -->
                 <div class="hidden md:flex items-center gap-1">
                     <a href="{% url 'super:menu' %}" class="nav-link"><i class='bx bx-grid-alt'></i>Menú</a>
                     <a href="{% url 'super:customer_list' %}" class="nav-link"><i class='bx bx-group'></i>Clientes</a>
@@ -71,10 +65,10 @@
 
                     <div class="nav-divider mx-3"></div>
 
-                    <div class="user-pill">
-                        <div class="user-avatar">{{ user.first_name|first|upper }}{{ user.last_name|first|upper }}</div>
+                    <a href="{% url 'super:admin_profile' %}" class="user-pill" style="text-decoration: none; cursor: pointer;" title="Mi Perfil">
+                        <img src="{{ user.get_image_url }}" alt="Avatar" class="w-7 h-7 rounded-full object-cover" style="border: 2px solid rgba(255,255,255,0.2);">
                         <span>{{ user.get_full_name }}</span>
-                    </div>
+                    </a>
 
                     <a href="{% url 'security:logout' %}" class="btn-logout ml-2">
                         <i class='bx bx-log-out'></i> Salir
@@ -83,7 +77,6 @@
             </div>
         </div>
 
-        <!-- Mobile menu -->
         <div id="mobile-menu" class="hidden md:hidden px-4 pb-4 animate-slide-down">
             <div class="rounded-xl overflow-hidden mt-1" style="background: rgba(0,0,0,0.2);">
                 <a href="{% url 'super:menu' %}" class="mobile-link"><i class='bx bx-grid-alt'></i>Menú</a>
@@ -93,9 +86,14 @@
                 <a href="{% url 'super:sale_list' %}" class="mobile-link"><i class='bx bx-receipt'></i>Ventas</a>
                 <a href="{% url 'super:scan_barcode' %}" class="mobile-link"><i class='bx bx-barcode-reader'></i>Escáner</a>
                 <div style="border-top: 1px solid rgba(255,255,255,0.1); margin: 6px 0;"></div>
-                <div class="px-4 py-2 text-xs font-semibold" style="color: rgba(255,255,255,0.5); text-transform: uppercase; letter-spacing: 0.08em;">
-                    {{ user.get_full_name }} &bull; {{ user.username }}
+                
+                <div class="px-4 py-2 flex items-center gap-3">
+                    <img src="{{ user.get_image_url }}" class="w-8 h-8 rounded-full object-cover border border-white/20">
+                    <div class="text-xs font-semibold" style="color: rgba(255,255,255,0.5); text-transform: uppercase; letter-spacing: 0.08em;">
+                        {{ user.get_full_name }} &bull; {{ user.username }}
+                    </div>
                 </div>
+                <a href="{% url 'super:admin_profile' %}" class="mobile-link" style="color: #bfdbfe;"><i class='bx bx-user'></i>Mi Perfil</a>
                 <a href="{% url 'security:logout' %}" class="mobile-link" style="color: #fca5a5;">
                     <i class='bx bx-log-out'></i>Cerrar sesión
                 </a>
@@ -103,15 +101,11 @@
         </div>
     </nav>
 
-    <!-- ═══════════════════════════════════════════
-         NAVBAR CLIENTE / VISITANTE
-    ═══════════════════════════════════════════ -->
     {% else %}
     <nav class="nav-customer sticky top-0 z-50" style="background: linear-gradient(135deg, #14532d 0%, #166534 50%, #15803d 100%); box-shadow: 0 2px 20px rgba(0,0,0,0.2);">
         <div class="max-w-7xl mx-auto px-4 sm:px-6">
             <div class="flex items-center justify-between h-16">
 
-                <!-- Logo -->
                 <a href="{% url 'super:home' %}" class="flex items-center gap-2.5 group flex-shrink-0">
                     <div class="w-8 h-8 rounded-lg flex items-center justify-center" style="background: rgba(255,255,255,0.15);">
                         <i class='bx bxs-cart-alt text-white text-lg'></i>
@@ -121,12 +115,10 @@
                     </span>
                 </a>
 
-                <!-- Hamburger (mobile) -->
                 <button id="mobile-menu-btn" class="md:hidden flex items-center justify-center w-9 h-9 rounded-lg text-white transition-all" style="background: rgba(255,255,255,0.1);">
                     <i class='bx bx-menu text-2xl' id="hamburger-icon"></i>
                 </button>
 
-                <!-- Links DESKTOP -->
                 <div class="hidden md:flex items-center gap-1">
                     <a href="{% url 'super:home' %}" class="nav-link"><i class='bx bx-home'></i>Inicio</a>
 
@@ -150,10 +142,11 @@
                     <div class="nav-divider mx-3"></div>
 
                     {% if user.is_authenticated %}
-                        <div class="user-pill">
-                            <div class="user-avatar">{{ user.first_name|first|upper }}{{ user.last_name|first|upper }}</div>
+                        <a href="{% url 'super:customer_profile' %}" class="user-pill" style="text-decoration: none; cursor: pointer;" title="Mi Perfil">
+                            <img src="{{ user.get_image_url }}" alt="Avatar" class="w-7 h-7 rounded-full object-cover bg-white" style="border: 2px solid rgba(255,255,255,0.2);">
                             <span>{{ user.first_name }}</span>
-                        </div>
+                        </a>
+
                         <a href="{% url 'security:logout' %}" class="btn-logout ml-2">
                             <i class='bx bx-log-out'></i> Salir
                         </a>
@@ -169,7 +162,6 @@
             </div>
         </div>
 
-        <!-- Mobile menu -->
         <div id="mobile-menu" class="hidden md:hidden px-4 pb-4 animate-slide-down">
             <div class="rounded-xl overflow-hidden mt-1" style="background: rgba(0,0,0,0.15);">
                 <a href="{% url 'super:home' %}" class="mobile-link"><i class='bx bx-home'></i>Inicio</a>
@@ -187,11 +179,16 @@
                 <a href="{% url 'super:about' %}" class="mobile-link"><i class='bx bx-info-circle'></i>Nosotros</a>
                 <a href="{% url 'super:contact' %}" class="mobile-link"><i class='bx bx-envelope'></i>Contacto</a>
                 <div style="border-top: 1px solid rgba(255,255,255,0.1); margin: 6px 0;"></div>
+                
                 {% if user.is_authenticated %}
-                    <div class="px-4 py-2 text-xs font-semibold" style="color: rgba(255,255,255,0.5); text-transform: uppercase; letter-spacing: 0.08em;">
-                        {{ user.get_full_name }}
+                    <div class="px-4 py-2 flex items-center gap-3">
+                        <img src="{{ user.get_image_url }}" class="w-8 h-8 rounded-full object-cover border border-white/20">
+                        <div class="text-xs font-semibold" style="color: rgba(255,255,255,0.5); text-transform: uppercase; letter-spacing: 0.08em;">
+                            {{ user.get_full_name }}
+                        </div>
                     </div>
-                    <a href="{% url 'security:logout' %}" class="mobile-link" style="color: #bbf7d0;">
+                    <a href="{% url 'super:customer_profile' %}" class="mobile-link" style="color: #bbf7d0;"><i class='bx bx-user'></i>Mi Perfil</a>
+                    <a href="{% url 'security:logout' %}" class="mobile-link" style="color: #fca5a5;">
                         <i class='bx bx-log-out'></i>Cerrar sesión
                     </a>
                 {% else %}
@@ -203,9 +200,6 @@
     </nav>
     {% endif %}
 
-    <!-- ═══════════════════════════════════════════
-         CHATBOT
-    ═══════════════════════════════════════════ -->
     <div id="chatbot-button" class="fixed bottom-6 right-6 z-50 group cursor-pointer" style="filter: drop-shadow(0 4px 16px rgba(0,0,0,0.25));">
         <div class="relative w-14 h-14 rounded-2xl overflow-hidden transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3">
             <img src="{% static 'img/chatbot.png' %}" alt="Chatbot" class="w-full h-full object-cover" />
@@ -215,7 +209,6 @@
 
     <div id="chatbot-modal" class="hidden fixed inset-0 bg-black/60 flex items-end sm:items-center justify-center sm:justify-end z-40 sm:p-6 backdrop-blur-sm">
         <div class="bg-white rounded-t-2xl sm:rounded-2xl shadow-2xl w-full sm:w-96 max-h-[90vh] flex flex-col overflow-hidden animate-slide-up" style="border: 1px solid rgba(0,0,0,0.08);">
-            <!-- Header -->
             <div class="flex items-center gap-3 px-4 py-3.5 flex-shrink-0" style="background: linear-gradient(135deg, #14532d, #166534);">
                 <div class="w-8 h-8 rounded-xl overflow-hidden flex-shrink-0">
                     <img src="{% static 'img/chatbot.png' %}" alt="Bot" class="w-full h-full object-cover">
@@ -226,9 +219,7 @@
                 </div>
                 <button id="close-chatbot" class="w-7 h-7 rounded-lg flex items-center justify-center text-white/70 hover:text-white hover:bg-white/10 transition-all text-lg leading-none">&times;</button>
             </div>
-            <!-- Messages -->
             <div id="message-container" class="flex-1 overflow-y-auto p-4 space-y-3 bg-gray-50 min-h-0" style="max-height: 320px;"></div>
-            <!-- Input -->
             <div class="px-3 py-3 border-t border-gray-100 flex gap-2 flex-shrink-0 bg-white">
                 <input id="chat-input"
                        class="flex-1 px-3 py-2.5 rounded-xl text-sm border border-gray-200 bg-gray-50 focus:outline-none focus:border-green-400 focus:bg-white transition-all"
@@ -242,9 +233,6 @@
         </div>
     </div>
 
-    <!-- ═══════════════════════════════════════════
-         CONTENIDO PRINCIPAL
-    ═══════════════════════════════════════════ -->
     <main class="flex-1 px-4 py-6 animate-fade-in" style="max-width: 100%;">
         <div class="max-w-7xl mx-auto">
             {% if messages %}
@@ -267,9 +255,6 @@
         </div>
     </main>
 
-    <!-- ═══════════════════════════════════════════
-         FOOTER
-    ═══════════════════════════════════════════ -->
     <footer class="mt-auto" style="background: #1a1a2e; border-top: 1px solid rgba(255,255,255,0.05);">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 py-8">
             <div class="flex flex-col sm:flex-row justify-between items-center gap-4">
@@ -286,9 +271,6 @@
         </div>
     </footer>
 
-    <!-- ═══════════════════════════════════════════
-         SCRIPTS
-    ═══════════════════════════════════════════ -->
     <script>
         {% if user.is_authenticated %}
             const CHATBOT_USER_NAME = "{{ user.first_name|default:user.username }}";

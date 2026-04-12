@@ -5,7 +5,6 @@
 
 <link rel="stylesheet" href="{% static 'css/components/menu.css' %}">
 
-<!-- ═══ WELCOME ALERT ═══ -->
 {% if recent_sales_count is not None %}
 <div id="welcome-alert" class="menu-welcome animate-fade-in">
   <div class="welcome-text">
@@ -31,16 +30,25 @@
 </div>
 {% endif %}
 
-<!-- ═══ HEADING ═══ -->
 <div class="mb-2">
   <div class="section-eyebrow">Panel de Control</div>
   <h1 class="section-heading">Menú Supermercado</h1>
 </div>
 
-<!-- ═══ CARDS ═══ -->
 <div class="menu-grid">
 
-  <!-- Clientes -->
+  <div class="menu-card card-cyan">
+    <div class="card-icon-wrap">
+      <i class='bx bx-user-circle'></i>
+    </div>
+    <div class="card-title">Mi Perfil</div>
+    <div class="card-desc">Visualiza y edita tu información personal, foto de perfil y contraseña.</div>
+    <a href="{% url 'super:admin_profile' %}" class="card-cta">
+      Ver Mi Perfil
+      <span class="card-arrow"><i class='bx bx-right-arrow-alt'></i></span>
+    </a>
+  </div>
+
   <div class="menu-card card-blue">
     <div class="card-icon-wrap">
       <i class='bx bx-group'></i>
@@ -53,7 +61,6 @@
     </a>
   </div>
 
-  <!-- Vendedores -->
   <div class="menu-card card-purple">
     <div class="card-icon-wrap">
       <i class='bx bx-badge-check'></i>
@@ -66,7 +73,6 @@
     </a>
   </div>
 
-  <!-- Productos -->
   <div class="menu-card card-green">
     <div class="card-icon-wrap">
       <i class='bx bx-package'></i>
@@ -79,7 +85,6 @@
     </a>
   </div>
 
-  <!-- Ventas -->
   <div class="menu-card card-amber">
     <div class="card-icon-wrap">
       <i class='bx bx-receipt'></i>
@@ -92,7 +97,6 @@
     </a>
   </div>
 
-  <!-- Usuarios -->
   <div class="menu-card card-red">
     <div class="card-icon-wrap">
       <i class='bx bx-user-circle'></i>
@@ -105,7 +109,6 @@
     </a>
   </div>
 
-  <!-- Escáner -->
   <div class="menu-card card-cyan">
     <div class="card-icon-wrap">
       <i class='bx bx-barcode-reader'></i>
@@ -118,7 +121,6 @@
     </a>
   </div>
 
-  <!-- Estadísticas y Reportes -->
   <div class="menu-card card-red">
     <div class="card-icon-wrap">
       <i class='bx bx-chart'></i>
