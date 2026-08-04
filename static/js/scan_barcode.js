@@ -67,24 +67,23 @@ document.addEventListener('DOMContentLoaded', function () {
                 type   : 'LiveStream',
                 target : document.querySelector('#interactive'),
                 constraints: {
-                    /* CRÍTICO — advanced constraints eliminadas del constraints
-                       principal. Se aplican después vía applyConstraints() con
-                       try/catch para evitar OverconstrainedError en Safari iOS. */
                     facingMode : useFrontCamera ? 'user' : 'environment',
-                    width  : { min: 640, ideal: 1920, max: 3840 },
-                    height : { min: 480, ideal: 1080, max: 2160 },
+                    // Reducimos la resolución a 720p para eliminar el motion blur y mejorar FPS
+                    width  : { min: 640, ideal: 1280, max: 1920 },
+                    height : { min: 480, ideal: 720, max: 1080 },
                 },
                 area: {
-                    top    : '15%',
-                    right  : '5%',
-                    left   : '5%',
-                    bottom : '15%'
+                    // Ajustamos el área para que coincida mejor con el recuadro verde de tu UI
+                    top    : '25%',
+                    right  : '10%',
+                    left   : '10%',
+                    bottom : '25%'
                 },
-                singleChannel: false,
+                singleChannel: true, // Cambiar a true ayuda a detectar bordes en baja iluminación
             },
             locator: {
-                patchSize  : 'small',
-                halfSample : false,
+                patchSize  : 'medium', // 'medium' o 'large' funciona mejor en resoluciones web
+                halfSample : true,     // CRÍTICO: true mejora el rendimiento drásticamente
             },
             numOfWorkers: getNumWorkers(),
             decoder: {
@@ -112,7 +111,6 @@ document.addEventListener('DOMContentLoaded', function () {
                     { focusMode: 'continuous' },
                     { exposureMode: 'continuous' },
                     { whiteBalanceMode: 'continuous' },
-                    { zoom: 1.5 }
                 ]
             });
         } catch (e) {
