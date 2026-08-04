@@ -64,6 +64,9 @@ AWS_S3_ADDRESSING_STYLE = 'path'   # importante: Supabase necesita "path style",
 AWS_DEFAULT_ACL = None
 AWS_QUERYSTRING_AUTH = False       # False si el bucket es público
 AWS_S3_FILE_OVERWRITE = False
+AWS_S3_CUSTOM_DOMAIN = f"pgrohmjzvfccktmjcnlw.supabase.co/storage/v1/object/public/{AWS_STORAGE_BUCKET_NAME}"
+AWS_QUERYSTRING_AUTH = False   # sin esto, custom_domain igual pega firma en la URL y falla
+AWS_DEFAULT_ACL = None
 
 CRISPY_ALLOWED_TEMPLATE_PACKS = 'bootstrap5'
 CRISPY_TEMPLATE_PACK = 'bootstrap5'
