@@ -5,19 +5,31 @@ from core.security.models import User
 class ProfileInfoForm(forms.ModelForm):
     """Formulario para editar datos personales del perfil."""
 
+    current_password = forms.CharField(
+        label='Contraseña actual',
+        widget=forms.PasswordInput(attrs={
+            'autocomplete': 'current-password',
+        }),
+    )
+
     class Meta:
         model = User
         fields = [
             'first_name', 'last_name', 'email',
             'phone_number', 'address', 'date_of_birth', 'gender',
         ]
-        # Forzar el formato estándar para inputs tipo date
         widgets = {
             'date_of_birth': forms.DateInput(
-                format='%Y-%m-%d', 
+                format='%Y-%m-%d',
                 attrs={'type': 'date'}
             ),
         }
+
+    def clean_current_password(self):
+        pwd = self.cleaned_data.get('current_password')
+        if not self.instance.check_password(pwd):
+            raise forms.ValidationError('La contraseña actual es incorrecta.')
+        return pwd
 
     def clean_email(self):
         email = self.cleaned_data.get('email')

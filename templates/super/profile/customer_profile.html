@@ -163,6 +163,25 @@
                     </div>
                 </div>
 
+                <div class="profile-section-divider"><span>Confirmar identidad</span></div>
+
+                <div class="profile-field">
+                    <label class="profile-label">Contraseña actual</label>
+                    <div class="profile-password-wrap">
+                        <input type="password" name="current_password" id="pw-info-current"
+                               class="profile-input {% if info_form.current_password.errors %}error{% endif %}"
+                               placeholder="Tu contraseña actual"
+                               autocomplete="current-password">
+                        <button type="button" class="profile-toggle-pw" onclick="togglePw('pw-info-current','icon-info-current')">
+                            <i id="icon-info-current" class='bx bx-show'></i>
+                        </button>
+                    </div>
+                    {% if info_form.current_password.errors %}
+                    <span class="profile-field-error"><i class='bx bx-error-circle'></i>{{ info_form.current_password.errors.0 }}</span>
+                    {% endif %}
+                    <p style="font-size:0.75rem;color:#6b7280;margin-top:4px;">Por seguridad, confirma tu contraseña para guardar los cambios.</p>
+                </div>
+
                 <div class="profile-form-footer">
                     <button type="submit" class="profile-btn-save">
                         <i class='bx bx-save'></i> Guardar cambios
