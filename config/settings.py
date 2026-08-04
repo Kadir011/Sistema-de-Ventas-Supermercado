@@ -47,13 +47,23 @@ INSTALLED_APPS = [
     'crispy_forms',
     'crispy_bootstrap5',
     'django_extensions',
-    'cloudinary_storage',
-    'cloudinary',
 
     #apps de usuario
     'core.super',
     'core.security',
 ]
+
+INSTALLED_APPS += ['storages']
+
+AWS_ACCESS_KEY_ID = os.getenv('SUPABASE_S3_KEY_ID')
+AWS_SECRET_ACCESS_KEY = os.getenv('SUPABASE_S3_SECRET')
+AWS_STORAGE_BUCKET_NAME = os.getenv('SUPABASE_S3_BUCKET')
+AWS_S3_ENDPOINT_URL = os.getenv('SUPABASE_S3_URL')
+AWS_S3_REGION_NAME = os.getenv('SUPABASE_S3_REGION', 'us-east-1')
+AWS_S3_ADDRESSING_STYLE = 'path'   # importante: Supabase necesita "path style", no "virtual hosted"
+AWS_DEFAULT_ACL = None
+AWS_QUERYSTRING_AUTH = False       # False si el bucket es público
+AWS_S3_FILE_OVERWRITE = False
 
 CRISPY_ALLOWED_TEMPLATE_PACKS = 'bootstrap5'
 CRISPY_TEMPLATE_PACK = 'bootstrap5'
@@ -100,17 +110,13 @@ WSGI_APPLICATION = 'config.wsgi.application'
 
 
 DATABASES = {
-    "default": {
-        'ENGINE': os.environ.get("DB_ENGINE", "django.db.backends.postgresql"),
-        'NAME': os.environ.get("DB_DATABASE", ""),
-        'USER': os.environ.get("DB_USERNAME", ""),
-        'PASSWORD': os.environ.get("DB_PASSWORD", ""),
-        'HOST': os.environ.get("DB_SOCKET", ""),
-        'PORT': os.environ.get("DB_PORT", "5432"),
-        'ATOMIC_REQUESTS': True,
-        'OPTIONS': {
-            'sslmode': 'require', # <--- ESTO ES VITAL PARA NEON
-        }
+    'default': {
+        'ENGINE': os.getenv('DB_ENGINE'),
+        'NAME': os.getenv('DB_DATABASE'),
+        'USER': os.getenv('DB_USERNAME'),
+        'PASSWORD': os.getenv('DB_PASSWORD'),
+        'HOST': os.getenv('DB_SOCKET'),
+        'PORT': os.getenv('DB_PORT'),
     }
 }
 
@@ -143,15 +149,10 @@ USE_I18N = True
 
 USE_TZ = True
 
-# Configuración de Cloudinary
-CLOUDINARY_STORAGE = {
-    'CLOUDINARY_URL': os.environ.get('CLOUDINARY_URL')
-}
-
-# Configuración de Almacenamiento (Django 5.1)
+# Django 4.2+
 STORAGES = {
     "default": {
-        "BACKEND": "cloudinary_storage.storage.MediaCloudinaryStorage",
+        "BACKEND": "storages.backends.s3boto3.S3Boto3Storage",
     },
     "staticfiles": {
         "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
