@@ -54,9 +54,11 @@ class BaseProfileView(LoginRequiredMixin, TemplateView):
         return redirect(self.success_url_name)
 
     def _handle_info(self, request):
+        old_email = request.user.email  # capturamos ANTES de aplicar los cambios del form
         form = ProfileInfoForm(request.POST, instance=request.user)
         if form.is_valid():
             form.save()
+            self._sync_customer(form.instance, old_email)
             messages.success(request, '✅ Datos actualizados correctamente.')
             return redirect(self.success_url_name)
 
@@ -65,6 +67,32 @@ class BaseProfileView(LoginRequiredMixin, TemplateView):
         context['info_form'] = form
         context['active_tab'] = 'info'
         return self.render_to_response(context)
+    
+    def _sync_customer(self, user, old_email):
+        """
+        Mantiene sincronizado el Customer (usado por descuentos, chatbot y
+        el admin de clientes) con los datos que el usuario edita en su perfil.
+        Buscamos por el email VIEJO porque, si el usuario cambió su email,
+        el Customer todavía tiene el anterior — buscar por el nuevo no lo encontraría.
+        """
+        from core.super.models import Customer
+        
+        customer = (
+            Customer.objects.filter(email=old_email).first() or 
+            Customer.objects.filter(email=user.email).first()
+        )
+        
+        if not customer:
+            return # este User no tiene Customer vinculado (ej. cuenta admin sin ficha de cliente)
+        
+        customer.name = user.first_name
+        customer.last_name = user.last_name
+        customer.email = user.email
+        customer.phone = user.phone_number
+        customer.address = user.address
+        customer.birth_date = user.date_of_birth
+        customer.gender = 1 if user.gender == 'M' else 2
+        customer.save()
 
     def _handle_avatar(self, request):
         form = ProfileAvatarForm(request.POST, request.FILES, instance=request.user)
