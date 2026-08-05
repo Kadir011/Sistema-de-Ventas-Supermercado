@@ -366,3 +366,38 @@ class CartItem(models.Model):
         verbose_name = "Item del Carrito"
         verbose_name_plural = "Items del Carrito"
         unique_together = ('cart', 'product')
+        
+
+class CustomerInsight(models.Model):
+    """Métricas RFM + patrones de recompra, recalculadas periódicamente."""
+    customer = models.OneToOneField(
+        'Customer', on_delete=models.CASCADE, related_name='insight'
+    )
+    # RFM
+    recency_days = models.IntegerField(default=0)       # días desde última compra
+    frequency_30d = models.IntegerField(default=0)       # compras en últimos 30 días
+    avg_ticket = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    segment = models.CharField(max_length=20, choices=[
+        ('nuevo', 'Nuevo'),
+        ('leal', 'Leal'),
+        ('en_riesgo', 'En riesgo'),  # compraba seguido, dejó de venir
+        ('perdido', 'Perdido'),
+        ('campeon', 'Campeón'),      # frecuente + alto ticket
+    ], default='nuevo')
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        indexes = [models.Index(fields=['segment'])]
+
+
+class RepurchasePattern(models.Model):
+    """Patrón de recompra por cliente/producto."""
+    customer = models.ForeignKey('Customer', on_delete=models.CASCADE, related_name='patterns')
+    product = models.ForeignKey('Product', on_delete=models.CASCADE)
+    avg_interval_days = models.FloatField()
+    last_purchase_date = models.DateField()
+    purchase_count = models.IntegerField()  # solo confiable con >=3 compras
+    is_due = models.BooleanField(default=False)  # ¿ya debería reponer?
+
+    class Meta:
+        unique_together = ('customer', 'product')
