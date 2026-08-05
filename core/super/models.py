@@ -396,8 +396,13 @@ class RepurchasePattern(models.Model):
     product = models.ForeignKey('Product', on_delete=models.CASCADE)
     avg_interval_days = models.FloatField()
     last_purchase_date = models.DateField()
-    purchase_count = models.IntegerField()  # solo confiable con >=3 compras
-    is_due = models.BooleanField(default=False)  # ¿ya debería reponer?
+    purchase_count = models.IntegerField()
+    is_due = models.BooleanField(default=False)
+    last_notified = models.DateField(
+        null=True, blank=True,
+        verbose_name="Última notificación enviada",
+        help_text="Evita reenviar el mismo recordatorio todos los días.",
+    )
 
     class Meta:
         unique_together = ('customer', 'product')
