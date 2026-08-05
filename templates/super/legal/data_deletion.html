@@ -1,9 +1,60 @@
 {% extends 'components/base.html' %}
+{% load static %}
 {% block title %}Eliminación de Datos{% endblock %}
 {% block content %}
-<div class="max-w-3xl mx-auto py-10 px-6 prose">
-<h1 class="text-2xl font-bold mb-4">Solicitar la eliminación de tus datos</h1>
-<p>Si deseas que eliminemos tu cuenta y los datos personales asociados (nombre, correo, teléfono, dirección, historial de compras), envía un correo a <strong>barquetbravokadir@gmail.com</strong> con el asunto "Eliminación de datos" desde el correo con el que te registraste.</p>
-<p>Procesaremos tu solicitud en un plazo máximo de 15 días hábiles. Ten en cuenta que, por razones legales de facturación, algunos registros de venta pueden requerir conservarse por el tiempo que exige la normativa tributaria vigente, aunque tu cuenta y datos de contacto sí sean eliminados.</p>
+
+<div class="max-w-3xl mx-auto px-4 sm:px-0">
+
+    <div class="rounded-2xl p-6 sm:p-10 mb-6 sm:mb-8 text-center" style="background: linear-gradient(135deg, #7f1d1d 0%, #991b1b 60%, #b91c1c 100%);">
+        <div class="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl mx-auto mb-4 flex items-center justify-center" style="background: rgba(255,255,255,0.15);">
+            <i class='bx bx-trash text-3xl sm:text-4xl text-white'></i>
+        </div>
+        <h1 class="text-2xl sm:text-3xl font-bold text-white mb-2">Eliminación de Datos</h1>
+        <p class="text-red-100 text-sm sm:text-base max-w-xl mx-auto">Cómo solicitar que borremos tu cuenta y datos personales.</p>
+    </div>
+
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 sm:p-8">
+
+        <div class="flex items-start gap-3 mb-5">
+            <div class="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0" style="background: #fef2f2;">
+                <i class='bx bx-envelope text-lg' style="color: #dc2626;"></i>
+            </div>
+            <p class="text-gray-600 text-sm sm:text-base leading-relaxed">
+                Si deseas que eliminemos tu cuenta y los datos personales asociados (nombre, correo, teléfono,
+                dirección, historial de compras), envía un correo a
+                <a href="mailto:barquetbravokadir@gmail.com?subject=Eliminación%20de%20datos" class="font-semibold text-red-700 hover:underline">barquetbravokadir@gmail.com</a>
+                con el asunto <span class="font-semibold text-gray-800">"Eliminación de datos"</span> desde el correo con el que te registraste.
+            </p>
+        </div>
+
+        <div class="flex items-start gap-3">
+            <div class="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0" style="background: #fef2f2;">
+                <i class='bx bx-time-five text-lg' style="color: #dc2626;"></i>
+            </div>
+            <p class="text-gray-600 text-sm sm:text-base leading-relaxed">
+                Procesaremos tu solicitud en un plazo máximo de <span class="font-semibold text-gray-800">15 días hábiles</span>.
+                Ten en cuenta que, por razones legales de facturación, algunos registros de venta pueden requerir
+                conservarse por el tiempo que exige la normativa tributaria vigente, aunque tu cuenta y datos de
+                contacto sí sean eliminados.
+            </p>
+        </div>
+
+        <a href="mailto:barquetbravokadir@gmail.com?subject=Eliminación%20de%20datos"
+           class="mt-6 w-full flex items-center justify-center gap-2 py-3.5 rounded-xl text-white font-semibold text-sm sm:text-base transition-all hover:opacity-90"
+           style="background: linear-gradient(135deg, #dc2626, #b91c1c);">
+            <i class='bx bx-envelope'></i> Enviar solicitud por correo
+        </a>
+
+    </div>
+
+    <div class="flex flex-col sm:flex-row gap-3 mt-6 mb-10">
+        <a href="{% url 'super:privacy_policy' %}" class="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl bg-white border border-gray-200 text-gray-600 text-sm font-semibold hover:border-green-300 hover:text-green-700 transition-all">
+            <i class='bx bx-shield-quarter'></i> Política de Privacidad
+        </a>
+        <a href="{% url 'super:terms_of_service' %}" class="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl bg-white border border-gray-200 text-gray-600 text-sm font-semibold hover:border-green-300 hover:text-green-700 transition-all">
+            <i class='bx bx-file'></i> Términos de Servicio
+        </a>
+    </div>
+
 </div>
 {% endblock %}

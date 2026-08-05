@@ -1,28 +1,117 @@
 {% extends 'components/base.html' %}
+{% load static %}
 {% block title %}Política de Privacidad{% endblock %}
 {% block content %}
-<div class="max-w-3xl mx-auto py-10 px-6 prose">
-<h1 class="text-2xl font-bold mb-4">Política de Privacidad — My Supermarket</h1>
-<p>Última actualización: agosto de 2026</p>
 
-<h2 class="font-bold mt-6">1. Datos que recopilamos</h2>
-<p>Al registrarte y usar My Supermarket recopilamos: nombre, apellido, cédula, correo electrónico, número de teléfono, dirección, fecha de nacimiento e historial de compras.</p>
+<div class="max-w-4xl mx-auto px-4 sm:px-0">
 
-<h2 class="font-bold mt-6">2. Cómo usamos tus datos</h2>
-<ul>
-<li>Procesar tus compras y generar facturas.</li>
-<li>Personalizar descuentos y recomendaciones según tu historial de compra.</li>
-<li>Enviarte notificaciones sobre productos que sueles comprar (por correo electrónico o WhatsApp, si nos escribes por ese canal).</li>
-<li>Responder tus consultas a través de nuestro asistente virtual, que utiliza la API de Google Gemini para generar respuestas. Tu mensaje y el contexto necesario (nombre, historial de compras reciente) se envían a Gemini únicamente para generar la respuesta; no se usan para entrenar modelos de terceros.</li>
-</ul>
+    <!-- Hero -->
+    <div class="rounded-2xl p-6 sm:p-10 mb-6 sm:mb-8 text-center" style="background: linear-gradient(135deg, #14532d 0%, #166534 50%, #15803d 100%);">
+        <div class="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl mx-auto mb-4 flex items-center justify-center" style="background: rgba(255,255,255,0.15);">
+            <i class='bx bx-shield-quarter text-3xl sm:text-4xl text-white'></i>
+        </div>
+        <h1 class="text-2xl sm:text-3xl font-bold text-white mb-2">Política de Privacidad</h1>
+        <p class="text-green-100 text-sm sm:text-base max-w-xl mx-auto">Cómo recopilamos, usamos y protegemos tus datos en My Supermarket.</p>
+        <span class="inline-flex items-center gap-1.5 mt-4 px-3 py-1 rounded-full text-xs font-semibold" style="background: rgba(255,255,255,0.15); color: #bbf7d0;">
+            <i class='bx bx-calendar'></i> Última actualización: agosto de 2026
+        </span>
+    </div>
 
-<h2 class="font-bold mt-6">3. WhatsApp</h2>
-<p>Si nos escribes por WhatsApp, tratamos ese número de la misma forma que el resto de tus datos de contacto, únicamente para identificarte como cliente registrado y responder tu consulta.</p>
+    <!-- Contenido -->
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 divide-y divide-gray-100">
 
-<h2 class="font-bold mt-6">4. Con quién compartimos tus datos</h2>
-<p>No vendemos ni compartimos tus datos con terceros para fines publicitarios. Usamos proveedores de infraestructura (Supabase para almacenamiento, Google Gemini para el asistente virtual, Meta/WhatsApp para mensajería) únicamente para operar el servicio.</p>
+        <section class="p-5 sm:p-8">
+            <div class="flex items-center gap-3 mb-3">
+                <div class="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0" style="background: #f0fdf4;">
+                    <i class='bx bx-data text-lg' style="color: #16a34a;"></i>
+                </div>
+                <h2 class="font-bold text-lg sm:text-xl text-gray-800">1. Datos que recopilamos</h2>
+            </div>
+            <p class="text-gray-600 text-sm sm:text-base leading-relaxed">
+                Al registrarte y usar My Supermarket recopilamos: nombre, apellido, cédula, correo electrónico,
+                número de teléfono, dirección, fecha de nacimiento e historial de compras.
+            </p>
+        </section>
 
-<h2 class="font-bold mt-6">5. Tus derechos</h2>
-<p>Puedes solicitar acceso, corrección o eliminación de tus datos escribiendo a barquetbravokadir@gmail.com, o visitando nuestra <a href="{% url 'super:data_deletion' %}">página de eliminación de datos</a>.</p>
+        <section class="p-5 sm:p-8">
+            <div class="flex items-center gap-3 mb-3">
+                <div class="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0" style="background: #f0fdf4;">
+                    <i class='bx bx-cog text-lg' style="color: #16a34a;"></i>
+                </div>
+                <h2 class="font-bold text-lg sm:text-xl text-gray-800">2. Cómo usamos tus datos</h2>
+            </div>
+            <ul class="space-y-2.5">
+                <li class="flex items-start gap-2 text-gray-600 text-sm sm:text-base">
+                    <i class='bx bx-check-circle text-green-500 mt-0.5 flex-shrink-0'></i>
+                    Procesar tus compras y generar facturas.
+                </li>
+                <li class="flex items-start gap-2 text-gray-600 text-sm sm:text-base">
+                    <i class='bx bx-check-circle text-green-500 mt-0.5 flex-shrink-0'></i>
+                    Personalizar descuentos y recomendaciones según tu historial de compra.
+                </li>
+                <li class="flex items-start gap-2 text-gray-600 text-sm sm:text-base">
+                    <i class='bx bx-check-circle text-green-500 mt-0.5 flex-shrink-0'></i>
+                    Enviarte notificaciones sobre productos que sueles comprar (por correo electrónico o WhatsApp, si nos escribes por ese canal).
+                </li>
+                <li class="flex items-start gap-2 text-gray-600 text-sm sm:text-base">
+                    <i class='bx bx-check-circle text-green-500 mt-0.5 flex-shrink-0'></i>
+                    Responder tus consultas a través de nuestro asistente virtual, que utiliza la API de Google Gemini para generar respuestas. Tu mensaje y el contexto necesario (nombre, historial de compras reciente) se envían a Gemini únicamente para generar la respuesta; no se usan para entrenar modelos de terceros.
+                </li>
+            </ul>
+        </section>
+
+        <section class="p-5 sm:p-8">
+            <div class="flex items-center gap-3 mb-3">
+                <div class="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0" style="background: #f0fdf4;">
+                    <i class='bx bxl-whatsapp text-lg' style="color: #16a34a;"></i>
+                </div>
+                <h2 class="font-bold text-lg sm:text-xl text-gray-800">3. WhatsApp</h2>
+            </div>
+            <p class="text-gray-600 text-sm sm:text-base leading-relaxed">
+                Si nos escribes por WhatsApp, tratamos ese número de la misma forma que el resto de tus datos de contacto,
+                únicamente para identificarte como cliente registrado y responder tu consulta.
+            </p>
+        </section>
+
+        <section class="p-5 sm:p-8">
+            <div class="flex items-center gap-3 mb-3">
+                <div class="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0" style="background: #f0fdf4;">
+                    <i class='bx bx-share-alt text-lg' style="color: #16a34a;"></i>
+                </div>
+                <h2 class="font-bold text-lg sm:text-xl text-gray-800">4. Con quién compartimos tus datos</h2>
+            </div>
+            <p class="text-gray-600 text-sm sm:text-base leading-relaxed">
+                No vendemos ni compartimos tus datos con terceros para fines publicitarios. Usamos proveedores de
+                infraestructura (Supabase para almacenamiento, Google Gemini para el asistente virtual, Meta/WhatsApp
+                para mensajería) únicamente para operar el servicio.
+            </p>
+        </section>
+
+        <section class="p-5 sm:p-8">
+            <div class="flex items-center gap-3 mb-3">
+                <div class="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0" style="background: #f0fdf4;">
+                    <i class='bx bx-user-check text-lg' style="color: #16a34a;"></i>
+                </div>
+                <h2 class="font-bold text-lg sm:text-xl text-gray-800">5. Tus derechos</h2>
+            </div>
+            <p class="text-gray-600 text-sm sm:text-base leading-relaxed">
+                Puedes solicitar acceso, corrección o eliminación de tus datos escribiendo a
+                <a href="mailto:barquetbravokadir@gmail.com" class="font-semibold text-green-700 hover:underline">barquetbravokadir@gmail.com</a>,
+                o visitando nuestra <a href="{% url 'super:data_deletion' %}" class="font-semibold text-green-700 hover:underline">página de eliminación de datos</a>.
+            </p>
+        </section>
+
+    </div>
+
+    <!-- Links cruzados -->
+    <div class="flex flex-col sm:flex-row gap-3 mt-6 mb-10">
+        <a href="{% url 'super:terms_of_service' %}" class="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl bg-white border border-gray-200 text-gray-600 text-sm font-semibold hover:border-green-300 hover:text-green-700 transition-all">
+            <i class='bx bx-file'></i> Términos de Servicio
+        </a>
+        <a href="{% url 'super:data_deletion' %}" class="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl bg-white border border-gray-200 text-gray-600 text-sm font-semibold hover:border-green-300 hover:text-green-700 transition-all">
+            <i class='bx bx-trash'></i> Eliminar mis datos
+        </a>
+    </div>
+
 </div>
 {% endblock %}
