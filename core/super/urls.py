@@ -1,5 +1,5 @@
 from django.urls import path 
-from core.super.views import customer, product, seller, sale, scan_barcode, shop, cart, chatbot, reports
+from core.super.views import customer, product, seller, sale, scan_barcode, shop, cart, chatbot, reports, legal
 from core.super.views.whatsapp_webhook import whatsapp_webhook
 from core.super.views import home, user, profile
 
@@ -83,4 +83,9 @@ urlpatterns = [
     
     # WHATSAPP WEBHOOK
     path('webhook/whatsapp/', whatsapp_webhook, name='whatsapp_webhook'),
+    
+    # LEGAL
+    path('privacidad/', legal.PrivacyPolicyView.as_view(), name='privacy_policy'),
+    path('terminos/', legal.TermsOfServiceView.as_view(), name='terms_of_service'),
+    path('eliminar-datos/', legal.DataDeletionView.as_view(), name='data_deletion'),
 ]

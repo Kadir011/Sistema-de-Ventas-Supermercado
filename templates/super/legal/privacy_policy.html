@@ -1,0 +1,28 @@
+{% extends 'components/base.html' %}
+{% block title %}Política de Privacidad{% endblock %}
+{% block content %}
+<div class="max-w-3xl mx-auto py-10 px-6 prose">
+<h1 class="text-2xl font-bold mb-4">Política de Privacidad — My Supermarket</h1>
+<p>Última actualización: agosto de 2026</p>
+
+<h2 class="font-bold mt-6">1. Datos que recopilamos</h2>
+<p>Al registrarte y usar My Supermarket recopilamos: nombre, apellido, cédula, correo electrónico, número de teléfono, dirección, fecha de nacimiento e historial de compras.</p>
+
+<h2 class="font-bold mt-6">2. Cómo usamos tus datos</h2>
+<ul>
+<li>Procesar tus compras y generar facturas.</li>
+<li>Personalizar descuentos y recomendaciones según tu historial de compra.</li>
+<li>Enviarte notificaciones sobre productos que sueles comprar (por correo electrónico o WhatsApp, si nos escribes por ese canal).</li>
+<li>Responder tus consultas a través de nuestro asistente virtual, que utiliza la API de Google Gemini para generar respuestas. Tu mensaje y el contexto necesario (nombre, historial de compras reciente) se envían a Gemini únicamente para generar la respuesta; no se usan para entrenar modelos de terceros.</li>
+</ul>
+
+<h2 class="font-bold mt-6">3. WhatsApp</h2>
+<p>Si nos escribes por WhatsApp, tratamos ese número de la misma forma que el resto de tus datos de contacto, únicamente para identificarte como cliente registrado y responder tu consulta.</p>
+
+<h2 class="font-bold mt-6">4. Con quién compartimos tus datos</h2>
+<p>No vendemos ni compartimos tus datos con terceros para fines publicitarios. Usamos proveedores de infraestructura (Supabase para almacenamiento, Google Gemini para el asistente virtual, Meta/WhatsApp para mensajería) únicamente para operar el servicio.</p>
+
+<h2 class="font-bold mt-6">5. Tus derechos</h2>
+<p>Puedes solicitar acceso, corrección o eliminación de tus datos escribiendo a barquetbravokadir@gmail.com, o visitando nuestra <a href="{% url 'super:data_deletion' %}">página de eliminación de datos</a>.</p>
+</div>
+{% endblock %}
