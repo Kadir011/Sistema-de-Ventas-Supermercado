@@ -43,8 +43,8 @@
             <div class="flex items-center justify-between h-16">
 
                 <a href="{% url 'super:menu' %}" class="flex items-center gap-2.5 group flex-shrink-0">
-                    <div class="w-8 h-8 rounded-lg flex items-center justify-center" style="background: rgba(255,255,255,0.15);">
-                        <i class='bx bxs-dashboard text-white text-lg'></i>
+                    <div class="w-8 h-8 rounded-lg overflow-hidden flex-shrink-0" style="background: rgba(255,255,255,0.15);">
+                        <img src="{% static 'img/icono-mysupermarket-removebg-preview.png' %}" alt="My Supermarket" class="w-full h-full object-contain p-0.5">
                     </div>
                     <span class="text-white font-bold text-base tracking-tight group-hover:opacity-90 transition-opacity">
                         Panel <span style="color: #fca5a5;">Admin</span>
@@ -107,8 +107,8 @@
             <div class="flex items-center justify-between h-16">
 
                 <a href="{% url 'super:home' %}" class="flex items-center gap-2.5 group flex-shrink-0">
-                    <div class="w-8 h-8 rounded-lg flex items-center justify-center" style="background: rgba(255,255,255,0.15);">
-                        <i class='bx bxs-cart-alt text-white text-lg'></i>
+                    <div class="w-8 h-8 rounded-lg overflow-hidden flex-shrink-0" style="background: rgba(255,255,255,0.15);">
+                        <img src="{% static 'img/icono-mysupermarket-removebg-preview.png' %}" alt="My Supermarket" class="w-full h-full object-contain p-0.5">
                     </div>
                     <span class="text-white font-bold text-base tracking-tight group-hover:opacity-90 transition-opacity">
                         My<span style="color: #bbf7d0;">Supermarket</span>
@@ -258,14 +258,30 @@
     <footer class="mt-auto" style="background: #1a1a2e; border-top: 1px solid rgba(255,255,255,0.05);">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 py-8">
             <div class="flex flex-col sm:flex-row justify-between items-center gap-4">
-                <div>
-                    <p class="font-bold text-base" style="color: #e2e8f0;">MySupermarket</p>
-                    <p class="text-sm mt-0.5" style="color: #64748b;">&copy; 2026 Todos los derechos reservados.</p>
+                <div class="flex items-center gap-3">
+                    <div class="w-9 h-9 rounded-lg overflow-hidden flex-shrink-0" style="background: rgba(255,255,255,0.06);">
+                        <img src="{% static 'img/icono-mysupermarket-removebg-preview.png' %}" 
+                             alt="My Supermarket" 
+                             class="w-full h-full object-contain p-1">
+                    </div>
+                    <div>
+                        <p class="font-bold text-base" style="color: #e2e8f0;">MySupermarket</p>
+                        <p class="text-sm mt-0.5" style="color: #64748b;">&copy; 2026 Todos los derechos reservados.</p>
+                    </div>
                 </div>
                 <div class="flex gap-4">
                     <a href="#" class="w-9 h-9 rounded-xl flex items-center justify-center transition-all hover:scale-110" style="background: rgba(255,255,255,0.06); color: #94a3b8;"><i class="bx bxl-facebook text-xl"></i></a>
                     <a href="#" class="w-9 h-9 rounded-xl flex items-center justify-center transition-all hover:scale-110" style="background: rgba(255,255,255,0.06); color: #94a3b8;"><i class="bx bxl-twitter text-xl"></i></a>
                     <a href="#" class="w-9 h-9 rounded-xl flex items-center justify-center transition-all hover:scale-110" style="background: rgba(255,255,255,0.06); color: #94a3b8;"><i class="bx bxl-instagram text-xl"></i></a>
+                </div>
+            </div>
+            
+            <div class="mt-6 pt-6 flex flex-col sm:flex-row justify-between items-center gap-3 text-sm" style="border-top: 1px solid rgba(255,255,255,0.05); color: #64748b;">
+                <p>Guayaquil, Ecuador</p>
+                <div class="flex gap-5">
+                    <a href="{% url 'super:privacy_policy' %}" class="hover:text-white transition-colors">Política de Privacidad</a>
+                    <a href="{% url 'super:terms_of_service' %}" class="hover:text-white transition-colors">Términos de Servicio</a>
+                    <a href="{% url 'super:data_deletion' %}" class="hover:text-white transition-colors">Eliminar mis datos</a>
                 </div>
             </div>
         </div>
