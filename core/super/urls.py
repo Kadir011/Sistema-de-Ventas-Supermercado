@@ -82,5 +82,5 @@ urlpatterns = [
     path('admin/profile/', profile.AdminProfileView.as_view(), name='admin_profile'),
     
     # WHATSAPP WEBHOOK
-    path('whatsapp/webhook/', whatsapp_webhook, name='whatsapp_webhook'),
+    path('webhook/whatsapp/', whatsapp_webhook, name='whatsapp_webhook'),
 ]
