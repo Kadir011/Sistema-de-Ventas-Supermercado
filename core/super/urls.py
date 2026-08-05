@@ -35,6 +35,7 @@ urlpatterns = [
     path('admin/clientes/crear/', customer.CustomerCreateView.as_view(), name='customer_create'),
     path('admin/clientes/editar/<int:pk>/', customer.CustomerUpdateView.as_view(), name='customer_update'),
     path('admin/clientes/eliminar/<int:pk>/', customer.CustomerDeleteView.as_view(), name='customer_delete'),
+    path('admin/clientes/sugerencia/<int:pk>/', customer.CustomerApplySuggestedDiscountView.as_view(), name='customer_suggest_discount'),
 
     # VENDEDORES (ADMIN)
     path('admin/vendedores/', seller.SellerListView.as_view(), name='seller_list'), 
