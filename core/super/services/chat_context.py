@@ -1,4 +1,4 @@
-from core.super.models import Product, Category, Brand, PaymentMethod, Sale, SaleDetail, Customer
+from core.super.models import Product, Category, Brand, PaymentMethod, Sale, SaleDetail, Customer, RepurchasePattern
 from django.db.models import Sum, Count, Avg
 from django.utils import timezone
 from datetime import timedelta
@@ -166,7 +166,7 @@ class SalesContextBuilder:
 
 
 class CustomerContextBuilder:
-    """Contexto extra para clientes autenticados: historial reciente y descuento activo."""
+    """Contexto extra para clientes autenticados: historial reciente, descuento activo y reposición."""
 
     def build(self, user) -> str:
         parts = []
@@ -211,6 +211,29 @@ class CustomerContextBuilder:
                 parts.append("El cliente aún no tiene compras registradas.")
         except Exception as exc:
             parts.append(f"(Error al cargar historial: {exc})")
+
+        # ── Productos por reponer (predicción de recompra) ─────────────────────
+        try:
+            if customer: # reutiliza el Customer ya resuelto arriba, no user
+                due_products = (
+                    RepurchasePattern.objects
+                    .filter(customer=customer, is_due=True)
+                    .select_related('product')
+                    .order_by('-purchase_count')[:5]
+                )
+                if due_products:
+                    lines = [
+                        f"  - {p.product.name} | Sueles comprarlo cada {round(p.avg_interval_days)} días, "
+                        f"van {(timezone.localdate() - p.last_purchase_date).days} días desde la última compra"
+                        for p in due_products
+                    ]
+                    parts.append(
+                        "PRODUCTOS QUE PODRÍA NECESITAR REPONER:\n" + "\n".join(lines) +
+                        "\n  • Si la conversación lo permite, sugiere naturalmente reponer alguno de estos, "
+                        "sin forzarlo si el cliente está preguntando otra cosa."
+                    )
+        except Exception:
+            pass
 
         return "\n\n".join(parts) if parts else "Sin información adicional del cliente."
 
