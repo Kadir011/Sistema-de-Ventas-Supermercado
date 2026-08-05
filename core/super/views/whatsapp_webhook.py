@@ -3,9 +3,19 @@ from django.conf import settings
 from django.http import HttpResponse, JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth import get_user_model
+
+from core.super.models import Customer
+from core.super.services.chat_context import ChatContextDirector
+from core.super.services.ai_client import GeminiAIClient
 from core.super.services.whatsapp_service import WhatsAppService
+from core.super.views.chatbot import _build_customer_prompt, _build_guest_prompt
 
 User = get_user_model()
+
+# Un solo cliente Gemini reutilizado entre requests, igual que hace
+# ChatbotProxyView vía su __init__ (evita crear un genai.Client nuevo
+# en cada mensaje de WhatsApp).
+_ai_client = GeminiAIClient(api_key=settings.GEMINI_API_KEY)
 
 
 @csrf_exempt
@@ -35,12 +45,18 @@ def _handle_incoming_message(request):
         entry = data['entry'][0]['changes'][0]['value']
 
         if 'messages' not in entry:
-            # Puede ser un evento de "mensaje leído" u otro, no un mensaje nuevo
+            # Puede ser un evento de "mensaje leído"/estado, no un mensaje nuevo
             return JsonResponse({'status': 'ignored'})
 
         message = entry['messages'][0]
         from_number = message['from']  # ej: "593998222804", sin el "+"
         text = message.get('text', {}).get('body', '')
+
+        if not text:
+            WhatsAppService().send_message(
+                from_number, "Por ahora solo puedo leer mensajes de texto 🙂"
+            )
+            return JsonResponse({'status': 'ok'})
 
         user = _find_user_by_phone(from_number)
         reply_text = _generate_reply(user, text)
@@ -50,18 +66,20 @@ def _handle_incoming_message(request):
 
     except (KeyError, IndexError, json.JSONDecodeError) as exc:
         print(f"[WhatsApp] Payload inesperado: {exc}")
-        return JsonResponse({'status': 'error'}, status=200)  # 200 igual, para que Meta no reintente
+        return JsonResponse({'status': 'error'}, status=200)  # 200 para que Meta no reintente
 
 
 def _find_user_by_phone(phone_number: str):
     """
-    Busca al User asociado a ese teléfono, comparando por el Customer.
+    Busca al Customer/User asociado a ese teléfono.
     Meta manda el número sin "+" y con código de país (ej: 593998222804).
+    Comparamos por los últimos 9 dígitos para tolerar diferencias de formato
+    (con/sin código de país, con/sin el 0 inicial ecuatoriano).
     """
     digits_only = ''.join(filter(str.isdigit, phone_number))
+    local_digits = digits_only[-9:]
 
-    from core.super.models import Customer
-    customer = Customer.objects.filter(phone__icontains=digits_only[-9:]).first()
+    customer = Customer.objects.filter(phone__icontains=local_digits).first()
     if not customer or not customer.email:
         return None
 
@@ -70,10 +88,27 @@ def _find_user_by_phone(phone_number: str):
 
 def _generate_reply(user, message_text: str) -> str:
     """
-    TODO: reemplazar este placeholder por la llamada real a tu servicio
-    de Gemini una vez que compartas ese archivo. Por ahora responde genérico
-    para poder probar que el webhook end-to-end funciona.
+    Reutiliza EXACTAMENTE el mismo pipeline que ChatbotProxyView (chat web):
+    ChatContextDirector arma el contexto por rol, el prompt correspondiente
+    lo envuelve, y GeminiAIClient genera la respuesta real.
+
+    Nota de alcance: WhatsApp no mantiene el `history` de la conversación
+    (cada mensaje se trata como turno único, sin memoria de mensajes previos).
+    Eso es una limitación consciente del MVP, no un error — se puede agregar
+    después guardando el historial reciente por número de teléfono.
     """
-    if not user:
-        return "Hola, no encontré tu cuenta registrada. Escríbenos desde el número con el que te registraste."
-    return f"Hola {user.first_name}, recibí tu mensaje: \"{message_text}\". (Respuesta de Gemini pendiente de conectar)"
+    director = ChatContextDirector()
+
+    if user is not None:
+        ctx = director.build_for_role(role='customer', user=user)
+        user_name = user.first_name or user.username
+        system_prompt = _build_customer_prompt(user_name, ctx)
+    else:
+        ctx = director.build_for_role(role='guest')
+        system_prompt = _build_guest_prompt(ctx)
+
+    try:
+        return _ai_client.generate(system_prompt, [], message_text)
+    except Exception as exc:
+        print(f"[WhatsApp] Error generando respuesta con Gemini: {exc}")
+        return "⚠️ Tuvimos un problema técnico. Inténtalo de nuevo en unos segundos."
