@@ -199,3 +199,8 @@ CSRF_TRUSTED_ORIGINS = [
     'https://my-supermarket-6l71.onrender.com',
     'https://*.onrender.com',
 ] 
+
+# Configuración de Whatsapp (Meta)
+WHATSAPP_TOKEN = os.getenv('WHATSAPP_TOKEN')
+WHATSAPP_PHONE_NUMBER_ID = os.getenv('WHATSAPP_PHONE_NUMBER_ID')
+WHATSAPP_VERIFY_TOKEN = os.getenv('WHATSAPP_VERIFY_TOKEN')
