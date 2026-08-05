@@ -4,7 +4,6 @@ from django.http import HttpResponse, JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth import get_user_model
 
-from core.super.models import Customer
 from core.super.services.chat_context import ChatContextDirector
 from core.super.services.ai_client import GeminiAIClient
 from core.super.services.whatsapp_service import WhatsAppService
@@ -71,7 +70,12 @@ def _handle_incoming_message(request):
 
 def _find_user_by_phone(phone_number: str):
     """
-    Busca al Customer/User asociado a ese teléfono.
+    Busca al User asociado a ese teléfono, comparando contra User.phone_number
+    (no Customer.phone) porque ese es el campo que el cliente mantiene
+    actualizado desde su propio perfil (ProfileInfoForm). Customer.phone solo
+    se sincroniza una vez, al momento del registro, y puede quedar obsoleto
+    si el cliente cambia su número después.
+
     Meta manda el número sin "+" y con código de país (ej: 593998222804).
     Comparamos por los últimos 9 dígitos para tolerar diferencias de formato
     (con/sin código de país, con/sin el 0 inicial ecuatoriano).
@@ -79,11 +83,7 @@ def _find_user_by_phone(phone_number: str):
     digits_only = ''.join(filter(str.isdigit, phone_number))
     local_digits = digits_only[-9:]
 
-    customer = Customer.objects.filter(phone__icontains=local_digits).first()
-    if not customer or not customer.email:
-        return None
-
-    return User.objects.filter(email=customer.email).first()
+    return User.objects.filter(phone_number__icontains=local_digits).first()
 
 
 def _generate_reply(user, message_text: str) -> str:
