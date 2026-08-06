@@ -13,7 +13,7 @@ from django.db.models import F
 import decimal
 import uuid
 from decimal import Decimal
-from core.super.models import Cart, CartItem, Product, Customer, PaymentMethod
+from core.super.models import Cart, CartItem, Product, Customer, PaymentMethod, ProductAffinity
 from core.super.services.checkout_service import CheckoutService
 from core.super.services.payment_processors import get_processor
 from core.super.services.idempotency_service import IdempotencyService
@@ -99,14 +99,49 @@ class CartView(LoginRequiredMixin, TemplateView):
             context['subtotal'] = cart.get_subtotal()
             context['iva'] = cart.get_iva()
             context['total'] = cart.get_total()
+            context['suggestions'] = self._get_combo_suggestions(items)
         except Cart.DoesNotExist:
             context['cart'] = None
             context['items'] = []
             context['subtotal'] = 0
             context['iva'] = 0
             context['total'] = 0
+            context['suggestions'] = []
         context['title'] = 'Mi Carrito'
         return context
+
+    def _get_combo_suggestions(self, cart_items):
+        """
+        Para cada producto ya en el carrito, busca su combinación más
+        confiable (ProductAffinity) que el cliente todavía NO tenga en
+        el carrito. Máximo 3 sugerencias, para no saturar la página.
+        """
+        product_ids_in_cart = {item.product_id for item in cart_items}
+        if not product_ids_in_cart:
+            return []
+
+        affinities = (
+            ProductAffinity.objects
+            .filter(product_a_id__in=product_ids_in_cart)
+            .exclude(product_b_id__in=product_ids_in_cart)
+            .select_related('product_a', 'product_b')
+            .order_by('-confidence')
+        )
+
+        seen_targets = set()
+        suggestions = []
+        for affinity in affinities:
+            if affinity.product_b_id in seen_targets:
+                continue
+            seen_targets.add(affinity.product_b_id)
+            suggestions.append({
+                'product': affinity.product_b,
+                'because_of': affinity.product_a,
+                'confidence_pct': round(affinity.confidence * 100),
+            })
+            if len(suggestions) >= 3:
+                break
+        return suggestions
  
  
 class CheckoutView(LoginRequiredMixin, TemplateView):
@@ -237,4 +272,4 @@ class CheckoutView(LoginRequiredMixin, TemplateView):
             return redirect('super:checkout')
         except Exception as e:
             messages.error(request, f'Error al procesar la compra: {str(e)}')
-            return redirect('super:checkout') 
+            return redirect('super:checkout')
