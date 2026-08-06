@@ -1,5 +1,6 @@
 from django import forms
 from core.security.models import User
+from core.security.validators import validate_password_strength
 
 
 class ProfileInfoForm(forms.ModelForm):
@@ -66,7 +67,6 @@ class ProfilePasswordForm(forms.Form):
     )
     new_password1 = forms.CharField(
         label='Nueva contraseña',
-        min_length=8,
         widget=forms.PasswordInput(attrs={
             'autocomplete': 'new-password',
         }),
@@ -87,6 +87,12 @@ class ProfilePasswordForm(forms.Form):
         if not self.user.check_password(pwd):
             raise forms.ValidationError('La contraseña actual es incorrecta.')
         return pwd
+
+    def clean_new_password1(self):
+        new_password1 = self.cleaned_data.get('new_password1')
+        if new_password1:
+            validate_password_strength(new_password1)
+        return new_password1
 
     def clean(self):
         cleaned = super().clean()

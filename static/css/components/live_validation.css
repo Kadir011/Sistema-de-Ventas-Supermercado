@@ -1,0 +1,117 @@
+/* ── Barra de fortaleza de contraseña ────────────────────────── */
+.pw-strength-wrap {
+    margin-top: 8px;
+    animation: fadeIn 0.3s ease-out;
+}
+
+.pw-strength-bar-track {
+    width: 100%;
+    height: 5px;
+    border-radius: 999px;
+    background: #e5e7eb;
+    overflow: hidden;
+    margin-bottom: 8px;
+}
+
+.pw-strength-bar-fill {
+    height: 100%;
+    border-radius: 999px;
+    width: 0%;
+    transition: width 0.35s ease, background-color 0.35s ease;
+    background: #d1d5db;
+}
+
+.pw-bar--weak   { background: #ef4444; }
+.pw-bar--medium { background: #f59e0b; }
+.pw-bar--strong { background: #16a34a; }
+
+/* ── Checklist de reglas ──────────────────────────────────────── */
+.pw-strength-checklist {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 4px;
+}
+
+@media (min-width: 480px) {
+    .pw-strength-checklist {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+.pw-rule {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.78rem;
+    transition: color 0.25s ease, transform 0.2s ease;
+}
+
+.pw-rule i {
+    font-size: 0.95rem;
+    transition: transform 0.25s ease, color 0.25s ease;
+}
+
+.pw-rule--pending {
+    color: #9ca3af;
+}
+
+.pw-rule--fail {
+    color: #dc2626;
+    animation: shake 0.3s ease;
+}
+
+.pw-rule--ok {
+    color: #16a34a;
+}
+
+.pw-rule--ok i {
+    transform: scale(1.15);
+}
+
+/* ── Feedback en vivo de cédula / teléfono ───────────────────── */
+.field-live-feedback {
+    display: block;
+    font-size: 0.78rem;
+    margin-top: 4px;
+    min-height: 1.1em;
+    transition: color 0.25s ease;
+}
+
+.field-live-feedback--pending {
+    color: #9ca3af;
+}
+
+.field-live-feedback--ok {
+    color: #16a34a;
+    animation: popIn 0.25s ease;
+}
+
+.field-live-feedback--fail {
+    color: #dc2626;
+    animation: shake 0.3s ease;
+}
+
+.field-live-feedback i {
+    margin-right: 3px;
+    vertical-align: -1px;
+}
+
+/* ── Animaciones compartidas ─────────────────────────────────── */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-4px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes popIn {
+    0%   { transform: scale(0.85); opacity: 0; }
+    100% { transform: scale(1); opacity: 1; }
+}
+
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25%      { transform: translateX(-3px); }
+    75%      { transform: translateX(3px); }
+}

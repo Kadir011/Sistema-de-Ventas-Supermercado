@@ -1,7 +1,13 @@
 from django import forms
 from core.security.models import User
 from core.super.models import Customer
+from core.security.validators import (
+    validate_ecuadorian_cedula,
+    validate_ecuadorian_phone,
+    validate_password_strength,
+)
 from django.db import IntegrityError, transaction
+
 
 class CustomerRegistrationForm(forms.ModelForm):
     # Agregamos campo DNI explícitamente
@@ -14,6 +20,12 @@ class CustomerRegistrationForm(forms.ModelForm):
         model = User
         fields = ['username', 'email', 'first_name', 'last_name', 'phone_number', 'address', 'date_of_birth', 'gender']
     
+    def clean_password1(self):
+        password1 = self.cleaned_data.get('password1')
+        if password1:
+            validate_password_strength(password1)  # lanza ValidationError con el detalle de reglas faltantes
+        return password1
+
     def clean_password2(self):
         password1 = self.cleaned_data.get('password1')
         password2 = self.cleaned_data.get('password2')
@@ -23,6 +35,7 @@ class CustomerRegistrationForm(forms.ModelForm):
     
     def clean_dni(self):
         dni = self.cleaned_data.get('dni')
+        validate_ecuadorian_cedula(dni)  # formato + dígito verificador, antes de chequear duplicados
         if Customer.objects.filter(dni=dni).exists():
             raise forms.ValidationError('Esta cédula ya está registrada.')
         return dni
@@ -37,6 +50,7 @@ class CustomerRegistrationForm(forms.ModelForm):
     def clean_phone_number(self):
         phone = self.cleaned_data.get('phone_number')
         if phone:
+            validate_ecuadorian_phone(phone)  # formato, antes de chequear duplicados
             if User.objects.filter(phone_number=phone).exists() or Customer.objects.filter(phone=phone).exists():
                 raise forms.ValidationError('Este número de teléfono ya está registrado.')
         return phone
@@ -106,4 +120,4 @@ class CustomerRegistrationForm(forms.ModelForm):
                     f"Customer duplicado al registrar usuario {user.username}"
                 )
 
-        return user 
+        return user

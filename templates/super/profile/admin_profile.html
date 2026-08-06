@@ -196,7 +196,8 @@
                     <label class="profile-label">Nueva contraseña</label>
                     <div class="profile-password-wrap">
                         <input type="password" name="new_password1" id="pw-new1"
-                               class="profile-input {% if password_form.new_password1.errors %}error{% endif %}">
+                               class="profile-input {% if password_form.new_password1.errors %}error{% endif %}"
+                               data-password-strength>
                         <button type="button" class="profile-toggle-pw" onclick="togglePw('pw-new1','icon-new1')">
                             <i id="icon-new1" class='bx bx-show'></i>
                         </button>
