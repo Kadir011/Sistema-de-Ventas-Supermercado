@@ -203,6 +203,11 @@ class Product(models.Model):
     production_date = models.DateField(default=timezone.now, verbose_name="Fecha de elaboración", blank=True, null=True)
     expiration_date = models.DateField(verbose_name="Fecha de vencimiento", blank=True, null=True)
     state = models.BooleanField(default=True, verbose_name="Estado", blank=True, null=True)
+    created_at = models.DateTimeField(
+        auto_now_add=True, null=True, blank=True,
+        verbose_name="Fecha de registro en el sistema",
+        help_text="Se llena automáticamente al crear el producto. Distinta de 'Fecha de elaboración'.",
+    )
 
     @property
     def id(self):
@@ -232,6 +237,7 @@ class Product(models.Model):
             models.Index(fields=['production_date']),
             models.Index(fields=['expiration_date']),
             models.Index(fields=['state']),
+            models.Index(fields=['created_at']),
         ]
         constraints = [
             CheckConstraint(check=Q(stock__gte=0), name='product_stock_non_negative'),
