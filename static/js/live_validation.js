@@ -34,7 +34,11 @@ function initPasswordMatchFields() {
             </div>
             <span class="field-live-feedback"></span>
         `;
-        confirmInput.insertAdjacentElement('afterend', wrapper);
+        // Mismo motivo que en initPasswordStrengthFields: insertar después
+        // del contenedor completo, no del <input> suelto, para no romper
+        // el layout flex del botón de mostrar/ocultar contraseña.
+        const container = confirmInput.closest('.password-wrap, .profile-password-wrap') || confirmInput;
+        container.insertAdjacentElement('afterend', wrapper);
 
         const bar = wrapper.querySelector('.pw-match-bar-fill');
         const feedback = wrapper.querySelector('.field-live-feedback');
@@ -114,7 +118,12 @@ function initPasswordStrengthFields() {
                 `).join('')}
             </ul>
         `;
-        input.insertAdjacentElement('afterend', wrapper);
+        // Insertamos después del contenedor completo del input (el div que
+        // envuelve input + botón del ojo), no después del <input> suelto —
+        // si no, el wrapper queda DENTRO de ese contenedor flex y empuja
+        // el ícono de mostrar/ocultar fuera de su lugar.
+        const container = input.closest('.password-wrap, .profile-password-wrap') || input;
+        container.insertAdjacentElement('afterend', wrapper);
 
         const bar = wrapper.querySelector('.pw-strength-bar-fill');
         const ruleEls = {};
