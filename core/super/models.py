@@ -406,3 +406,27 @@ class RepurchasePattern(models.Model):
 
     class Meta:
         unique_together = ('customer', 'product')
+
+
+class ProductAffinity(models.Model):
+    """
+    Afinidad de compra conjunta entre dos productos, calculada desde el
+    historial real de SaleDetail (market basket analysis).
+
+    Dirección importa: confidence es P(compraron product_b | compraron product_a),
+    no es simétrica. "El 70% de los que compran Coca-Cola también compran
+    Doritos" no implica que el 70% de los que compran Doritos compren Coca-Cola
+    (Doritos puede tener muchos más compradores en total).
+    """
+    product_a = models.ForeignKey('Product', on_delete=models.CASCADE, related_name='affinities_from')
+    product_b = models.ForeignKey('Product', on_delete=models.CASCADE, related_name='affinities_to')
+    co_occurrence_count = models.IntegerField(verbose_name="Veces compradas juntas")
+    confidence = models.FloatField(verbose_name="Confianza (0-1)")
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = "Afinidad de Productos"
+        verbose_name_plural = "Afinidades de Productos"
+        unique_together = ('product_a', 'product_b')
+        indexes = [models.Index(fields=['product_a', '-confidence'])]
+        ordering = ['-confidence']
