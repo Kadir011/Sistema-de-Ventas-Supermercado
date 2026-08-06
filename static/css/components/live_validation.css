@@ -36,7 +36,6 @@
     border-radius: 999px;
     width: 0%;
     transition: width 0.25s ease, background-color 0.25s ease;
-    background: #d1d5db;
 }
 
 /* ── Checklist de reglas ──────────────────────────────────────── */
