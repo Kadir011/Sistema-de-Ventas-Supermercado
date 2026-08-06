@@ -24,6 +24,31 @@ def _get_out_of_stock_count() -> int:
     return Product.objects.filter(stock=0).count()
 
 
+def _get_recent_products(days: int = 14, limit: int = 10):
+    """
+    Productos agregados al catálogo recientemente (created_at, NO
+    production_date — eso es la fecha de fabricación del producto físico,
+    esto es cuándo se registró en el sistema).
+
+    Si no hay ninguno dentro de la ventana de `days`, cae al más reciente
+    que exista igual (aunque sea uno solo) — así el bot siempre puede
+    contestar "¿qué hay nuevo?" con algo, en vez de un vacío.
+    Excluimos created_at nulo explícitamente: son productos que ya
+    existían antes de agregar este campo, y NO deben aparecer como
+    "recién agregados" solo porque Postgres podría ordenarlos primero
+    al tener NULL en una fecha.
+    """
+    base_qs = Product.objects.filter(state=True, created_at__isnull=False).select_related('category', 'brand')
+
+    cutoff = timezone.now() - timedelta(days=days)
+    recent = list(base_qs.filter(created_at__gte=cutoff).order_by('-created_at')[:limit])
+    if recent:
+        return recent, True   # sí hay novedades dentro de la ventana normal
+
+    fallback = list(base_qs.order_by('-created_at')[:1])
+    return fallback, False    # no hay nada reciente, mostramos el último que exista igual
+
+
 # ─────────────────────────────────────────────────────────────────
 # SRP — Builders separados por responsabilidad
 # ─────────────────────────────────────────────────────────────────
@@ -54,6 +79,26 @@ class StoreContextBuilder:
         if brands:
             parts.append("MARCAS:\n  " + ", ".join(brands))
         parts.append("PRODUCTOS:\n" + ("\n".join(lines) if lines else "Sin productos disponibles."))
+
+        # ── Productos agregados recientemente ───────────────────────────
+        recent_products, within_window = _get_recent_products(days=14, limit=10)
+        if recent_products:
+            recent_lines = [
+                f"  - {p.name} | Categoría: {p.category.name if p.category else 'Sin categoría'}"
+                f" | Precio: ${p.price:.2f} | Agregado: {p.created_at.strftime('%d/%m/%Y')}"
+                for p in recent_products
+            ]
+            header = (
+                "PRODUCTOS NUEVOS (agregados en los últimos 14 días):"
+                if within_window else
+                "PRODUCTO MÁS RECIENTE AGREGADO AL CATÁLOGO (no hay novedades en los últimos 14 días, pero este es el último que se registró):"
+            )
+            parts.append(header + "\n" + "\n".join(recent_lines))
+        else:
+            parts.append(
+                "PRODUCTOS NUEVOS:\n  No hay información de fecha de registro disponible "
+                "para ningún producto todavía (se activó recién, los productos ya existentes no tienen esa fecha)."
+            )
 
         # Métodos de pago
         active_payment_names = {"Efectivo", "Tarjeta de crédito", "Tarjeta de débito"}
@@ -139,7 +184,7 @@ class SalesContextBuilder:
             ]
 
             if recent_lines:
-                parts.append("\nÚLTIMAS 10 VENTAS:")
+                parts.append(f"\nÚLTIMAS {len(recent_lines)} VENTA(S):")
                 parts.extend(recent_lines)
 
             if top_lines:
