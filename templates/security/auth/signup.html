@@ -98,7 +98,8 @@
           <label class="field-label"><i class='bx bx-lock-alt'></i> Confirmar contraseña</label>
           <div class="password-wrap">
             <input type="password" name="password2" id="id_password2"
-                   class="field-input" placeholder="Repite tu contraseña" required autocomplete="new-password">
+                   class="field-input" placeholder="Repite tu contraseña" required autocomplete="new-password"
+                   data-password-match="id_password1">
             <button type="button" class="toggle-pw" onclick="togglePassword('id_password2','icon2')">
               <i id="icon2" class='bx bx-show'></i>
             </button>

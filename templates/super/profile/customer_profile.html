@@ -252,7 +252,8 @@
                         <input type="password" name="new_password2" id="pw-new2"
                                class="profile-input {% if password_form.new_password2.errors %}error{% endif %}"
                                placeholder="Repite la contraseña"
-                               autocomplete="new-password">
+                               autocomplete="new-password"
+                               data-password-match="pw-new1">
                         <button type="button" class="profile-toggle-pw" onclick="togglePw('pw-new2','icon-new2')">
                             <i id="icon-new2" class='bx bx-show'></i>
                         </button>
@@ -270,7 +271,10 @@
             </form>
         </div>
 
-    </div></div><script>
+    </div>
+</div>
+
+<script>
 /* Lógica de Preview del Avatar */
 const fileInput = document.getElementById('avatar-file-input');
 const avatarImg = document.getElementById('profile-avatar-img');

@@ -11,9 +11,80 @@
  */
 document.addEventListener('DOMContentLoaded', function () {
     initPasswordStrengthFields();
+    initPasswordMatchFields();
     initCedulaFields();
     initPhoneFields();
 });
+
+/* ────────────────────────────────────────────────────────────────
+   CONFIRMACIÓN DE CONTRASEÑA — barra + mensaje de coincidencia en vivo
+   Activación: <input data-password-match="id_del_input_original">
+   ──────────────────────────────────────────────────────────────── */
+
+function initPasswordMatchFields() {
+    document.querySelectorAll('[data-password-match]').forEach(confirmInput => {
+        const originalInput = document.getElementById(confirmInput.dataset.passwordMatch);
+        if (!originalInput) return;
+
+        const wrapper = document.createElement('div');
+        wrapper.className = 'pw-match-wrap';
+        wrapper.innerHTML = `
+            <div class="pw-strength-bar-track">
+                <div class="pw-match-bar-fill" style="width:0%"></div>
+            </div>
+            <span class="field-live-feedback"></span>
+        `;
+        confirmInput.insertAdjacentElement('afterend', wrapper);
+
+        const bar = wrapper.querySelector('.pw-match-bar-fill');
+        const feedback = wrapper.querySelector('.field-live-feedback');
+
+        const checkMatch = () => {
+            const original = originalInput.value;
+            const confirm = confirmInput.value;
+
+            confirmInput.classList.remove('border-red-500', 'border-green-500');
+
+            if (confirm.length === 0) {
+                bar.style.width = '0%';
+                bar.className = 'pw-match-bar-fill';
+                feedback.textContent = '';
+                feedback.className = 'field-live-feedback';
+                return;
+            }
+
+            const matches = confirm === original;
+            // Progreso parcial: cuánto del texto coincide desde el inicio,
+            // para que la barra avance mientras escribes en vez de saltar de 0 a 100.
+            let matchingChars = 0;
+            while (matchingChars < confirm.length && confirm[matchingChars] === original[matchingChars]) {
+                matchingChars++;
+            }
+            const pct = original.length > 0 ? Math.min(100, (matchingChars / original.length) * 100) : 0;
+
+            bar.style.width = pct + '%';
+
+            if (matches && original.length > 0) {
+                bar.className = 'pw-match-bar-fill pw-bar--strong';
+                feedback.innerHTML = "<i class='bx bx-check-circle'></i> Las contraseñas coinciden";
+                feedback.className = 'field-live-feedback field-live-feedback--ok';
+                confirmInput.classList.add('border-green-500');
+            } else {
+                bar.className = 'pw-match-bar-fill pw-bar--weak';
+                feedback.innerHTML = "<i class='bx bx-x-circle'></i> Las contraseñas no coinciden";
+                feedback.className = 'field-live-feedback field-live-feedback--fail';
+                confirmInput.classList.add('border-red-500');
+            }
+        };
+
+        confirmInput.addEventListener('input', checkMatch);
+        // Si el usuario cambia la contraseña original después de haber escrito
+        // la confirmación, revalidamos también (evita un falso "coincide").
+        originalInput.addEventListener('input', () => {
+            if (confirmInput.value.length > 0) checkMatch();
+        });
+    });
+}
 
 /* ────────────────────────────────────────────────────────────────
    CONTRASEÑA — checklist animado + barra de fortaleza
