@@ -145,13 +145,7 @@ function addToCart(productId) {
     });
 }
 
-function showNotification(message, type) {
-    const notification = document.createElement('div');
-    notification.className = `fixed top-20 right-4 z-50 px-6 py-3 rounded-lg shadow-lg ${type === 'success' ? 'bg-green-600' : 'bg-red-600'} text-white animate-slide-in-right`;
-    notification.textContent = message;
-    document.body.appendChild(notification);
-    setTimeout(() => notification.remove(), 3000);
-}
+// showNotification() ahora vive en static/js/notifications.js (con "x" y 10s de autocierre)
 
 /* Delegación de eventos para los botones de agregar al carrito */
 document.addEventListener('DOMContentLoaded', function () {
