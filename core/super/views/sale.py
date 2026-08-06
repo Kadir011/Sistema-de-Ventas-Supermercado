@@ -12,7 +12,7 @@ from django.views import View
 from django.views.generic import ListView, CreateView, UpdateView, DeleteView, DetailView
 from django.http import JsonResponse
 from django.db import transaction
-from django.db.models import Q, F
+from django.db.models import Q, F, Sum
 from decimal import Decimal
 from core.super.models import Sale, SaleDetail, Product
 from core.super.form.sale import SaleForm
@@ -51,6 +51,12 @@ class SaleListView(AdminRequiredMixin, ListView):
         context = super().get_context_data(**kwargs)
         context['title'] = 'Ventas'
         context['create_url'] = reverse_lazy('super:sale_create')
+        # Se calcula sobre TODO el queryset filtrado (no solo la página
+        # actual de 12), y se hace en la BD con Sum() — nunca en el
+        # template, que no puede acumular sumas de forma confiable.
+        context['total_recaudado'] = (
+            self.get_queryset().aggregate(t=Sum('total'))['t'] or Decimal('0')
+        )
         return context
 
 
@@ -399,4 +405,4 @@ class SaleDetailView(AdminRequiredMixin, DetailView):
             }
             return render(request, self.template_name, context)
         except Exception as e:
-            return HttpResponse(f'Error: {str(e)}') 
+            return HttpResponse(f'Error: {str(e)}')

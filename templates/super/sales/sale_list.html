@@ -131,14 +131,12 @@
         <!-- Footer tabla -->
         <div class="px-5 py-3 bg-gray-50 border-t border-gray-200 flex items-center justify-between">
             <p class="text-sm text-gray-500">
-                <span class="font-semibold text-gray-700">{{ sales|length }}</span> venta{{ sales|length|pluralize }} registrada{{ sales|length|pluralize }}
+                <span class="font-semibold text-gray-700">{{ paginator.count }}</span> venta{{ paginator.count|pluralize }} registrada{{ paginator.count|pluralize }}
             </p>
             <p class="text-sm text-gray-500">
                 Total recaudado:
                 <span class="font-bold text-green-600">
-                    ${% with total=0 %}
-                        {% for s in sales %}{{ s.total|add:total }}{% endfor %}
-                    {% endwith %}
+                    ${{ total_recaudado|floatformat:2 }}
                 </span>
             </p>
         </div>
