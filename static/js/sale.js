@@ -1,6 +1,37 @@
 // Variables globales
 const IVA_RATE = 0.15;
 let currentRow = 0;
+let cachedProducts = null;   // catálogo completo, se pide una sola vez y se reutiliza en todas las filas
+
+/**
+ * Trae el catálogo completo (con caché) y lo agrega como <option> al select
+ * de la fila. `excludeProductId` evita duplicar el producto que ya viene
+ * preseleccionado en filas de edición (addDetailRowWithData ya le agregó
+ * su propia opción con el stock ajustado).
+ */
+function populateProductOptions(selectEl, excludeProductId = null) {
+    const request = cachedProducts
+        ? Promise.resolve(cachedProducts)
+        : fetch('/api/products/').then(r => r.json()).then(products => {
+            cachedProducts = products;
+            return products;
+        });
+
+    return request.then(products => {
+        products.forEach(product => {
+            if (excludeProductId && String(product.id) === String(excludeProductId)) return;
+
+            const option = document.createElement('option');
+            option.value = product.id;
+            option.textContent = product.name;
+            option.dataset.price = product.price;
+            option.dataset.stock = product.stock;
+            selectEl.appendChild(option);
+        });
+    }).catch(error => {
+        console.error('Error al cargar el catálogo de productos:', error);
+    });
+}
 
 document.addEventListener('DOMContentLoaded', function() {
     console.log('Iniciando carga del formulario de ventas...');
@@ -27,17 +58,18 @@ document.addEventListener('DOMContentLoaded', function() {
         initialDetails.forEach(detail => {
             addDetailRowWithData(detail);
         });
-        setTimeout(() => { calculateTotals(); }, 100);
     } else {
         addDetailRow();
     }
 
-    if (initialTotals && Object.keys(initialTotals).length > 0) {
-        document.querySelector('input[name="subtotal"]').value = parseFloat(initialTotals.subtotal || 0).toFixed(2);
-        document.querySelector('input[name="iva"]').value = parseFloat(initialTotals.iva || 0).toFixed(2);
+    // El descuento SÍ viene del servidor (es editable, no se recalcula desde
+    // las filas). Subtotal/IVA/Total, en cambio, siempre se recalculan desde
+    // las filas reales — nunca se pisan con datos del servidor, para evitar
+    // que queden desincronizados si el usuario cambia algo.
+    if (initialTotals && initialTotals.discount !== undefined) {
         document.querySelector('input[name="discount"]').value = parseFloat(initialTotals.discount || 0).toFixed(2);
-        document.querySelector('input[name="total"]').value = parseFloat(initialTotals.total || 0).toFixed(2);
     }
+    calculateTotals();
 
     document.getElementById('add-product').addEventListener('click', addDetailRow);
     document.getElementById('saleForm').addEventListener('submit', function(e) {
@@ -71,7 +103,7 @@ function addDetailRow() {
     });
 
     tbody.appendChild(clone);
-    showProductModal(row.dataset.rowId);
+    populateProductOptions(productSelect);
 }
 
 function addDetailRowWithData(detail) {
@@ -112,6 +144,7 @@ function addDetailRowWithData(detail) {
     });
 
     tbody.appendChild(clone);
+    populateProductOptions(productSelect, detail.product);
 }
 
 function updateRowPricesAndStock(rowId) {
