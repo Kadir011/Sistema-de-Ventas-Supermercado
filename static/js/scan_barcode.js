@@ -26,8 +26,44 @@ document.addEventListener('DOMContentLoaded', function () {
     let isScanning   = false;
     let voteMap      = {};
     let lastScanTime = 0;
+    let stallTimer   = null;
+    let stallStage   = 0;
 
     const VOTES_REQUIRED = 3;
+
+    /* ── Avisos progresivos si el escáner no logra leer nada ──
+       Se reinicia cada vez que Quagga detecta CUALQUIER patrón de barras
+       (aunque no sea un EAN-13 válido todavía) — eso ya indica que la
+       cámara SÍ está viendo algo, solo falta que lo lea bien. Si pasa el
+       tiempo sin ni siquiera eso, el problema es de encuadre/luz/enfoque,
+       y se lo decimos al usuario en vez de dejarlo esperando a ciegas. */
+    const STALL_TIPS = [
+        { ms: 8000,  text: '💡 Acerca más el código, a unos 10-15 cm', color: 'blue' },
+        { ms: 15000, text: '💡 Mejora la iluminación o evita reflejos en el empaque', color: 'blue' },
+        { ms: 25000, text: '💡 Mantén el código bien plano y quieto frente a la cámara', color: 'blue' },
+    ];
+
+    function resetStallTimer() {
+        clearTimeout(stallTimer);
+        stallStage = 0;
+        scheduleNextStallTip();
+    }
+
+    function scheduleNextStallTip() {
+        if (stallStage >= STALL_TIPS.length) return;
+        const tip = STALL_TIPS[stallStage];
+        stallTimer = setTimeout(() => {
+            if (!isScanning) return;
+            setStatus(tip.text, tip.color);
+            stallStage++;
+            scheduleNextStallTip();
+        }, stallStage === 0 ? tip.ms : tip.ms - STALL_TIPS[stallStage - 1].ms);
+    }
+
+    function clearStallTimer() {
+        clearTimeout(stallTimer);
+        stallStage = 0;
+    }
 
     /* ── Calcular workers de forma robusta (CRÍTICO — Safari iOS) ──
        navigator.hardwareConcurrency puede ser undefined en Safari iOS
@@ -68,22 +104,44 @@ document.addEventListener('DOMContentLoaded', function () {
                 target : document.querySelector('#interactive'),
                 constraints: {
                     facingMode : useFrontCamera ? 'user' : 'environment',
-                    // Reducimos la resolución a 720p para eliminar el motion blur y mejorar FPS
-                    width  : { min: 640, ideal: 1280, max: 1920 },
-                    height : { min: 480, ideal: 720, max: 1080 },
+                    // Subimos la resolución ideal — más píxeles = más detalle
+                    // para distinguir barras finas. El min bajo (640x480)
+                    // sigue permitiendo que funcione en cámaras más débiles;
+                    // el navegador elige lo mejor disponible entre min y max.
+                    width  : { min: 640, ideal: 1920, max: 1920 },
+                    height : { min: 480, ideal: 1080, max: 1080 },
                 },
                 area: {
                     // Ajustamos el área para que coincida mejor con el recuadro verde de tu UI
-                    top    : '25%',
-                    right  : '10%',
-                    left   : '10%',
-                    bottom : '25%'
+                    top    : '20%',
+                    right  : '5%',
+                    left   : '5%',
+                    bottom : '20%'
                 },
-                singleChannel: true, // Cambiar a true ayuda a detectar bordes en baja iluminación
+                // singleChannel=false es lo correcto: le dice a Quagga que
+                // convierta el frame RGB completo a escala de grises antes de
+                // buscar bordes. Con singleChannel=true (como estaba antes)
+                // Quagga asume que YA recibe un solo canal y toma uno crudo
+                // de la imagen a color sin convertir — literalmente reduce el
+                // contraste disponible para detectar barras, sobre todo con
+                // luz de color (tubos fluorescentes, luz cálida de foco) o
+                // reflejos. El comentario anterior decía que ayudaba en baja
+                // iluminación; es al revés.
+                singleChannel: false,
             },
             locator: {
-                patchSize  : 'medium', // 'medium' o 'large' funciona mejor en resoluciones web
-                halfSample : true,     // CRÍTICO: true mejora el rendimiento drásticamente
+                // 'large' en vez de 'medium': busca patrones de barra más
+                // anchos, lo que ayuda con códigos algo borrosos o mal
+                // enfocados — a costa de un poco de velocidad, aceptable
+                // porque el problema reportado es precisión, no lentitud.
+                patchSize  : 'large',
+                // halfSample=false: procesa el frame a su resolución real en
+                // vez de reducirlo a la mitad antes de buscar el código.
+                // Con halfSample=true (como estaba) se pierde justo el detalle
+                // fino que hace falta para leer barras delgadas con cámaras de
+                // gama baja o con poca luz — es la causa más probable de que
+                // el escáner "no se adapte" a distintas resoluciones/cámaras.
+                halfSample : false,
             },
             numOfWorkers: getNumWorkers(),
             decoder: {
@@ -143,6 +201,7 @@ document.addEventListener('DOMContentLoaded', function () {
             Quagga.start();
             isScanning = true;
             setStatus('📷 Enfoque el código en el área central', 'black');
+            resetStallTimer();
 
             /* Aplicar optimizaciones de cámara de forma asíncrona y segura */
             setTimeout(applyAdvancedCameraConstraints, 800);
@@ -177,6 +236,10 @@ document.addEventListener('DOMContentLoaded', function () {
         Quagga.onDetected(function (result) {
             const code = result.codeResult?.code;
             if (!code) return;
+
+            // Cualquier lectura, válida o no, prueba que la cámara SÍ está
+            // viendo un patrón de barras — reiniciamos los avisos de "no veo nada".
+            resetStallTimer();
 
             if (!validateEAN13(code)) return;
 
@@ -213,6 +276,7 @@ document.addEventListener('DOMContentLoaded', function () {
         if (!isScanning) return;
         Quagga.stop();
         isScanning = false;
+        clearStallTimer();
 
         const canvas = document.querySelector('#interactive canvas');
         if (canvas) canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height);
