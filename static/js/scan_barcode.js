@@ -42,7 +42,7 @@ document.addEventListener('DOMContentLoaded', function () {
        tiempo sin ni siquiera eso, el problema es de encuadre/luz/enfoque,
        y se lo decimos al usuario en vez de dejarlo esperando a ciegas. */
     const STALL_TIPS = [
-        { ms: 8000,  text: '💡 Acerca más el código, a unos 10-15 cm', color: 'blue' },
+        { ms: 8000,  text: '💡 Prueba a 15-20 cm — si se ve borroso al acercarte más, es el límite de enfoque de tu cámara, aléjate un poco', color: 'blue' },
         { ms: 15000, text: '💡 Mejora la iluminación o evita reflejos en el empaque', color: 'blue' },
         { ms: 22000, text: '🥫 ¿Es una lata o botella? Gírala hasta que el código quede lo más plano posible hacia la cámara', color: 'blue' },
         { ms: 30000, text: '⌨️ ¿Sigue sin leer? Usa "Ingresar código manualmente" abajo', color: 'blue' },
@@ -192,9 +192,16 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     /* ── Aplicar constraints avanzadas de cámara (CRÍTICO) ──
-       Se intenta aplicar focusMode y zoom DESPUÉS de iniciar Quagga,
-       dentro de un try/catch. Si el navegador no lo soporta (Firefox,
-       Safari antiguo), se ignora silenciosamente sin romper el escáner. */
+       Se intenta aplicar focusMode/zoom DESPUÉS de iniciar Quagga, dentro
+       de un try/catch. Si el navegador no lo soporta (Firefox, Safari en
+       iOS no soporta NINGUNA de estas constraints — limitación de WebKit,
+       no nuestra), se ignora silenciosamente sin romper el escáner.
+
+       Para códigos de barras la cámara necesita enfocar CERCA (8-20cm),
+       distinto del enfoque "normal" que prioriza objetos a media/larga
+       distancia. Donde el navegador expone las capacidades reales del
+       lente (mayormente Android Chrome), sesgamos el enfoque hacia el
+       extremo cercano de su rango en vez de dejarlo en automático puro. */
     async function applyAdvancedCameraConstraints() {
         try {
             const video = document.querySelector('#interactive video');
@@ -203,13 +210,37 @@ document.addEventListener('DOMContentLoaded', function () {
             const track = video.srcObject.getVideoTracks()[0];
             if (!track || typeof track.applyConstraints !== 'function') return;
 
-            await track.applyConstraints({
-                advanced: [
-                    { focusMode: 'continuous' },
-                    { exposureMode: 'continuous' },
-                    { whiteBalanceMode: 'continuous' },
-                ]
-            });
+            const advanced = [
+                { focusMode: 'continuous' },
+                { exposureMode: 'continuous' },
+                { whiteBalanceMode: 'continuous' },
+            ];
+
+            if (typeof track.getCapabilities === 'function') {
+                const caps = track.getCapabilities();
+
+                // Si el dispositivo expone un rango de distancia de enfoque,
+                // lo sesgamos al 15% más cercano de su rango — más útil para
+                // códigos de barras a poca distancia que el punto medio que
+                // suele usar el autoenfoque genérico.
+                if (caps.focusDistance) {
+                    const nearBias = caps.focusDistance.min +
+                        (caps.focusDistance.max - caps.focusDistance.min) * 0.15;
+                    advanced.push({ focusDistance: nearBias });
+                }
+
+                // Si soporta zoom, acercamos un poco de forma óptica/digital
+                // — así el código se ve más grande SIN que el usuario tenga
+                // que acercar el teléfono más allá de la distancia mínima
+                // de enfoque de su cámara (que es justo lo que causa el
+                // desenfoque al acercarse demasiado).
+                if (caps.zoom) {
+                    const modestZoom = Math.min(caps.zoom.max, Math.max(caps.zoom.min, caps.zoom.min + (caps.zoom.max - caps.zoom.min) * 0.25));
+                    advanced.push({ zoom: modestZoom });
+                }
+            }
+
+            await track.applyConstraints({ advanced });
         } catch (e) {
             /* Ignorado — el escáner funciona sin estas optimizaciones */
         }
