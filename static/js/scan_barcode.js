@@ -192,8 +192,8 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     /* ── Aplicar constraints avanzadas de cámara (CRÍTICO) ──
-       Se intenta aplicar focusMode/zoom DESPUÉS de iniciar Quagga, dentro
-       de un try/catch. Si el navegador no lo soporta (Firefox, Safari en
+       Se intenta aplicar focusMode DESPUÉS de iniciar Quagga, dentro de
+       un try/catch. Si el navegador no lo soporta (Firefox, Safari en
        iOS no soporta NINGUNA de estas constraints — limitación de WebKit,
        no nuestra), se ignora silenciosamente sin romper el escáner.
 
@@ -201,7 +201,13 @@ document.addEventListener('DOMContentLoaded', function () {
        distinto del enfoque "normal" que prioriza objetos a media/larga
        distancia. Donde el navegador expone las capacidades reales del
        lente (mayormente Android Chrome), sesgamos el enfoque hacia el
-       extremo cercano de su rango en vez de dejarlo en automático puro. */
+       extremo cercano de su rango en vez de dejarlo en automático puro.
+
+       NOTA: se probó también aplicar zoom automático aquí, pero se quitó
+       — el zoom digital interpola píxeles y en la práctica empeoraba la
+       nitidez del código en vez de ayudar, además de sentirse demasiado
+       agresivo para el usuario. El acercamiento lo sigue controlando el
+       usuario con la distancia física, apoyado por el sesgo de enfoque. */
     async function applyAdvancedCameraConstraints() {
         try {
             const video = document.querySelector('#interactive video');
@@ -227,16 +233,6 @@ document.addEventListener('DOMContentLoaded', function () {
                     const nearBias = caps.focusDistance.min +
                         (caps.focusDistance.max - caps.focusDistance.min) * 0.15;
                     advanced.push({ focusDistance: nearBias });
-                }
-
-                // Si soporta zoom, acercamos un poco de forma óptica/digital
-                // — así el código se ve más grande SIN que el usuario tenga
-                // que acercar el teléfono más allá de la distancia mínima
-                // de enfoque de su cámara (que es justo lo que causa el
-                // desenfoque al acercarse demasiado).
-                if (caps.zoom) {
-                    const modestZoom = Math.min(caps.zoom.max, Math.max(caps.zoom.min, caps.zoom.min + (caps.zoom.max - caps.zoom.min) * 0.25));
-                    advanced.push({ zoom: modestZoom });
                 }
             }
 
