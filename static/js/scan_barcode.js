@@ -21,6 +21,10 @@ document.addEventListener('DOMContentLoaded', function () {
     const beepSound         = new Audio('/static/sounds/barcode_sound.mp3');
     const voteBar           = document.getElementById('voteProgressBar');
     const voteLabel         = document.getElementById('voteLabel');
+    const manualToggle      = document.getElementById('manualEntryToggle');
+    const manualForm        = document.getElementById('manualEntryForm');
+    const manualInput       = document.getElementById('manualBarcodeInput');
+    const manualError       = document.getElementById('manualEntryError');
 
     /* ── Estado interno ────────────────────────────────────── */
     let isScanning   = false;
@@ -40,7 +44,8 @@ document.addEventListener('DOMContentLoaded', function () {
     const STALL_TIPS = [
         { ms: 8000,  text: '💡 Acerca más el código, a unos 10-15 cm', color: 'blue' },
         { ms: 15000, text: '💡 Mejora la iluminación o evita reflejos en el empaque', color: 'blue' },
-        { ms: 25000, text: '💡 Mantén el código bien plano y quieto frente a la cámara', color: 'blue' },
+        { ms: 22000, text: '🥫 ¿Es una lata o botella? Gírala hasta que el código quede lo más plano posible hacia la cámara', color: 'blue' },
+        { ms: 30000, text: '⌨️ ¿Sigue sin leer? Usa "Ingresar código manualmente" abajo', color: 'blue' },
     ];
 
     function resetStallTimer() {
@@ -63,6 +68,14 @@ document.addEventListener('DOMContentLoaded', function () {
     function clearStallTimer() {
         clearTimeout(stallTimer);
         stallStage = 0;
+    }
+
+    function resetManualEntryUI() {
+        if (!manualForm) return;
+        manualForm.classList.add('hidden');
+        manualInput.value = '';
+        manualError.textContent = '';
+        manualToggle.textContent = '⌨️ Ingresar código manualmente';
     }
 
     /* ── Calcular workers de forma robusta (CRÍTICO — Safari iOS) ──
@@ -90,6 +103,36 @@ document.addEventListener('DOMContentLoaded', function () {
     if (closeResultModal) {
         closeResultModal.addEventListener('click', function () {
             resultModal.classList.add('hidden');
+        });
+    }
+
+    /* ── Ingreso manual (fallback para productos que la cámara no logra
+       leer — superficies curvas, empaques muy brillosos, etc.) ────── */
+    if (manualToggle && manualForm) {
+        manualToggle.addEventListener('click', function () {
+            const showing = !manualForm.classList.contains('hidden');
+            manualForm.classList.toggle('hidden', showing);
+            manualToggle.textContent = showing
+                ? '⌨️ Ingresar código manualmente'
+                : '📷 Volver a usar la cámara';
+            if (!showing) {
+                manualInput.focus();
+            }
+        });
+
+        manualForm.addEventListener('submit', function (e) {
+            e.preventDefault();
+            const code = manualInput.value.trim();
+            manualError.textContent = '';
+
+            if (!validateEAN13(code)) {
+                manualError.textContent = 'Ese código no es un EAN-13 válido. Verifica los 13 dígitos.';
+                return;
+            }
+
+            stopScanner();
+            setStatus('✅ Consultando código ingresado...', 'green');
+            fetchProduct(code);
         });
     }
 
@@ -130,17 +173,13 @@ document.addEventListener('DOMContentLoaded', function () {
                 singleChannel: false,
             },
             locator: {
-                // 'large' en vez de 'medium': busca patrones de barra más
-                // anchos, lo que ayuda con códigos algo borrosos o mal
-                // enfocados — a costa de un poco de velocidad, aceptable
-                // porque el problema reportado es precisión, no lentitud.
-                patchSize  : 'large',
-                // halfSample=false: procesa el frame a su resolución real en
-                // vez de reducirlo a la mitad antes de buscar el código.
-                // Con halfSample=true (como estaba) se pierde justo el detalle
-                // fino que hace falta para leer barras delgadas con cámaras de
-                // gama baja o con poca luz — es la causa más probable de que
-                // el escáner "no se adapte" a distintas resoluciones/cámaras.
+                // 'x-large': el nivel más tolerante de Quagga para localizar
+                // el patrón de barras. Ayuda específicamente con superficies
+                // curvas (latas, botellas) donde el ancho de las barras varía
+                // según el ángulo — sigue sin ser magia, pero es el margen
+                // máximo que da la librería antes de tener que recurrir a
+                // ingreso manual.
+                patchSize  : 'x-large',
                 halfSample : false,
             },
             numOfWorkers: getNumWorkers(),
@@ -181,6 +220,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
         voteMap = {};
         updateVoteBar(0);
+        resetManualEntryUI();
 
         Quagga.init(buildQuaggaConfig(!!useFrontCamera), function (err) {
             if (err) {

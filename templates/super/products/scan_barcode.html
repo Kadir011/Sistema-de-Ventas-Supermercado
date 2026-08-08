@@ -77,6 +77,26 @@
                 </div>
                 <p id="voteLabel" class="text-center text-xs text-gray-400 mt-1 h-4"></p>
             </div>
+
+            <!-- ── Ingreso manual (fallback: latas, botellas, empaques
+                 brillosos — cuando la cámara simplemente no puede leerlo) ── -->
+            <button type="button" id="manualEntryToggle"
+                    class="mt-4 text-sm text-gray-300 hover:text-white underline z-50 transition-colors">
+                ⌨️ Ingresar código manualmente
+            </button>
+
+            <form id="manualEntryForm" class="hidden mt-3 w-full max-w-xs z-50">
+                <div class="flex gap-2">
+                    <input type="text" id="manualBarcodeInput" inputmode="numeric" maxlength="13"
+                           placeholder="13 dígitos del código"
+                           class="flex-1 px-3 py-2 rounded-lg text-sm border-none focus:outline-none focus:ring-2 focus:ring-green-500">
+                    <button type="submit"
+                            class="bg-green-600 hover:bg-green-700 text-white text-sm font-semibold px-4 rounded-lg transition-colors">
+                        Buscar
+                    </button>
+                </div>
+                <p id="manualEntryError" class="text-red-400 text-xs mt-1.5 text-center"></p>
+            </form>
         </div>
     </div>
 
