@@ -15,6 +15,26 @@
         </a>
     </div>
 
+    <!-- Búsqueda -->
+    <form method="get" class="bg-white rounded-2xl shadow-sm p-4 mb-6 flex flex-col sm:flex-row gap-3">
+        <div class="relative flex-1">
+            <i class='bx bx-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400'></i>
+            <input type="text" name="q" value="{{ request.GET.q }}"
+                   placeholder="Buscar por nombre, apellido, cédula, email, dirección o teléfono..."
+                   class="w-full pl-9 pr-3 py-2.5 rounded-xl border border-gray-200 bg-gray-50 text-sm focus:outline-none focus:border-blue-400 focus:bg-white transition-all">
+        </div>
+        <div class="flex gap-2">
+            {% if request.GET.q %}
+            <a href="{% url 'super:seller_list' %}" class="px-4 py-2.5 rounded-xl border border-gray-200 text-gray-500 text-sm font-semibold hover:bg-gray-50 transition-all whitespace-nowrap">
+                <i class='bx bx-x'></i> Limpiar
+            </a>
+            {% endif %}
+            <button type="submit" class="flex items-center gap-1.5 bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl text-sm font-semibold transition-all whitespace-nowrap">
+                <i class='bx bx-search'></i> Buscar
+            </button>
+        </div>
+    </form>
+
     {% if sellers %}
     <div class="bg-white rounded-2xl shadow-md overflow-hidden">
         <div class="overflow-x-auto">
