@@ -18,7 +18,8 @@ document.addEventListener('DOMContentLoaded', function () {
     const closeResultModal  = document.getElementById('closeResultModal');
     const scanningStatus    = document.getElementById('scanningStatus');
     const resultContent     = document.getElementById('resultContent');
-    const beepSound         = new Audio('/static/sounds/barcode_sound.mp3');
+    const beepSound          = new Audio('/static/sounds/barcode_sound.mp3');
+    beepSound.preload        = 'auto';
     const voteBar           = document.getElementById('voteProgressBar');
     const voteLabel         = document.getElementById('voteLabel');
     const manualToggle      = document.getElementById('manualEntryToggle');
@@ -78,6 +79,45 @@ document.addEventListener('DOMContentLoaded', function () {
         manualToggle.textContent = '⌨️ Ingresar código manualmente';
     }
 
+    /* ── Desbloquear el audio en un gesto real del usuario ──
+       iOS Safari (y algunos Android) solo permite reproducir audio la
+       PRIMERA vez si esa llamada está ligada directamente a un toque del
+       usuario. El beep real ocurre después, dentro de la detección
+       asíncrona de Quagga — eso NO cuenta como gesto directo en iOS, así
+       que a veces el sonido simplemente no suena, sin ningún error visible.
+       Truco estándar: reproducir y pausar inmediatamente DENTRO del clic
+       que abre el escáner — eso "desbloquea" el elemento de audio para el
+       resto de la sesión, incluidas las reproducciones asíncronas de después. */
+    function unlockBeepSound() {
+        beepSound.play().then(() => {
+            beepSound.pause();
+            beepSound.currentTime = 0;
+        }).catch(() => {
+            /* Si falla el desbloqueo, el beep intentará sonar igual más
+               tarde — puede que no suene en ese navegador, pero no rompe nada. */
+        });
+    }
+
+    /* ── Reproducir el beep, siempre desde el inicio ──
+       Sin resetear currentTime, si el sonido ya llegó al final una vez,
+       algunos navegadores no lo vuelven a reproducir en la siguiente
+       llamada a play() — se queda "mudo" en escaneos posteriores. */
+    function playBeep() {
+        try {
+            beepSound.currentTime = 0;
+        } catch (e) { /* algunos navegadores no dejan tocar currentTime si aún no cargó */ }
+        beepSound.play().catch(err => {
+            console.warn('[Scanner] No se pudo reproducir el sonido:', err);
+        });
+
+        // Vibración como respaldo — funciona en Android (incluso con el
+        // teléfono en silencio) y no hace nada en iOS/desktop (no existe
+        // la API ahí, la llamada simplemente no tiene efecto, sin error).
+        if (navigator.vibrate) {
+            navigator.vibrate(120);
+        }
+    }
+
     /* ── Calcular workers de forma robusta (CRÍTICO — Safari iOS) ──
        navigator.hardwareConcurrency puede ser undefined en Safari iOS
        antiguo. Number() lo convierte a NaN y || 2 garantiza el fallback. */
@@ -92,6 +132,7 @@ document.addEventListener('DOMContentLoaded', function () {
     /* ── Botones ───────────────────────────────────────────── */
     openModalButton.addEventListener('click', function () {
         modal.classList.remove('hidden');
+        unlockBeepSound();
         startScanner();
     });
 
@@ -331,7 +372,7 @@ document.addEventListener('DOMContentLoaded', function () {
             voteMap = {};
             updateVoteBar(0);
 
-            beepSound.play().catch(() => {});
+            playBeep();
             setStatus('✅ ¡Código detectado! Consultando...', 'green');
             stopScanner();
             fetchProduct(code);
