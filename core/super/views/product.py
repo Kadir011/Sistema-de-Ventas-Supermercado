@@ -5,32 +5,54 @@ Vistas para que el admin gestione los productos
 from django.views.generic import ListView, CreateView, UpdateView, DeleteView, DetailView
 from django.urls import reverse_lazy
 from django.db.models import Q
-from core.super.models import Product
+from core.super.models import Product, Category, Brand
 from core.super.form.product import ProductForm
 from django.contrib.auth.mixins import LoginRequiredMixin
 from core.super.mixins.auth import AdminRequiredMixin
 
 class ProductListView(AdminRequiredMixin, ListView):
-    """Vista para listar los productos"""
-    
+    """Vista para listar los productos, con búsqueda y filtros"""
+
     model = Product
     template_name = 'super/products/product_list.html'
     context_object_name = 'products'
     paginate_by = 12
-    
+
     def get_queryset(self):
         q = self.request.GET.get('q')
-        self.query = Q()
-        if q is not None:
-            self.query.add(Q(name__icontains=q)|Q(description__icontains=q)|
-                           Q(brand__name__icontains=q)|Q(category__name__icontains=q)|
-                           Q(state__icontains=q), Q.OR)
-        return self.model.objects.filter(self.query).order_by('id_product') 
-    
+        category_id = self.request.GET.get('category')
+        brand_id = self.request.GET.get('brand')
+        state = self.request.GET.get('state')
+
+        query = Q()
+        if q:
+            query &= (
+                Q(name__icontains=q) | Q(description__icontains=q) |
+                Q(brand__name__icontains=q) | Q(category__name__icontains=q) |
+                Q(barcode__icontains=q)
+            )
+
+        qs = self.model.objects.filter(query).select_related('category', 'brand')
+
+        if category_id:
+            qs = qs.filter(category_id=category_id)
+        if brand_id:
+            qs = qs.filter(brand_id=brand_id)
+        if state in ('1', '0'):
+            qs = qs.filter(state=(state == '1'))
+
+        return qs.order_by('id_product')
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['title'] = 'Productos'
         context['create_url'] = reverse_lazy('super:product_create')
+        context['categories'] = Category.objects.order_by('name')
+        context['brands'] = Brand.objects.order_by('name')
+        context['search_query'] = self.request.GET.get('q', '')
+        context['selected_category'] = self.request.GET.get('category', '')
+        context['selected_brand'] = self.request.GET.get('brand', '')
+        context['selected_state'] = self.request.GET.get('state', '')
         return context
     
 class ProductCreateView(AdminRequiredMixin, CreateView):
@@ -89,4 +111,4 @@ class ProductDetailView(DetailView, LoginRequiredMixin):
         context = super().get_context_data(**kwargs)
         context['title'] = f'Producto: {self.object.name}'
         context['back_url'] = reverse_lazy('super:product_list')
-        return context 
+        return context
