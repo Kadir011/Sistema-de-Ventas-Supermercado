@@ -20,6 +20,10 @@ class UserListView(AdminRequiredMixin, ListView):
     
     def get_queryset(self):
         q = self.request.GET.get('q', '').strip()
+        user_type = self.request.GET.get('user_type', '').strip()
+        status = self.request.GET.get('status', '').strip()
+        superuser = self.request.GET.get('superuser', '').strip()
+
         qs = User.objects.all().order_by('-date_joined')
         if q:
             qs = qs.filter(
@@ -28,14 +32,23 @@ class UserListView(AdminRequiredMixin, ListView):
                 Q(last_name__icontains=q) |
                 Q(email__icontains=q)
             )
-        
+        if user_type:
+            qs = qs.filter(user_type=user_type)
+        if status in ('1', '0'):
+            qs = qs.filter(is_active=(status == '1'))
+        if superuser in ('1', '0'):
+            qs = qs.filter(is_superuser=(superuser == '1'))
+
         return qs
-    
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['title'] = 'Usuarios'
         context['create_url'] = reverse_lazy('super:user_create')
         context['search_query'] = self.request.GET.get('q', '')
+        context['selected_user_type'] = self.request.GET.get('user_type', '')
+        context['selected_status'] = self.request.GET.get('status', '')
+        context['selected_superuser'] = self.request.GET.get('superuser', '')
         return context 
     
 
@@ -109,4 +122,4 @@ class UserDeleteView(AdminRequiredMixin, DeleteView):
         context['grabar'] = 'Eliminar Usuario'
         context['description'] = f'¿Estás seguro de eliminar al usuario "{obj.username}" ({obj.get_full_name()})?'
         context['back_url'] = self.success_url
-        return context 
+        return context
