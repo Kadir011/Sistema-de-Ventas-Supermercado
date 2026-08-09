@@ -14,7 +14,7 @@ from django.http import JsonResponse
 from django.db import transaction
 from django.db.models import Q, F, Sum
 from decimal import Decimal
-from core.super.models import Sale, SaleDetail, Product
+from core.super.models import Sale, SaleDetail, Product, PaymentMethod
 from core.super.form.sale import SaleForm
 from core.super.services.idempotency_service import IdempotencyService
 from django.http import HttpResponse
@@ -34,18 +34,31 @@ class SaleListView(AdminRequiredMixin, ListView):
 
     def get_queryset(self):
         q = self.request.GET.get('q')
-        self.query = Q()
-        if q is not None:
-            self.query.add(
+        payment_id = self.request.GET.get('payment')
+        date_from = self.request.GET.get('date_from')
+        date_to = self.request.GET.get('date_to')
+
+        query = Q()
+        if q:
+            query &= (
                 Q(id_sale__icontains=q) |
                 Q(customer__name__icontains=q) |
                 Q(customer__last_name__icontains=q) |
                 Q(seller__name__icontains=q) |
                 Q(seller__last_name__icontains=q) |
-                Q(payment__name__icontains=q),
-                Q.OR
+                Q(payment__name__icontains=q)
             )
-        return self.model.objects.filter(self.query).order_by('-sale_date')
+
+        qs = self.model.objects.filter(query).select_related('customer', 'seller', 'payment')
+
+        if payment_id:
+            qs = qs.filter(payment_id=payment_id)
+        if date_from:
+            qs = qs.filter(sale_date__date__gte=date_from)
+        if date_to:
+            qs = qs.filter(sale_date__date__lte=date_to)
+
+        return qs.order_by('-sale_date')
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -57,6 +70,11 @@ class SaleListView(AdminRequiredMixin, ListView):
         context['total_recaudado'] = (
             self.get_queryset().aggregate(t=Sum('total'))['t'] or Decimal('0')
         )
+        context['payment_methods'] = PaymentMethod.objects.order_by('name')
+        context['search_query'] = self.request.GET.get('q', '')
+        context['selected_payment'] = self.request.GET.get('payment', '')
+        context['date_from'] = self.request.GET.get('date_from', '')
+        context['date_to'] = self.request.GET.get('date_to', '')
         return context
 
 
