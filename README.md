@@ -38,6 +38,16 @@
 
 ---
 
+## The problem
+
+Small supermarkets that want to sell both in-store and online usually end up stitching together two separate systems — a POS for the register and a bolted-on webshop — that don't share inventory or customer data in real time. That mismatch causes overselling, inconsistent pricing, and no single source of truth for stock.
+
+**MySupermarket** is a single Django application that runs both channels off the same database: the same product, stock, and pricing logic drives the in-store register and the online storefront. It also solves problems that generic tutorials skip — a customer double-clicking "Pay" can't create two sales (enforced at the database level, not just the UI), personalized discounts expire automatically, and an AI chatbot answers both staff and customer questions using live inventory data instead of a static FAQ.
+
+It's a production-deployed system, not a tutorial project — see the engineering decisions below for why each pattern earns its place.
+
+---
+
 ## What this project actually demonstrates
 
 This is not a tutorial project. It's a production-deployed system built from scratch that solves real business problems — dual-mode (POS + e-commerce), personalized discount lifecycle management, race condition prevention, and AI that actually knows your inventory.
