@@ -97,7 +97,7 @@ CACHES = {
 # WEB_CONCURRENCY=1 (un solo worker), así que en la práctica sí funciona
 # correctamente. Si en el futuro escalas a más de un worker/instancia,
 # hay que migrar a Redis (ej. Upstash) para que el límite sea confiable.
-SILENCED_SYSTEMCHECKS = ['django_ratelimit.E003']
+SILENCED_SYSTEM_CHECKS = ['django_ratelimit.E003']
 
 # Configuración del modelo de usuario personalizado
 AUTH_USER_MODEL = 'security.User'
