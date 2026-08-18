@@ -26,18 +26,27 @@ urlpatterns = [
     path('security/', include('core.security.urls', namespace='security')),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT) 
 
-# Páginas de error del sistema: le indican a Django qué vista usar
-# cuando se levanta Http404 / PermissionDenied / SuspiciousOperation.
-# Solo entran en acción cuando DEBUG=False (en producción); con
-# DEBUG=True, Django sigue mostrando su página de depuración normal.
+# Páginas de error del sistema: 400, 403, 404 y 503.
+#
+# Django solo reconoce automáticamente 400 / 403 / 404 (y 500, que no
+# usamos aquí) a través de las variables handler400 / handler403 /
+# handler404, que se disparan cuando se levanta SuspiciousOperation /
+# PermissionDenied / Http404 respectivamente. Solo entran en acción
+# cuando DEBUG=False (en producción); con DEBUG=True, Django sigue
+# mostrando su página de depuración normal.
 handler400 = errors.bad_request_view
 handler403 = errors.permission_denied_view
 handler404 = errors.page_not_found_view
 
-# Rutas de previsualización de las 4 páginas de error (incluida 503,
-# que no tiene handler nativo en Django), solo disponibles en
-# desarrollo para poder revisar su diseño sin forzar el error real.
-if settings.DEBUG:
-    urlpatterns += [
-        path('', include('core.security.urls_errors')),
-    ]
+# El 503 (errors.service_unavailable_view) NO tiene un handler nativo
+# en Django -no existe "handler503"-, así que nunca se dispara solo.
+# Debe invocarse manualmente desde el código (ej. en un except al
+# fallar la conexión a la base de datos, o desde un middleware de
+# modo mantenimiento) devolviendo esa vista con status=503.
+#
+# Las 4 páginas de error también se pueden revisar visitándolas
+# directamente (ver sección "ERRORES" en core/security/urls.py):
+# /security/error/400/, /security/error/403/, /security/error/404/
+# y /security/error/503/. A diferencia de handler400/403/404, estas
+# rutas SÍ están activas también en producción (no dependen de
+# DEBUG), ya que viven junto a las demás rutas normales de la app.

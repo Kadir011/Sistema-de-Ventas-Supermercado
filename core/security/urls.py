@@ -8,7 +8,7 @@ urlpatterns = [
     path('register/', auth.UserRegisterView.as_view(), name='register'),
     path('login/', auth.UserLoginView.as_view(), name='login'),
     path('logout/', auth.logout_view, name='logout'),
-    
+
     # ERRORES
     path('error/400/', errors.bad_request_view, name='preview_error_400'),
     path('error/403/', errors.permission_denied_view, name='preview_error_403'),
