@@ -61,7 +61,7 @@
                     <div class="field-group">
                         <label class="field-label"><i class='bx bx-id-card'></i>Cédula</label>
                         <input type="text" name="dni" value="{{ form.instance.dni|default:'' }}"
-                               class="field-input only-numbers {% if form.dni.errors %}error{% endif %}"
+                               class="field-input field-input--short only-numbers {% if form.dni.errors %}error{% endif %}"
                                placeholder="10 dígitos" maxlength="10" pattern="[0-9]{10}" required autocomplete="off">
                         {% if form.dni.errors %}
                             <span class="field-error"><i class='bx bx-error-circle'></i>{{ form.dni.errors.0 }}</span>
@@ -72,7 +72,7 @@
                     <div class="field-group">
                         <label class="field-label"><i class='bx bx-phone'></i>Teléfono</label>
                         <input type="text" name="phone" value="{{ form.instance.phone|default:'' }}"
-                               class="field-input only-numbers {% if form.phone.errors %}error{% endif %}"
+                               class="field-input field-input--short only-numbers {% if form.phone.errors %}error{% endif %}"
                                placeholder="10 dígitos" maxlength="10" pattern="[0-9]{10}" autocomplete="off">
                         {% if form.phone.errors %}
                             <span class="field-error"><i class='bx bx-error-circle'></i>{{ form.phone.errors.0 }}</span>

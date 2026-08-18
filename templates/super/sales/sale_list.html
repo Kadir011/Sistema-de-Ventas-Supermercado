@@ -1,3 +1,4 @@
+{% load humanize %}
 {% extends 'components/base.html' %}
 {% load static %}
 {% block title %}{{ title }}{% endblock %}
@@ -182,7 +183,7 @@
             <p class="text-sm text-gray-500">
                 Total recaudado:
                 <span class="font-bold text-green-600">
-                    ${{ total_recaudado|floatformat:2 }}
+                    ${{ total_recaudado|floatformat:2|intcomma }}
                 </span>
             </p>
         </div>

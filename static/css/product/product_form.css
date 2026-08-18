@@ -70,6 +70,10 @@
     box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.1);
 }
 
+.field-input--short {
+    max-width: 160px;
+}
+
 .field-input.error {
     border-color: #ef4444;
     background: #fff5f5;

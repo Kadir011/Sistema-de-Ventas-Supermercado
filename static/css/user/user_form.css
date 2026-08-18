@@ -80,6 +80,10 @@
     background: #fff5f5;
 }
 
+.field-input--short {
+    max-width: 160px;
+}
+
 .field-error {
     font-size: 0.78rem;
     color: #ef4444;

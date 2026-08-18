@@ -79,7 +79,7 @@
                     <div class="field-group">
                         <label class="field-label"><i class='bx bx-box'></i>Stock</label>
                         <input type="number" name="stock" id="id_stock" value="{{ form.instance.stock|default:'0' }}"
-                               class="field-input {% if form.stock.errors %}error{% endif %}"
+                               class="field-input field-input--short {% if form.stock.errors %}error{% endif %}"
                                placeholder="0" step="1" min="0" required>
                         {% if form.stock.errors %}<span class="field-error"><i class='bx bx-error-circle'></i>{{ form.stock.errors.0 }}</span>{% endif %}
                     </div>
@@ -116,7 +116,7 @@
                     <div class="field-group">
                         <label class="field-label"><i class='bx bx-barcode'></i>Código de barras EAN-13</label>
                         <input type="text" name="barcode" id="id_barcode" value="{{ form.instance.barcode|default:'' }}"
-                               class="field-input only-numbers {% if form.barcode.errors %}error{% endif %}"
+                               class="field-input field-input--short only-numbers {% if form.barcode.errors %}error{% endif %}"
                                placeholder="13 dígitos" maxlength="13" pattern="[0-9]{13}" autocomplete="off">
                         {% if form.barcode.errors %}
                             <span class="field-error"><i class='bx bx-error-circle'></i>{{ form.barcode.errors.0 }}</span>

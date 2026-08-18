@@ -1,3 +1,4 @@
+{% load humanize %}
 {% extends 'components/base.html' %}
 {% load static %}
 {% block title %}{{ title }}{% endblock %}
@@ -161,7 +162,7 @@
   <div class="kpi-card green">
     <div class="kpi-icon green"><i class='bx bx-dollar' style="color:#16a34a;"></i></div>
     <div class="kpi-label">Ingresos totales</div>
-    <div class="kpi-value green">${{ total_revenue|floatformat:2 }}</div>
+    <div class="kpi-value green">${{ total_revenue|floatformat:2|intcomma }}</div>
   </div>
   <div class="kpi-card blue">
     <div class="kpi-icon blue"><i class='bx bx-receipt' style="color:#2563eb;"></i></div>
@@ -171,12 +172,12 @@
   <div class="kpi-card cyan">
     <div class="kpi-icon cyan"><i class='bx bx-trending-up' style="color:#0ea5e9;"></i></div>
     <div class="kpi-label">Ticket promedio</div>
-    <div class="kpi-value cyan">${{ avg_ticket|floatformat:2 }}</div>
+    <div class="kpi-value cyan">${{ avg_ticket|floatformat:2|intcomma }}</div>
   </div>
   <div class="kpi-card amber">
     <div class="kpi-icon amber"><i class='bx bx-purchase-tag' style="color:#d97706;"></i></div>
     <div class="kpi-label">Descuentos otorgados</div>
-    <div class="kpi-value amber">${{ total_discount|floatformat:2 }}</div>
+    <div class="kpi-value amber">${{ total_discount|floatformat:2|intcomma }}</div>
   </div>
 </div>
 
@@ -214,7 +215,7 @@
         {% for p in by_payment %}
         <div style="display:flex;justify-content:space-between;font-family:'DM Sans',sans-serif;font-size:0.78rem;padding:3px 0;">
           <span style="color:#374151;font-weight:600;">{{ p.payment__name|default:"—" }}</span>
-          <span style="color:#7c3aed;font-weight:700;">${{ p.total|floatformat:2 }}</span>
+          <span style="color:#7c3aed;font-weight:700;">${{ p.total|floatformat:2|intcomma }}</span>
         </div>
         {% empty %}
         <p style="color:#9ca3af;font-size:0.8rem;text-align:center;padding:12px 0;">Sin datos</p>
@@ -263,7 +264,7 @@
                 </span>
               </td>
               <td style="text-align:right;font-weight:700;color:#374151;">{{ p.qty }}</td>
-              <td style="text-align:right;font-weight:700;color:#16a34a;">${{ p.revenue|floatformat:2 }}</td>
+              <td style="text-align:right;font-weight:700;color:#16a34a;">${{ p.revenue|floatformat:2|intcomma }}</td>
             </tr>
             {% empty %}
             <tr><td colspan="5" style="text-align:center;color:#9ca3af;padding:20px;">Sin datos en el período</td></tr>
@@ -297,7 +298,7 @@
                  style="background: hsl({{ forloop.counter0|add:0 }}deg, 70%, 52%); width:0%;">
             </div>
           </div>
-          <span class="progress-value">${{ cat.revenue|floatformat:0 }}</span>
+          <span class="progress-value">${{ cat.revenue|floatformat:0|intcomma }}</span>
         </div>
         {% endwith %}
       {% empty %}
@@ -321,7 +322,7 @@
             <tr>
               <td style="font-weight:600;color:#111827;">{{ cat.product__category__name|default:"Sin categoría" }}</td>
               <td style="text-align:right;">{{ cat.qty }}</td>
-              <td style="text-align:right;font-weight:700;color:#d97706;">${{ cat.revenue|floatformat:2 }}</td>
+              <td style="text-align:right;font-weight:700;color:#d97706;">${{ cat.revenue|floatformat:2|intcomma }}</td>
             </tr>
             {% endfor %}
           </tbody>
@@ -370,7 +371,7 @@
               </div>
             </td>
             <td style="text-align:right;font-weight:700;">{{ s.count }}</td>
-            <td style="text-align:right;font-weight:700;color:#2563eb;">${{ s.total|floatformat:2 }}</td>
+            <td style="text-align:right;font-weight:700;color:#2563eb;">${{ s.total|floatformat:2|intcomma }}</td>
           </tr>
           {% empty %}
           <tr><td colspan="4" style="text-align:center;color:#9ca3af;padding:20px;">Sin datos</td></tr>
@@ -415,7 +416,7 @@
               </div>
             </td>
             <td style="text-align:right;font-weight:700;">{{ cu.count }}</td>
-            <td style="text-align:right;font-weight:700;color:#0ea5e9;">${{ cu.total|floatformat:2 }}</td>
+            <td style="text-align:right;font-weight:700;color:#0ea5e9;">${{ cu.total|floatformat:2|intcomma }}</td>
           </tr>
           {% empty %}
           <tr><td colspan="4" style="text-align:center;color:#9ca3af;padding:20px;">Sin datos</td></tr>
