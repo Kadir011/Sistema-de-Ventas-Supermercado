@@ -1,0 +1,14 @@
+{% extends 'errors/base_error.html' %}
+
+{% block title %}Acceso denegado{% endblock %}
+
+{% block icon %}bx-lock-alt{% endblock %}
+{% block icon_bg %}#fef2f2{% endblock %}
+{% block icon_color %}#dc2626{% endblock %}
+{% block code_gradient %}linear-gradient(135deg, #7f1d1d, #b91c1c){% endblock %}
+{% block error_code %}Error 403{% endblock %}
+
+{% block heading %}No tienes permiso para ver esto{% endblock %}
+{% block message %}
+Tu cuenta no cuenta con los permisos necesarios para acceder a esta sección, o se detectaron demasiados intentos seguidos desde tu conexión. Si crees que se trata de un error, contáctanos.
+{% endblock %}

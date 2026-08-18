@@ -1,0 +1,23 @@
+{% extends 'errors/base_error.html' %}
+
+{% block title %}Servicio no disponible{% endblock %}
+
+{% block icon %}bx-wrench{% endblock %}
+{% block icon_bg %}#eef2ff{% endblock %}
+{% block icon_color %}#4f46e5{% endblock %}
+{% block code_gradient %}linear-gradient(135deg, #3730a3, #4f46e5){% endblock %}
+{% block error_code %}Error 503{% endblock %}
+
+{% block heading %}Estamos en mantenimiento{% endblock %}
+{% block message %}
+El servicio no está disponible en este momento, probablemente estamos realizando tareas de mantenimiento o hay una interrupción temporal. Por favor, inténtalo de nuevo en unos minutos.
+{% endblock %}
+
+{% block actions %}
+<button type="button" class="error-btn-primary" onclick="window.location.reload();">
+    <i class='bx bx-refresh'></i> Reintentar
+</button>
+<a href="{% url 'super:home' %}" class="error-btn-secondary">
+    <i class='bx bx-home-alt'></i> Ir al inicio
+</a>
+{% endblock %}

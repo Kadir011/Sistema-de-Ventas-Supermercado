@@ -1,0 +1,70 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Error{% endblock %} · My Supermarket</title>
+    <link rel="icon" type="image/x-icon" href="{% static 'icono-mysupermarket.ico' %}">
+    <link rel="apple-touch-icon" href="{% static 'img/icono-mysupermarket.png' %}">
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Plus Jakarta Sans', 'sans-serif'] },
+                    animation: {
+                        'fade-in': 'fadeIn 0.5s ease-out',
+                        'slide-up': 'slideUp 0.5s ease-out',
+                    },
+                    keyframes: {
+                        fadeIn:  { '0%': { opacity: '0' }, '100%': { opacity: '1' } },
+                        slideUp: { '0%': { transform: 'translateY(18px)', opacity: '0' }, '100%': { transform: 'translateY(0)', opacity: '1' } },
+                    }
+                }
+            }
+        }
+    </script>
+    <link rel="stylesheet" href="{% static 'css/components/errors.css' %}">
+</head>
+<body class="font-sans">
+
+    <div class="error-page-bg">
+        <div class="error-blob error-blob--one"></div>
+        <div class="error-blob error-blob--two"></div>
+
+        <div class="error-page-inner animate-slide-up">
+            <div class="error-card">
+                <div class="error-icon-wrap" style="background: {% block icon_bg %}#f0fdf4{% endblock %};">
+                    <i class='bx {% block icon %}bx-error-circle{% endblock %} error-icon' style="color: {% block icon_color %}#16a34a{% endblock %};"></i>
+                </div>
+
+                <span class="error-code" style="background: {% block code_gradient %}linear-gradient(135deg, #14532d, #15803d){% endblock %};">
+                    {% block error_code %}Error{% endblock %}
+                </span>
+
+                <h1 class="error-title">{% block heading %}Algo salió mal{% endblock %}</h1>
+                <p class="error-message">{% block message %}Ocurrió un problema inesperado. Intenta de nuevo en unos momentos.{% endblock %}</p>
+
+                {% block extra %}{% endblock %}
+
+                <div class="error-actions">
+                    {% block actions %}
+                    <a href="{% url 'super:home' %}" class="error-btn-primary">
+                        <i class='bx bx-home-alt'></i> Ir al inicio
+                    </a>
+                    <button type="button" class="error-btn-secondary" onclick="window.history.length > 1 ? window.history.back() : window.location.href='{% url 'super:home' %}';">
+                        <i class='bx bx-left-arrow-alt'></i> Regresar
+                    </button>
+                    {% endblock %}
+                </div>
+            </div>
+
+            <p class="error-footer-brand">My<span>Supermarket</span></p>
+        </div>
+    </div>
+
+</body>
+</html>

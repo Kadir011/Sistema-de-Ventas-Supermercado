@@ -18,6 +18,7 @@ from django.contrib import admin
 from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
+from core.security.views import errors
 
 urlpatterns = [
     path('django-admin/', admin.site.urls),
@@ -25,5 +26,18 @@ urlpatterns = [
     path('security/', include('core.security.urls', namespace='security')),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT) 
 
+# Páginas de error del sistema: le indican a Django qué vista usar
+# cuando se levanta Http404 / PermissionDenied / SuspiciousOperation.
+# Solo entran en acción cuando DEBUG=False (en producción); con
+# DEBUG=True, Django sigue mostrando su página de depuración normal.
+handler400 = errors.bad_request_view
+handler403 = errors.permission_denied_view
+handler404 = errors.page_not_found_view
 
-
+# Rutas de previsualización de las 4 páginas de error (incluida 503,
+# que no tiene handler nativo en Django), solo disponibles en
+# desarrollo para poder revisar su diseño sin forzar el error real.
+if settings.DEBUG:
+    urlpatterns += [
+        path('', include('core.security.urls_errors')),
+    ]

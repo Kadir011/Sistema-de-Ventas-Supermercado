@@ -1,0 +1,14 @@
+{% extends 'errors/base_error.html' %}
+
+{% block title %}Solicitud incorrecta{% endblock %}
+
+{% block icon %}bx-error-alt{% endblock %}
+{% block icon_bg %}#fffbeb{% endblock %}
+{% block icon_color %}#d97706{% endblock %}
+{% block code_gradient %}linear-gradient(135deg, #b45309, #d97706){% endblock %}
+{% block error_code %}Error 400{% endblock %}
+
+{% block heading %}Solicitud incorrecta{% endblock %}
+{% block message %}
+El servidor no pudo procesar tu solicitud porque algo en la información enviada no es válido. Revisa los datos e inténtalo nuevamente.
+{% endblock %}

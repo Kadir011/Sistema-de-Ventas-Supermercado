@@ -1,0 +1,217 @@
+/* ══════════════════════════════════════════════════════════
+   Páginas de error del sistema (400 / 403 / 404 / 503)
+   Son páginas independientes (sin navbar ni footer de la app),
+   así que definen aquí su propio fondo, tarjeta central y
+   elementos decorativos, reutilizando la tipografía y paleta
+   de color del resto del sitio.
+══════════════════════════════════════════════════════════ */
+
+.error-page-bg {
+    position: relative;
+    min-height: 100vh;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2.5rem 1.25rem;
+    background:
+        radial-gradient(circle at 12% 18%, rgba(22, 163, 74, 0.10), transparent 45%),
+        radial-gradient(circle at 88% 82%, rgba(185, 28, 28, 0.08), transparent 45%),
+        #f3f4f6;
+}
+
+.error-page-inner {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    max-width: 30rem;
+}
+
+/* Manchas decorativas de fondo, meramente estéticas */
+.error-blob {
+    position: absolute;
+    border-radius: 9999px;
+    filter: blur(60px);
+    opacity: 0.6;
+    z-index: 0;
+    pointer-events: none;
+}
+
+.error-blob--one {
+    width: 320px;
+    height: 320px;
+    top: -90px;
+    left: -90px;
+    background: rgba(21, 128, 61, 0.16);
+}
+
+.error-blob--two {
+    width: 260px;
+    height: 260px;
+    bottom: -70px;
+    right: -70px;
+    background: rgba(185, 28, 28, 0.12);
+}
+
+.error-card {
+    background: #fff;
+    border-radius: 1.5rem;
+    padding: 2.75rem 2.25rem;
+    text-align: center;
+    box-shadow: 0 20px 50px -12px rgba(0, 0, 0, 0.15);
+    border: 1px solid rgba(0, 0, 0, 0.04);
+}
+
+.error-icon-wrap {
+    width: 4.5rem;
+    height: 4.5rem;
+    border-radius: 1.25rem;
+    margin: 0 auto 1.25rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.error-icon {
+    font-size: 2.25rem;
+    line-height: 1;
+}
+
+.error-code {
+    display: inline-block;
+    font-size: 0.7rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #fff;
+    padding: 0.35rem 0.9rem;
+    border-radius: 9999px;
+    margin-bottom: 1rem;
+}
+
+.error-title {
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: #1f2937;
+    margin-bottom: 0.6rem;
+    line-height: 1.3;
+}
+
+.error-message {
+    font-size: 0.925rem;
+    color: #6b7280;
+    line-height: 1.65;
+    margin-bottom: 1.75rem;
+}
+
+.error-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 0.65rem;
+}
+
+.error-btn-primary,
+.error-btn-secondary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    width: 100%;
+    padding: 0.8rem 1.25rem;
+    border-radius: 0.85rem;
+    font-size: 0.9rem;
+    font-weight: 700;
+    font-family: inherit;
+    transition: all 0.2s ease;
+    cursor: pointer;
+    border: none;
+}
+
+.error-btn-primary {
+    color: #fff;
+    background: linear-gradient(135deg, #16a34a, #15803d);
+}
+
+.error-btn-primary:hover {
+    opacity: 0.92;
+    transform: translateY(-1px);
+}
+
+.error-btn-secondary {
+    background: #f9fafb;
+    color: #4b5563;
+    border: 1px solid #e5e7eb;
+}
+
+.error-btn-secondary:hover {
+    background: #f3f4f6;
+    color: #1f2937;
+}
+
+.error-footer-brand {
+    text-align: center;
+    margin-top: 1.5rem;
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: #9ca3af;
+}
+
+.error-footer-brand span {
+    color: #15803d;
+}
+
+/* ── Responsividad ── */
+
+/* Desde tablets hacia arriba, los botones van en fila */
+@media (min-width: 480px) {
+    .error-actions {
+        flex-direction: row;
+    }
+}
+
+/* Celulares pequeños: se reduce el padding y las tipografías */
+@media (max-width: 380px) {
+    .error-page-bg {
+        padding: 1.75rem 1rem;
+    }
+
+    .error-card {
+        padding: 2rem 1.25rem;
+        border-radius: 1.25rem;
+    }
+
+    .error-title {
+        font-size: 1.25rem;
+    }
+
+    .error-message {
+        font-size: 0.875rem;
+    }
+
+    .error-icon-wrap {
+        width: 3.75rem;
+        height: 3.75rem;
+        margin-bottom: 1rem;
+    }
+
+    .error-icon {
+        font-size: 1.9rem;
+    }
+}
+
+/* Pantallas muy bajas (celular en horizontal): evita que la tarjeta
+   se corte, permitiendo scroll en vez de recortar contenido */
+@media (max-height: 480px) {
+    .error-page-bg {
+        align-items: flex-start;
+        overflow-y: auto;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .error-card,
+    .error-btn-primary,
+    .error-btn-secondary {
+        transition: none !important;
+    }
+}
