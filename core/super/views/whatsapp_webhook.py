@@ -1,13 +1,13 @@
-import json
+import json, hmac, hashlib
 from django.conf import settings
 from django.http import HttpResponse, JsonResponse
-from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth import get_user_model
 
 from core.super.services.chat_context import ChatContextDirector
 from core.super.services.ai_client import GeminiAIClient
 from core.super.services.whatsapp_service import WhatsAppService
 from core.super.views.chatbot import _build_customer_prompt, _build_guest_prompt
+from django_ratelimit.decorators import ratelimit
 
 User = get_user_model()
 
@@ -17,11 +17,31 @@ User = get_user_model()
 _ai_client = GeminiAIClient(api_key=settings.GEMINI_API_KEY)
 
 
-@csrf_exempt
+def _verify_signature(request) -> bool:
+    """Verifica que el request venga realmente de Meta, comparando la firma
+    HMAC-SHA256 que Meta envía en el header contra una firma calculada
+    localmente con el App Secret (nunca se comparan directo por timing attack)."""
+    signature_header = request.headers.get('X-Hub-Signature-256', '')
+    if not signature_header.startswith('sha256='):
+        return False
+
+    expected_signature = signature_header.split('sha256=')[1]
+    computed_signature = hmac.new(
+        key=settings.WHATSAPP_APP_SECRET.encode('utf-8'),
+        msg=request.body,
+        digestmod=hashlib.sha256
+    ).hexdigest()
+
+    return hmac.compare_digest(expected_signature, computed_signature)
+
+
+@ratelimit(key='ip', rate='30/m', method='POST', block=True)
 def whatsapp_webhook(request):
     if request.method == 'GET':
         return _verify_webhook(request)
     if request.method == 'POST':
+        if not _verify_signature(request):
+            return HttpResponse('Firma inválida', status=403)
         return _handle_incoming_message(request)
     return HttpResponse(status=405)
 

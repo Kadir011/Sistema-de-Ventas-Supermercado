@@ -8,6 +8,8 @@ from django.views.generic.edit import FormView
 from django.contrib.auth.forms import AuthenticationForm
 from django.db import IntegrityError
 from core.security.forms.auth import CustomerRegistrationForm
+from django_ratelimit.decorators import ratelimit
+from django.utils.decorators import method_decorator
 
 
 class UserRegisterView(FormView):
@@ -28,6 +30,7 @@ class UserRegisterView(FormView):
         return self.form_invalid(form)
 
 
+@method_decorator(ratelimit(key='ip', rate='5/m', method='POST', block=True), name='post')
 class UserLoginView(LoginView):
     template_name = 'security/auth/login.html'
     form_class = AuthenticationForm

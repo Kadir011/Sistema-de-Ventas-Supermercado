@@ -7,9 +7,12 @@ from core.super.models import Product
 from django.http import JsonResponse
 from django.db.models import Q
 from django.views.generic import TemplateView
+from django_ratelimit.decorators import ratelimit
+from django.utils.decorators import method_decorator
 
 logger = logging.getLogger(__name__)
 
+@method_decorator(ratelimit(key='ip', rate='30/m', method='POST', block=True), name='post')
 class ScannerTemplate(TemplateView):
     """Vista para escanear códigos de barras y buscar productos en el inventario."""
     template_name = 'super/products/scan_barcode.html'

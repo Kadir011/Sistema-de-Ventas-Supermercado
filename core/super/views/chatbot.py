@@ -8,6 +8,7 @@ from django.http import JsonResponse
 from django.views import View
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
+from django_ratelimit.decorators import ratelimit
 from core.super.services.chat_context import (
     ChatContextDirector,
     get_admin_quick_summary,
@@ -153,6 +154,7 @@ Tu objetivo principal: CONVERTIR al visitante en cliente registrado.
 # ─────────────────────────────────────────────────────────────────
 
 @method_decorator(csrf_exempt, name='dispatch')
+@method_decorator(ratelimit(key='ip', rate='10/m', method='POST', block=True), name='post')
 class ChatbotProxyView(View):
     """
     POST /chatbot/api/
