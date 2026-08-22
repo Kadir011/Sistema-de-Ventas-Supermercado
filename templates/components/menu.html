@@ -29,6 +29,40 @@
 </div>
 {% endif %}
 
+{% if expired_products or expiring_soon_products %}
+<div class="js-notification mb-5 flex items-start gap-3 px-4 py-3 rounded-xl text-sm font-medium bg-red-50 text-red-800 border border-red-200 animate-slide-down" role="alert">
+    <i class='bx bx-calendar-x text-lg flex-shrink-0 mt-0.5'></i>
+    <div class="flex-1">
+        {% if expired_products %}
+        <p class="font-bold">{{ expired_count }} producto{{ expired_count|pluralize }} caducado{{ expired_count|pluralize }} — retirar del inventario</p>
+        <ul class="mt-1.5 space-y-0.5">
+            {% for product in expired_products|slice:":5" %}
+            <li>
+                <a href="{% url 'super:product_list' %}?expiry=expired" class="hover:underline">
+                    {{ product.name }} — venció el {{ product.expiration_date|date:"d/m/Y" }}
+                </a>
+            </li>
+            {% endfor %}
+            {% if expired_count > 5 %}<li class="opacity-70">y {{ expired_count|add:"-5" }} más...</li>{% endif %}
+        </ul>
+        {% endif %}
+        {% if expiring_soon_products %}
+        <p class="font-bold {% if expired_products %}mt-3{% endif %}">{{ expiring_soon_count }} producto{{ expiring_soon_count|pluralize }} por vencer en los próximos 7 días</p>
+        <ul class="mt-1.5 space-y-0.5">
+            {% for product in expiring_soon_products|slice:":5" %}
+            <li>
+                <a href="{% url 'super:product_list' %}?expiry=soon" class="hover:underline">
+                    {{ product.name }} — vence el {{ product.expiration_date|date:"d/m/Y" }}
+                </a>
+            </li>
+            {% endfor %}
+            {% if expiring_soon_count > 5 %}<li class="opacity-70">y {{ expiring_soon_count|add:"-5" }} más...</li>{% endif %}
+        </ul>
+        {% endif %}
+    </div>
+</div>
+{% endif %}
+
 {% if recent_sales_count is not None %}
 <div id="welcome-alert" class="menu-welcome animate-fade-in">
   <div class="welcome-text">

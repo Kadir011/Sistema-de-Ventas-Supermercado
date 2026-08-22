@@ -5,6 +5,7 @@ from django.conf import settings
 from decimal import Decimal
 from config.utils import get_image
 from django.forms import model_to_dict
+from datetime import timedelta
 import uuid
 
 
@@ -190,6 +191,33 @@ class Seller(models.Model):
         ]
 
 
+class ProductQuerySet(models.QuerySet):
+    """
+    Centraliza las reglas de "vendible" en un solo lugar. Antes, cada vista
+    repetía Product.objects.filter(state=True, stock__gt=0) por su cuenta —
+    si una caducidad se agregaba, había que acordarse de tocar las cinco
+    vistas por separado. Ahora es un solo punto de cambio.
+    """
+
+    def not_expired(self):
+        today = timezone.now().date()
+        # Un producto SIN fecha de vencimiento (None) nunca se considera caducado.
+        return self.filter(Q(expiration_date__isnull=True) | Q(expiration_date__gte=today))
+
+    def expired(self):
+        today = timezone.now().date()
+        return self.filter(expiration_date__lt=today)
+
+    def expiring_soon(self, days=7):
+        today = timezone.now().date()
+        limit = today + timedelta(days=days)
+        return self.filter(expiration_date__gte=today, expiration_date__lte=limit)
+
+    def available(self):
+        """Productos realmente vendibles: activos, con stock, y no caducados."""
+        return self.filter(state=True, stock__gt=0).not_expired()
+    
+    
 class Product(models.Model):
     id_product = models.AutoField(primary_key=True, verbose_name="ID", blank=False, null=False, unique=True)
     brand = models.ForeignKey(Brand, on_delete=models.SET_NULL, verbose_name="Marca", blank=True, null=True)
@@ -209,9 +237,27 @@ class Product(models.Model):
         help_text="Se llena automáticamente al crear el producto. Distinta de 'Fecha de elaboración'.",
     )
 
+    # Manager custom — reemplaza al Manager por defecto implícito.
+    # No requiere migración: los managers no son parte del esquema de BD.
+    objects = ProductQuerySet.as_manager()
+
     @property
     def id(self):
         return self.id_product
+
+    @property
+    def is_expired(self):
+        """True si la fecha de vencimiento ya pasó."""
+        return bool(self.expiration_date and self.expiration_date < timezone.now().date())
+
+    def is_expiring_soon(self, days=7):
+        """
+        True si vence dentro de los próximos `days` días y todavía no caducó.
+        Sin argumento en el template ({{ product.is_expiring_soon }}) usa 7 por defecto.
+        """
+        if not self.expiration_date or self.is_expired:
+            return False
+        return self.expiration_date <= timezone.now().date() + timedelta(days=days)
 
     def save(self, *args, **kwargs):
         self.state = self.stock > 0

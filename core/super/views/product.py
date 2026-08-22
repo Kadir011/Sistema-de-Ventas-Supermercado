@@ -23,6 +23,7 @@ class ProductListView(AdminRequiredMixin, ListView):
         category_id = self.request.GET.get('category')
         brand_id = self.request.GET.get('brand')
         state = self.request.GET.get('state')
+        expiry = self.request.GET.get('expiry')
 
         query = Q()
         if q:
@@ -40,6 +41,10 @@ class ProductListView(AdminRequiredMixin, ListView):
             qs = qs.filter(brand_id=brand_id)
         if state in ('1', '0'):
             qs = qs.filter(state=(state == '1'))
+        if expiry == 'expired':
+            qs = qs.expired()
+        elif expiry == 'soon':
+            qs = qs.expiring_soon()
 
         return qs.order_by('id_product')
 
@@ -53,6 +58,7 @@ class ProductListView(AdminRequiredMixin, ListView):
         context['selected_category'] = self.request.GET.get('category', '')
         context['selected_brand'] = self.request.GET.get('brand', '')
         context['selected_state'] = self.request.GET.get('state', '')
+        context['selected_expiry'] = self.request.GET.get('expiry', '')
         return context
     
 class ProductCreateView(AdminRequiredMixin, CreateView):

@@ -16,8 +16,10 @@ class ShopView(LoginRequiredMixin, ListView):
     login_url = '/security/login/'
 
     def get_queryset(self):
-        queryset = Product.objects.filter(state=True, stock__gt=0)
-        
+        # available() ya excluye state=False, stock=0 y productos caducados —
+        # antes esto solo filtraba por state y stock.
+        queryset = Product.objects.available()
+
         category_id = self.request.GET.get('category')
         brand_id = self.request.GET.get('brand')
         search_query = self.request.GET.get('search')
@@ -31,7 +33,7 @@ class ShopView(LoginRequiredMixin, ListView):
                 Q(name__icontains=search_query) |
                 Q(description__icontains=search_query)
             )
-        
+
         return queryset.order_by('name')
 
     def get_context_data(self, **kwargs):
@@ -43,9 +45,6 @@ class ShopView(LoginRequiredMixin, ListView):
         context['selected_category'] = self.request.GET.get('category')
         context['search_query'] = self.request.GET.get('search', '')
 
-        # Aviso de productos agotándose (visible al cliente al entrar a la
-        # tienda). Solo cuenta stock 1-5: en 0 el producto ya ni aparece
-        # en el listado, porque get_queryset() filtra stock__gt=0.
         context['low_stock_products'] = Product.objects.filter(
             state=True, stock__gt=0, stock__lte=5
         ).order_by('stock')

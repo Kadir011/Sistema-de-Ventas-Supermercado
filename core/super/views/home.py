@@ -25,8 +25,8 @@ class HomeView(TemplateView):
     
 class MenuView(AdminRequiredMixin, TemplateView):
     """
-    Vista de menú o panel de admin incluyendo el notificador de ventas realizadas en tiempo real
-    y la alerta de productos con stock bajo o agotado.
+    Vista de menú o panel de admin incluyendo el notificador de ventas realizadas en tiempo real,
+    la alerta de productos con stock bajo o agotado, y la alerta de productos caducados/por vencer.
     """
     
     template_name = 'components/menu.html'
@@ -34,12 +34,12 @@ class MenuView(AdminRequiredMixin, TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-
+        
         # Ventas de las últimas 24 horas para la notificación de bienvenida
         since = timezone.now() - timedelta(hours=24)
         recent_sales_count = Sale.objects.filter(sale_date__gte=since).count()
         context['recent_sales_count'] = recent_sales_count
-
+        
         # Alerta de stock bajo/agotado: productos activos con stock <= 5.
         # Se calcula al vuelo (sin modelo ni señal aparte) porque solo se
         # necesita al entrar al panel, no un historial persistente.
@@ -49,6 +49,16 @@ class MenuView(AdminRequiredMixin, TemplateView):
         context['low_stock_products'] = low_stock_products
         context['low_stock_count'] = low_stock_products.count()
         context['out_of_stock_count'] = low_stock_products.filter(stock=0).count()
+
+        # Caducidad: se muestra sin filtrar por state, porque un producto
+        # caducado igual necesita atención del admin aunque ya esté
+        # marcado como agotado por otro motivo.
+        expired_products = Product.objects.expired().order_by('expiration_date')
+        expiring_soon_products = Product.objects.filter(state=True, stock__gt=0).expiring_soon().order_by('expiration_date')
+        context['expired_products'] = expired_products
+        context['expired_count'] = expired_products.count()
+        context['expiring_soon_products'] = expiring_soon_products
+        context['expiring_soon_count'] = expiring_soon_products.count()
 
         return context
 

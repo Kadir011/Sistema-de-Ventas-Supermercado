@@ -91,7 +91,7 @@ class SaleCreateView(AdminRequiredMixin, CreateView):
         context['title'] = 'Registrar Venta'
         context['grabar'] = 'Crear Venta'
         context['back_url'] = self.success_url
-        context['products'] = Product.objects.filter(state=True, stock__gt=0)
+        context['products'] = Product.objects.available()
         # ── Idempotencia ──────────────────────────────────────────────────
         # UUID generado al abrir el formulario de creación (GET).
         # El JS lo incluye en el payload JSON que envía al servidor.

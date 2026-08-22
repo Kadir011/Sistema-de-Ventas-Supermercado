@@ -61,11 +61,18 @@
                         Stock: {{ p.stock }}
                     </div>
 
-                    {% if p.stock <= 5 %}
-                    <div class="absolute top-2 left-2 bg-amber-500 text-white px-2 py-1 rounded-full text-xs font-bold flex items-center gap-1">
-                        <i class='bx bx-time-five'></i> Últimas unidades
+                    <div class="absolute top-2 left-2 flex flex-col gap-1 items-start">
+                        {% if p.stock <= 5 %}
+                        <div class="bg-amber-500 text-white px-2 py-1 rounded-full text-xs font-bold flex items-center gap-1">
+                            <i class='bx bx-time-five'></i> Últimas unidades
+                        </div>
+                        {% endif %}
+                        {% if p.is_expiring_soon %}
+                        <div class="bg-orange-600 text-white px-2 py-1 rounded-full text-xs font-bold flex items-center gap-1">
+                            <i class='bx bx-calendar-exclamation'></i> Por vencer
+                        </div>
+                        {% endif %}
                     </div>
-                    {% endif %}
                 </div>
                 
                 <div class="p-4">
@@ -128,9 +135,6 @@
 </div>
 
 <script>
-/* CRÍTICO corregido: fetch usa POST con X-CSRFToken.
-   GET con side effects puede ser cacheado por proxies y
-   no incluye protección CSRF. */
 function getCsrfToken() {
     const name = 'csrftoken';
     const cookies = document.cookie.split(';');
@@ -164,9 +168,6 @@ function addToCart(productId) {
     });
 }
 
-// showNotification() ahora vive en static/js/notifications.js (con "x" y 10s de autocierre)
-
-/* Delegación de eventos para los botones de agregar al carrito */
 document.addEventListener('DOMContentLoaded', function () {
     document.querySelectorAll('.btn-add-cart').forEach(function(btn) {
         btn.addEventListener('click', function() {

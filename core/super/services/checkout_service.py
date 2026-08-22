@@ -108,22 +108,17 @@ class CheckoutService:
         """
         Registra el detalle de venta y descuenta el stock de cada producto.
 
-        Antes: se leía item.product.stock y se restaba en Python sin bloqueo,
-        el mismo patrón de condición de carrera que ya existía en sale.py antes
-        de corregirlo. Si dos clientes pagaban el mismo producto (stock=1) casi
-        al mismo tiempo, ambos podían leer stock=1, ambos restar 1, y el
-        resultado final quedaba en 0 en vez de -1 — es decir, la SEGUNDA venta
-        se registraba como exitosa aunque ya no quedara stock real.
-
-        Ahora: select_for_update() bloquea la fila del producto hasta que esta
-        transacción (el @transaction.atomic de CheckoutView.post) termina. Si
-        dos checkouts concurrentes compran el mismo producto, el segundo queda
-        esperando al primero y, cuando le toca, ya ve el stock actualizado —
-        por lo que su compra falla limpiamente con un ValueError en vez de
-        generar una venta fantasma.
+        select_for_update() bloquea la fila del producto (fix del race
+        condition de stock). Aquí también se revalida is_expired: un
+        producto pudo caducar entre que el cliente lo agregó al carrito
+        y el momento en que paga — mismo principio de "revalidar en el
+        instante crítico" que ya se aplica al stock.
         """
         for item in items:
             product = Product.objects.select_for_update().get(pk=item.product_id)
+
+            if product.is_expired:
+                raise ValueError(f"'{product.name}' está caducado y no se puede vender.")
 
             if product.stock < item.quantity:
                 raise ValueError(
@@ -139,8 +134,6 @@ class CheckoutService:
                 subtotal=item.get_subtotal(),
             )
 
-            # Descuento atómico en la BD con F() — igual que en sale.py,
-            # inmune a condiciones de carrera incluso fuera del bloqueo.
             Product.objects.filter(pk=product.pk).update(stock=F('stock') - item.quantity)
 
         items.delete()
