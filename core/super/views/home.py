@@ -25,7 +25,8 @@ class HomeView(TemplateView):
     
 class MenuView(AdminRequiredMixin, TemplateView):
     """
-    Vista de menú o panel de admin incluyendo el notificador de ventas realizadas en tiempo real. 
+    Vista de menú o panel de admin incluyendo el notificador de ventas realizadas en tiempo real
+    y la alerta de productos con stock bajo o agotado.
     """
     
     template_name = 'components/menu.html'
@@ -38,7 +39,17 @@ class MenuView(AdminRequiredMixin, TemplateView):
         since = timezone.now() - timedelta(hours=24)
         recent_sales_count = Sale.objects.filter(sale_date__gte=since).count()
         context['recent_sales_count'] = recent_sales_count
-        
+
+        # Alerta de stock bajo/agotado: productos activos con stock <= 5.
+        # Se calcula al vuelo (sin modelo ni señal aparte) porque solo se
+        # necesita al entrar al panel, no un historial persistente.
+        low_stock_products = Product.objects.filter(
+            state=True, stock__lte=5
+        ).order_by('stock')
+        context['low_stock_products'] = low_stock_products
+        context['low_stock_count'] = low_stock_products.count()
+        context['out_of_stock_count'] = low_stock_products.filter(stock=0).count()
+
         return context
 
 class AboutView(TemplateView):

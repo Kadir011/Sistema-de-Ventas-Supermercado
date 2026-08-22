@@ -36,6 +36,17 @@
             </div>
         </form>
     </div>
+
+    {% if low_stock_products %}
+    <div class="js-notification mb-5 flex items-start gap-3 px-4 py-3 rounded-xl text-sm font-medium bg-amber-50 text-amber-800 border border-amber-200 animate-slide-down" role="alert">
+        <i class='bx bx-time-five text-lg flex-shrink-0 mt-0.5'></i>
+        <span class="flex-1">
+            ¡Últimas unidades! {{ low_stock_products.count }} producto{{ low_stock_products.count|pluralize }}
+            se está{{ low_stock_products.count|pluralize:",n" }} agotando:
+            {% for product in low_stock_products|slice:":4" %}{{ product.name }}{% if not forloop.last %}, {% endif %}{% endfor %}{% if low_stock_products.count > 4 %} y más{% endif %}.
+        </span>
+    </div>
+    {% endif %}
     
     {% if products %}
         <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
@@ -49,6 +60,12 @@
                     <div class="absolute top-2 right-2 bg-green-600 text-white px-2 py-1 rounded-full text-xs font-bold">
                         Stock: {{ p.stock }}
                     </div>
+
+                    {% if p.stock <= 5 %}
+                    <div class="absolute top-2 left-2 bg-amber-500 text-white px-2 py-1 rounded-full text-xs font-bold flex items-center gap-1">
+                        <i class='bx bx-time-five'></i> Últimas unidades
+                    </div>
+                    {% endif %}
                 </div>
                 
                 <div class="p-4">
@@ -57,8 +74,10 @@
                     
                     <div class="flex justify-between items-center mb-3">
                         <span class="text-2xl font-bold text-green-600">${{ p.price|floatformat:2 }}</span>
-                        {% if p.stock > 0 %}
+                        {% if p.stock > 5 %}
                             <span class="text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full">Disponible</span>
+                        {% elif p.stock > 0 %}
+                            <span class="text-xs bg-amber-100 text-amber-700 px-2 py-1 rounded-full">¡Se agota!</span>
                         {% else %}
                             <span class="text-xs bg-red-100 text-red-700 px-2 py-1 rounded-full">Agotado</span>
                         {% endif %}

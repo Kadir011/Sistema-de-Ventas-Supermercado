@@ -1,6 +1,7 @@
 from decimal import Decimal
 from django.utils import timezone
-from core.super.models import Sale, SaleDetail, Customer, Seller, PaymentMethod
+from django.db.models import F
+from core.super.models import Sale, SaleDetail, Customer, Seller, PaymentMethod, Product
 
 # SRP — Extraer servicios de CheckoutView y sale.py
 
@@ -102,16 +103,44 @@ class CheckoutService:
             change=change,
         )
     
-    # Método que se encarga de guardar los detalles de la venta
+    # Método que se encarga de guardar los detalles de la venta y descontar el stock
     def register_items(self, sale, items):
+        """
+        Registra el detalle de venta y descuenta el stock de cada producto.
+
+        Antes: se leía item.product.stock y se restaba en Python sin bloqueo,
+        el mismo patrón de condición de carrera que ya existía en sale.py antes
+        de corregirlo. Si dos clientes pagaban el mismo producto (stock=1) casi
+        al mismo tiempo, ambos podían leer stock=1, ambos restar 1, y el
+        resultado final quedaba en 0 en vez de -1 — es decir, la SEGUNDA venta
+        se registraba como exitosa aunque ya no quedara stock real.
+
+        Ahora: select_for_update() bloquea la fila del producto hasta que esta
+        transacción (el @transaction.atomic de CheckoutView.post) termina. Si
+        dos checkouts concurrentes compran el mismo producto, el segundo queda
+        esperando al primero y, cuando le toca, ya ve el stock actualizado —
+        por lo que su compra falla limpiamente con un ValueError en vez de
+        generar una venta fantasma.
+        """
         for item in items:
+            product = Product.objects.select_for_update().get(pk=item.product_id)
+
+            if product.stock < item.quantity:
+                raise ValueError(
+                    f"Stock insuficiente para '{product.name}'. "
+                    f"Disponible: {product.stock}, solicitado: {item.quantity}"
+                )
+
             SaleDetail.objects.create(
                 sale=sale,
-                product=item.product,
+                product=product,
                 quantity=item.quantity,
-                price=item.product.price,
+                price=product.price,
                 subtotal=item.get_subtotal(),
             )
-            item.product.stock -= item.quantity
-            item.product.save()
+
+            # Descuento atómico en la BD con F() — igual que en sale.py,
+            # inmune a condiciones de carrera incluso fuera del bloqueo.
+            Product.objects.filter(pk=product.pk).update(stock=F('stock') - item.quantity)
+
         items.delete()

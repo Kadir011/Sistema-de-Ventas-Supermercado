@@ -42,6 +42,14 @@ class ShopView(LoginRequiredMixin, ListView):
         context['selected_brand'] = self.request.GET.get('brand')
         context['selected_category'] = self.request.GET.get('category')
         context['search_query'] = self.request.GET.get('search', '')
+
+        # Aviso de productos agotándose (visible al cliente al entrar a la
+        # tienda). Solo cuenta stock 1-5: en 0 el producto ya ni aparece
+        # en el listado, porque get_queryset() filtra stock__gt=0.
+        context['low_stock_products'] = Product.objects.filter(
+            state=True, stock__gt=0, stock__lte=5
+        ).order_by('stock')
+
         return context
 
 

@@ -5,6 +5,30 @@
 
 <link rel="stylesheet" href="{% static 'css/components/menu.css' %}">
 
+{% if low_stock_products %}
+<div class="js-notification mb-5 flex items-start gap-3 px-4 py-3 rounded-xl text-sm font-medium bg-amber-50 text-amber-800 border border-amber-200 animate-slide-down" role="alert">
+    <i class='bx bx-error-circle text-lg flex-shrink-0 mt-0.5'></i>
+    <div class="flex-1">
+        <p class="font-bold">
+            {% if out_of_stock_count %}{{ out_of_stock_count }} producto{{ out_of_stock_count|pluralize }} agotado{{ out_of_stock_count|pluralize }} y {% endif %}
+            {{ low_stock_count }} producto{{ low_stock_count|pluralize }} con stock bajo
+        </p>
+        <ul class="mt-1.5 space-y-0.5">
+            {% for product in low_stock_products|slice:":5" %}
+            <li>
+                <a href="{% url 'super:product_list' %}" class="hover:underline">
+                    {{ product.name }} — {% if product.stock == 0 %}agotado{% else %}quedan {{ product.stock }} unidades{% endif %}
+                </a>
+            </li>
+            {% endfor %}
+            {% if low_stock_products.count > 5 %}
+            <li class="opacity-70">y {{ low_stock_products.count|add:"-5" }} más...</li>
+            {% endif %}
+        </ul>
+    </div>
+</div>
+{% endif %}
+
 {% if recent_sales_count is not None %}
 <div id="welcome-alert" class="menu-welcome animate-fade-in">
   <div class="welcome-text">
