@@ -51,7 +51,7 @@
     {% if products %}
         <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
             {% for p in products %}
-            <div class="bg-white rounded-lg shadow-md hover:shadow-xl transition-all overflow-hidden group">
+            <div class="bg-white rounded-lg shadow-md hover:shadow-xl transition-all overflow-hidden group flex flex-col">
                 <div class="relative h-48 bg-gray-100 overflow-hidden">
                     <img src="{{ p.get_image_url }}" 
                          alt="{{ p.name }}" 
@@ -75,7 +75,7 @@
                     </div>
                 </div>
                 
-                <div class="p-4">
+                <div class="p-4 flex flex-col flex-1">
                     <h3 class="text-lg font-bold text-gray-800 mb-2 truncate">{{ p.name }}</h3>
                     <p class="text-gray-600 text-sm mb-3 line-clamp-2">{{ p.description|truncatewords:10 }}</p>
                     
@@ -90,15 +90,20 @@
                         {% endif %}
                     </div>
                     
-                    <div class="flex gap-2">
+                    <!-- Botones de acción: fijos abajo de la tarjeta (mt-auto) para que
+                         alineen entre sí sin importar el largo de la descripción de cada
+                         producto. Mismo estilo visual que product_list.html (admin). -->
+                    <div class="mt-auto pt-3 border-t border-gray-100 grid grid-cols-2 gap-2">
                         <a href="{% url 'super:product_detail_customer' p.pk %}" 
-                           class="flex-1 bg-blue-500 text-white text-center py-2 rounded-lg hover:bg-blue-600 transition-all text-sm">
-                            <i class='bx bx-show'></i> Ver
+                           class="flex flex-col items-center justify-center gap-1 bg-blue-50 hover:bg-blue-600 text-blue-600 hover:text-white py-2 rounded-xl font-semibold text-xs transition-all duration-200">
+                            <i class='bx bx-show text-lg'></i>
+                            <span>Ver</span>
                         </a>
                         <!--CRÍTICO corregido: data-product-id en lugar de onclick con id inline-->
                         <button data-product-id="{{ p.id_product }}"
-                                class="btn-add-cart flex-1 bg-green-600 text-white py-2 rounded-lg hover:bg-green-700 transition-all text-sm">
-                            <i class='bx bx-cart-add'></i> Agregar
+                                class="btn-add-cart flex flex-col items-center justify-center gap-1 bg-green-50 hover:bg-green-600 text-green-600 hover:text-white py-2 rounded-xl font-semibold text-xs transition-all duration-200">
+                            <i class='bx bx-cart-add text-lg'></i>
+                            <span>Agregar</span>
                         </button>
                     </div>
                 </div>
