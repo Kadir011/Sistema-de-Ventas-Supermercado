@@ -24,6 +24,45 @@ def _get_out_of_stock_count() -> int:
     return Product.objects.filter(stock=0).count()
 
 
+def _get_out_of_stock_products(limit: int = 10) -> list[dict]:
+    """Nombres de productos agotados (stock=0), para que el admin sepa CUÁLES,
+    no solo cuántos. El count numérico se mantiene aparte para el resumen."""
+    return list(
+        Product.objects
+        .filter(stock=0)
+        .select_related('category', 'brand')
+        .order_by('-created_at')
+        .values('name', 'category__name')[:limit]
+    )
+
+
+def _get_expiring_soon_products(days: int = 7, limit: int = 10) -> list[dict]:
+    """Productos vendibles (no caducados, con stock) que vencen dentro de `days` días."""
+    return list(
+        Product.objects.available()
+        .expiring_soon(days)
+        .select_related('category', 'brand')
+        .order_by('expiration_date')
+        .values('name', 'expiration_date', 'stock')[:limit]
+    )
+
+
+def _get_expired_products(limit: int = 10) -> list[dict]:
+    """
+    Productos caducados, sin filtrar por stock/state — un producto puede seguir
+    con stock físico y state=True (porque state solo depende del stock) pero ya
+    no ser vendible por fecha. Esto es información operativa para el admin
+    (qué retirar de percha); los clientes nunca ven esta lista porque
+    available() ya los excluye del catálogo que se les muestra.
+    """
+    return list(
+        Product.objects.expired()
+        .select_related('category', 'brand')
+        .order_by('-expiration_date')
+        .values('name', 'expiration_date', 'stock')[:limit]
+    )
+
+
 def _get_recent_products(days: int = 14, limit: int = 10):
     """
     Productos agregados al catálogo recientemente (created_at, NO
@@ -59,26 +98,51 @@ class StoreContextBuilder:
     def build(self) -> str:
         categories = list(Category.objects.values_list('name', flat=True).order_by('name'))
         brands = list(Brand.objects.values_list('name', flat=True).order_by('name'))
+        # available() = state=True + stock>0 + no caducado. Antes este filtro
+        # solo miraba state/stock, así que un producto caducado con stock
+        # físico todavía se le mostraba al bot como comprable. Con available()
+        # el catálogo que ve el bot es exactamente el mismo que ve la tienda.
         products = (
             Product.objects
-            .filter(state=True, stock__gt=0)
+            .available()
             .select_related('category', 'brand')
             .order_by('name')
         )
 
-        lines = [
-            f"  - {p.name} | Categoría: {p.category.name if p.category else 'Sin categoría'}"
-            f" | Marca: {p.brand.name if p.brand else 'Sin marca'}"
-            f" | Precio: ${p.price:.2f} | Stock: {p.stock}"
-            for p in products
-        ]
+        lines = []
+        for p in products:
+            tags = []
+            if p.stock <= 5:
+                tags.append("⚠️ POCO STOCK")
+            if p.is_expiring_soon():
+                tags.append("⏰ POR VENCER PRONTO")
+            tag_str = f" | {' '.join(tags)}" if tags else ""
+            exp_str = f" | Vence: {p.expiration_date.strftime('%d/%m/%Y')}" if p.expiration_date else ""
+
+            lines.append(
+                f"  - {p.name} | Categoría: {p.category.name if p.category else 'Sin categoría'}"
+                f" | Marca: {p.brand.name if p.brand else 'Sin marca'}"
+                f" | Precio: ${p.price:.2f} | Stock: {p.stock}{exp_str}{tag_str}"
+            )
 
         parts = []
         if categories:
             parts.append("CATEGORÍAS:\n  " + ", ".join(categories))
         if brands:
             parts.append("MARCAS:\n  " + ", ".join(brands))
-        parts.append("PRODUCTOS:\n" + ("\n".join(lines) if lines else "Sin productos disponibles."))
+        parts.append("PRODUCTOS DISPONIBLES PARA VENTA:\n" + ("\n".join(lines) if lines else "Sin productos disponibles."))
+
+        # ── Productos por vencer pronto (subconjunto de los de arriba) ──────
+        # Sección aparte, además del tag inline, para que el bot pueda
+        # responder directo a "¿qué está por caducar?" sin tener que barrer
+        # todo el listado de productos buscando el tag.
+        expiring_soon = _get_expiring_soon_products(days=7)
+        if expiring_soon:
+            exp_lines = [
+                f"  - {p['name']} | Vence: {p['expiration_date'].strftime('%d/%m/%Y')} | Stock: {p['stock']}"
+                for p in expiring_soon
+            ]
+            parts.append("PRODUCTOS POR VENCER EN LOS PRÓXIMOS 7 DÍAS:\n" + "\n".join(exp_lines))
 
         # ── Productos agregados recientemente ───────────────────────────
         recent_products, within_window = _get_recent_products(days=14, limit=10)
@@ -170,9 +234,14 @@ class SalesContextBuilder:
                 for i, tp in enumerate(top_products, 1)
             ]
 
-            # Alertas de stock bajo
+            # Alertas de stock bajo / agotado
             low_stock = _get_low_stock_products(threshold=5)
+            out_of_stock_products = _get_out_of_stock_products()
             out_count = _get_out_of_stock_count()
+
+            # Alertas de caducidad
+            expired_products = _get_expired_products()
+            expiring_soon = _get_expiring_soon_products(days=7)
 
             parts = [
                 "RESUMEN DE VENTAS (tiempo real):",
@@ -191,9 +260,13 @@ class SalesContextBuilder:
                 parts.append("\nTOP 5 PRODUCTOS (últimos 30 días):")
                 parts.extend(top_lines)
 
-            # Alertas de inventario
-            parts.append(f"\nALERTAS DE INVENTARIO:")
-            parts.append(f"  • Productos agotados: {out_count}")
+            # Alertas de inventario (stock)
+            parts.append(f"\nALERTAS DE INVENTARIO — STOCK:")
+            parts.append(f"  • Total de productos agotados: {out_count}")
+            if out_of_stock_products:
+                parts.append("  • Agotados:")
+                for p in out_of_stock_products:
+                    parts.append(f"    - {p['name']} | Cat: {p['category__name'] or 'N/A'}")
             if low_stock:
                 parts.append(f"  • Stock crítico (≤5 unidades):")
                 for p in low_stock:
@@ -201,8 +274,25 @@ class SalesContextBuilder:
                         f"    - {p['name']} | Stock: {p['stock']} | "
                         f"Cat: {p['category__name'] or 'N/A'}"
                     )
-            else:
-                parts.append("  • Sin productos en stock crítico ✅")
+            if not out_of_stock_products and not low_stock:
+                parts.append("  • Sin alertas de stock ✅")
+
+            # Alertas de caducidad
+            parts.append(f"\nALERTAS DE INVENTARIO — CADUCIDAD:")
+            if expired_products:
+                parts.append("  • CADUCADOS (retirar de percha/venta):")
+                for p in expired_products:
+                    parts.append(
+                        f"    - {p['name']} | Venció: {p['expiration_date'].strftime('%d/%m/%Y')} | Stock físico: {p['stock']}"
+                    )
+            if expiring_soon:
+                parts.append("  • Por vencer en los próximos 7 días:")
+                for p in expiring_soon:
+                    parts.append(
+                        f"    - {p['name']} | Vence: {p['expiration_date'].strftime('%d/%m/%Y')} | Stock: {p['stock']}"
+                    )
+            if not expired_products and not expiring_soon:
+                parts.append("  • Sin alertas de caducidad ✅")
 
             return "\n".join(parts)
 
@@ -287,7 +377,7 @@ class GuestContextBuilder:
     """Contexto mínimo y motivador para visitantes no autenticados."""
 
     def build(self) -> str:
-        total_products = Product.objects.filter(state=True, stock__gt=0).count()
+        total_products = Product.objects.available().count()
         total_cats = Category.objects.count()
         total_brands = Brand.objects.count()
         return (
@@ -375,6 +465,8 @@ def get_admin_quick_summary() -> dict:
 
         low_stock = _get_low_stock_products(5)
         out_count = _get_out_of_stock_count()
+        expired_count = Product.objects.expired().count()
+        expiring_soon_count = len(_get_expiring_soon_products(days=7))
 
         return {
             'count_24h': count_24h,
@@ -382,6 +474,8 @@ def get_admin_quick_summary() -> dict:
             'total_7d':  float(total_7d),
             'low_stock_count': len(low_stock),
             'out_of_stock': out_count,
+            'expired_count': expired_count,
+            'expiring_soon_count': expiring_soon_count,
             'low_stock_items': [
                 {'name': p['name'], 'stock': p['stock']}
                 for p in low_stock[:3]
