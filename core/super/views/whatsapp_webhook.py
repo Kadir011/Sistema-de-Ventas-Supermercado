@@ -1,5 +1,6 @@
 import json, hmac, hashlib
 from django.conf import settings
+from django.core.cache import cache
 from django.http import HttpResponse, JsonResponse
 from django.contrib.auth import get_user_model
 
@@ -11,10 +12,12 @@ from django_ratelimit.decorators import ratelimit
 
 User = get_user_model()
 
-# Un solo cliente Gemini reutilizado entre requests, igual que hace
-# ChatbotProxyView vía su __init__ (evita crear un genai.Client nuevo
-# en cada mensaje de WhatsApp).
 _ai_client = GeminiAIClient(api_key=settings.GEMINI_API_KEY)
+
+# TTL de la marca "ya se presentó a este número". Pasado este tiempo sin
+# escribir, se vuelve a presentar — igual que hacen los bots de WhatsApp
+# reales cuando el cliente reaparece después de un buen rato.
+GREETED_CACHE_TTL = 60 * 60 * 6  # 6 horas
 
 
 def _verify_signature(request) -> bool:
@@ -78,7 +81,7 @@ def _handle_incoming_message(request):
             return JsonResponse({'status': 'ok'})
 
         user = _find_user_by_phone(from_number)
-        reply_text = _generate_reply(user, text)
+        reply_text = _generate_reply(user, text, from_number)
 
         WhatsAppService().send_message(from_number, reply_text)
         return JsonResponse({'status': 'ok'})
@@ -106,7 +109,23 @@ def _find_user_by_phone(phone_number: str):
     return User.objects.filter(phone_number__icontains=local_digits).first()
 
 
-def _generate_reply(user, message_text: str) -> str:
+def _is_first_contact(phone_number: str) -> bool:
+    """
+    True si este número no ha escrito en las últimas GREETED_CACHE_TTL horas
+    (o nunca). Marca el número como "ya saludado" en el mismo paso.
+
+    WhatsApp no manda `history` como el chat web — cada mensaje es un turno
+    aislado — así que sin esto el bot se presentaría en TODOS los mensajes,
+    no solo en el primero.
+    """
+    cache_key = f"whatsapp_greeted_{phone_number}"
+    if cache.get(cache_key):
+        return False
+    cache.set(cache_key, True, GREETED_CACHE_TTL)
+    return True
+
+
+def _generate_reply(user, message_text: str, from_number: str) -> str:
     """
     Reutiliza EXACTAMENTE el mismo pipeline que ChatbotProxyView (chat web):
     ChatContextDirector arma el contexto por rol, el prompt correspondiente
@@ -126,6 +145,15 @@ def _generate_reply(user, message_text: str) -> str:
     else:
         ctx = director.build_for_role(role='guest')
         system_prompt = _build_guest_prompt(ctx)
+
+    # El prompt base dice "preséntate si el historial está vacío" — como aquí
+    # el historial SIEMPRE es [], esa condición se cumpliría en cada mensaje.
+    # Sobreescribimos la instrucción explícitamente según si ya se presentó
+    # o no a este número recientemente.
+    if _is_first_contact(from_number):
+        system_prompt += "\n\nEste es el PRIMER mensaje de este número en las últimas horas — preséntate por tu nombre de forma breve antes de responder."
+    else:
+        system_prompt += "\n\nYa te presentaste a este número recientemente — NO vuelvas a decir tu nombre ni a presentarte, responde directo al mensaje."
 
     try:
         return _ai_client.generate(system_prompt, [], message_text)
