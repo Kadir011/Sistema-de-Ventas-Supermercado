@@ -16,7 +16,7 @@ from core.super.services.chat_context import (
 )
 from core.super.services.ai_client import GeminiAIClient
 
-BOT_NAME = "Gabo" # Nombre del bot
+BOT_NAME = "Gabot"  # Nombre del bot
 
 # ─────────────────────────────────────────────────────────────────
 # Prompts por rol

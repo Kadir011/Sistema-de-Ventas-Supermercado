@@ -10,6 +10,8 @@
  */
 
 document.addEventListener("DOMContentLoaded", () => {
+    // Nombre del Bot
+    const BOT_NAME = "Gabot";
 
     /* ── Contexto del usuario ─────────────────────────────────── */
     const userRole = (typeof CHATBOT_USER_ROLE !== "undefined") ? CHATBOT_USER_ROLE : "guest";
@@ -162,12 +164,12 @@ document.addEventListener("DOMContentLoaded", () => {
     /* ── Mensajes de bienvenida ───────────────────────────────── */
     function getWelcomeText() {
         if (userRole === 'admin') {
-            return `¡Hola, ${userName}! 👋 Soy tu asistente de gestión.\n\nPuedes preguntarme sobre ventas, stock, métricas del negocio o pedirme que te guíe a cualquier sección del panel.`;
+            return `¡Hola, ${userName}! 👋 Soy ${BOT_NAME}, tu asistente de gestión.\n\nPuedes preguntarme sobre ventas, stock, métricas del negocio o pedirme que te guíe a cualquier sección del panel.`;
         }
         if (userRole === 'customer') {
-            return `¡Hola, ${userName}! 👋 Soy tu asistente de compras.\n\nPuedo ayudarte a encontrar productos, conocer precios, guiarte en el proceso de compra o consultar tus pedidos anteriores.`;
+            return `¡Hola, ${userName}! 👋 Soy ${BOT_NAME}, tu asistente de compras.\n\nPuedo ayudarte a encontrar productos, conocer precios, guiarte en el proceso de compra o consultar tus pedidos anteriores.`;
         }
-        return `¡Hola! 👋 Bienvenido a My Supermarket.\n\nExplora nuestro catálogo, conoce nuestros productos y regístrate gratis para empezar a comprar. ¿En qué te puedo ayudar?`;
+        return `¡Hola! 👋 Soy ${BOT_NAME}, tu asistente en My Supermarket.\n\nExplora nuestro catálogo, conoce nuestros productos y regístrate gratis para empezar a comprar. ¿En qué te puedo ayudar?`;
     }
 
     /* ── Renderizado de botones de acción rápida ─────────────── */
