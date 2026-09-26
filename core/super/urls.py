@@ -88,4 +88,5 @@ urlpatterns = [
     path('privacidad/', legal.PrivacyPolicyView.as_view(), name='privacy_policy'),
     path('terminos/', legal.TermsOfServiceView.as_view(), name='terms_of_service'),
     path('eliminar-datos/', legal.DataDeletionView.as_view(), name='data_deletion'),
+    path('reembolsos/', legal.RefundPolicyView.as_view(), name='refund_policy'),
 ]

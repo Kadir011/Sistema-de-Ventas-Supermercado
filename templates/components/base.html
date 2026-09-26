@@ -90,7 +90,7 @@
                 <div style="border-top: 1px solid rgba(255,255,255,0.1); margin: 6px 0;"></div>
                 
                 <div class="px-4 py-2 flex items-center gap-3">
-                    <img src="{{ user.get_image_url }}" class="w-8 h-8 rounded-full object-cover border border-white/20">
+                    <img src="{{ user.get_image_url }}" alt="Foto de perfil de {{ user.get_full_name|default:user.username }}" class="w-8 h-8 rounded-full object-cover border border-white/20">
                     <div class="text-xs font-semibold" style="color: rgba(255,255,255,0.5); text-transform: uppercase; letter-spacing: 0.08em;">
                         {{ user.get_full_name }} &bull; {{ user.username }}
                     </div>
@@ -184,7 +184,7 @@
                 
                 {% if user.is_authenticated %}
                     <div class="px-4 py-2 flex items-center gap-3">
-                        <img src="{{ user.get_image_url }}" class="w-8 h-8 rounded-full object-cover border border-white/20">
+                        <img src="{{ user.get_image_url }}" alt="Foto de perfil de {{ user.get_full_name|default:user.username }}" class="w-8 h-8 rounded-full object-cover border border-white/20">
                         <div class="text-xs font-semibold" style="color: rgba(255,255,255,0.5); text-transform: uppercase; letter-spacing: 0.08em;">
                             {{ user.get_full_name }}
                         </div>
@@ -283,6 +283,7 @@
                 <div class="flex gap-5">
                     <a href="{% url 'super:privacy_policy' %}" class="hover:text-white transition-colors">Política de Privacidad</a>
                     <a href="{% url 'super:terms_of_service' %}" class="hover:text-white transition-colors">Términos de Servicio</a>
+                    <a href="{% url 'super:refund_policy' %}" class="hover:text-white transition-colors">Reembolsos</a>
                     <a href="{% url 'super:data_deletion' %}" class="hover:text-white transition-colors">Eliminar mis datos</a>
                 </div>
             </div>

@@ -15,3 +15,7 @@ class TermsOfServiceView(TemplateView):
 
 class DataDeletionView(TemplateView):
     template_name = 'super/legal/data_deletion.html'
+
+
+class RefundPolicyView(TemplateView):
+    template_name = 'super/legal/refund_policy.html'
