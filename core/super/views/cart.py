@@ -219,6 +219,13 @@ class CheckoutView(LoginRequiredMixin, TemplateView):
                 messages.info(request, 'Esta compra ya fue procesada.')
                 return redirect('super:order_detail', pk=existing_sale.pk)
 
+        if 'accepted_terms' not in request.POST:
+            messages.error(
+                request,
+                'Debes aceptar los Términos de Servicio y la Política de Reembolsos para finalizar la compra.'
+            )
+            return redirect('super:checkout')
+
         try:
             service = CheckoutService()
             cart = Cart.objects.get(user=request.user)
