@@ -135,6 +135,25 @@
           </div>
         </details>
 
+        <!-- Consentimiento -->
+        <div class="field-group">
+          <label style="display:flex; align-items:flex-start; gap:8px; font-size:0.85rem; color:#4b5563; cursor:pointer;">
+            <input type="checkbox" name="accepted_terms" id="id_accepted_terms" required
+                   style="margin-top:3px; width:16px; height:16px; flex-shrink:0;">
+            <span>
+              He leído y acepto los
+              <a href="{% url 'super:terms_of_service' %}" target="_blank" rel="noopener"
+                 class="font-semibold" style="color:#15803d;">Términos de Servicio</a>
+              y la
+              <a href="{% url 'super:privacy_policy' %}" target="_blank" rel="noopener"
+                 class="font-semibold" style="color:#15803d;">Política de Privacidad</a>.
+            </span>
+          </label>
+          {% if form.accepted_terms.errors %}
+            <span class="field-error"><i class='bx bx-error-circle'></i>{{ form.accepted_terms.errors.0 }}</span>
+          {% endif %}
+        </div>
+
         <!-- Botón -->
         <button type="submit" class="btn-submit btn-green">
           <i class='bx bx-user-check'></i> Crear Cuenta

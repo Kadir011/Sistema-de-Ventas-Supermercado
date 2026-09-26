@@ -15,7 +15,14 @@ class CustomerRegistrationForm(forms.ModelForm):
                          widget=forms.TextInput(attrs={'class': 'form-control only-numbers', 'placeholder': 'Cédula'}))
     password1 = forms.CharField(label='Contraseña', widget=forms.PasswordInput)
     password2 = forms.CharField(label='Confirmar Contraseña', widget=forms.PasswordInput)
-    
+    accepted_terms = forms.BooleanField(
+        label='Acepto los Términos de Servicio y la Política de Privacidad',
+        required=True,
+        error_messages={
+            'required': 'Debes aceptar los Términos de Servicio y la Política de Privacidad para crear tu cuenta.'
+        },
+    )
+
     class Meta:
         model = User
         fields = ['username', 'email', 'first_name', 'last_name', 'phone_number', 'address', 'date_of_birth', 'gender']
